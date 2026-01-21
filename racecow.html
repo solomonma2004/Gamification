@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Derby - 膠原飛輪跑</title>
+    
+    <!-- Google Fonts: Orbitron for Headers, Teko for Numbers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Teko:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <!-- PapaParse for CSV Parsing (if needed for CSV fallback) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'racing': ['"Orbitron"', 'sans-serif'],
+                        'numbers': ['"Teko"', 'sans-serif'],
+                    },
+                    colors: {
+                        'f1-blue': '#0ea5e9',
+                        'f1-cyan': '#22d3ee',
+                        'f1-slate': '#0f172a',
+                    },
+                    backgroundImage: {
+                        'checkered-light': "repeating-linear-gradient(45deg, #e0f2fe 25%, transparent 25%, transparent 75%, #e0f2fe 75%, #e0f2fe), repeating-linear-gradient(45deg, #e0f2fe 25%, #f0f9ff 25%, #f0f9ff 75%, #e0f2fe 75%, #e0f2fe)",
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+
+        /* F1 Style Background Pattern */
+        .bg-f1-pattern {
+            background-color: #f0f9ff;
+            background-image: 
+                linear-gradient(30deg, #e0f2fe 12%, transparent 12.5%, transparent 87%, #e0f2fe 87.5%, #e0f2fe),
+                linear-gradient(150deg, #e0f2fe 12%, transparent 12.5%, transparent 87%, #e0f2fe 87.5%, #e0f2fe),
+                linear-gradient(30deg, #e0f2fe 12%, transparent 12.5%, transparent 87%, #e0f2fe 87.5%, #e0f2fe),
+                linear-gradient(150deg, #e0f2fe 12%, transparent 12.5%, transparent 87%, #e0f2fe 87.5%, #e0f2fe),
+                linear-gradient(60deg, #e0f2fe77 25%, transparent 25.5%, transparent 75%, #e0f2fe77 75%, #e0f2fe77),
+                linear-gradient(60deg, #e0f2fe77 25%, transparent 25.5%, transparent 75%, #e0f2fe77 75%, #e0f2fe77);
+            background-size: 80px 140px;
+            background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+        }
+        
+        /* Slanted Clip Path for HUD feel */
+        .clip-hud {
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        
+        /* Speed Trail Animation */
+        @keyframes trail-flow {
+            0% { transform: scaleX(0.8); opacity: 0.4; }
+            50% { transform: scaleX(1.2); opacity: 0.8; }
+            100% { transform: scaleX(0.8); opacity: 0.4; }
+        }
+        @keyframes trail-particles {
+            0% { transform: translateX(0) scale(1); opacity: 0.8; }
+            100% { transform: translateX(-20px) scale(0); opacity: 0; }
+        }
+        .animate-trail {
+            animation: trail-flow 0.8s infinite ease-in-out;
+            transform-origin: right center;
+        }
+        .animate-particle {
+            animation: trail-particles 0.5s infinite linear;
+        }
+
+        /* Asphalt Texture */
+        .bg-asphalt {
+            background-color: #1e293b;
+            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* Grass/Crowd Texture */
+        .bg-crowd {
+            background-color: #10b981;
+            background-image: radial-gradient(#047857 15%, transparent 16%), radial-gradient(#047857 15%, transparent 16%);
+            background-size: 10px 10px;
+            background-position: 0 0, 5px 5px;
+            opacity: 0.8;
+        }
+        
+        .bg-checkered {
+            background-image: 
+                linear-gradient(45deg, #000 25%, transparent 25%), 
+                linear-gradient(-45deg, #000 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #000 75%), 
+                linear-gradient(-45deg, transparent 75%, #000 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            opacity: 0.1;
+        }
+    </style>
+</head>
+<body class="bg-f1-pattern text-slate-800 font-sans selection:bg-cyan-200 selection:text-cyan-900 overflow-x-hidden">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- ICONS (SVG Components) ---
+        const IconBase = ({ children, className, size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
+        );
+        const Trophy = (props) => <IconBase {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconBase>;
+        const Plus = (props) => <IconBase {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconBase>;
+        const Settings = (props) => <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.35a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>;
+        const Filter = (props) => <IconBase {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconBase>;
+        const Info = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>;
+        const Store = (props) => <IconBase {...props}><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></IconBase>;
+        const Award = (props) => <IconBase {...props}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></IconBase>;
+        const Zap = (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>;
+        const Target = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
+        const X = (props) => <IconBase {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>;
+        const RotateCcw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconBase>;
+        const MapIcon = (props) => <IconBase {...props}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></IconBase>;
+        const Search = (props) => <IconBase {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></IconBase>;
+        const Flag = (props) => <IconBase {...props}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></IconBase>;
+        const RefreshCw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconBase>;
+
+        // --- CONFIGURATION ---
+        
+        // [UPDATED] Google Script Web App URL - Corrected to the specific URL provided by user
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxghoGKevzCyi7UvKx0bzdmSCiOqM_MrP_Z1TLiJhxORi4Oz-6gJHb5oX2e-0b584Ze/exec"; 
+
+        const BRAND_GIFS = {
+            "Dermes": "https://i.postimg.cc/DZ0SprZG/DC.gif",
+            "Reenex": "https://i.postimg.cc/PxJCVWxw/RC.gif",
+            "Elyze": "https://i.postimg.cc/W3zdYG3D/EC.gif"
+        };
+        const BRAND_COLORS = {
+            "Dermes": "#f97316", // Orange
+            "Reenex": "#991b1b", // Red
+            "Elyze": "#4ade80"   // Green
+        };
+
+        // Fallback Sample Data
+        const SAMPLE_RACERS = [
+            { id: 1, name: "Sarah Miller", brand: "Dermes", shop: "TS", trial_qty: 4, package_sales: 20000, combo_qty: 2, plla_qty: 3, polyca_qty: 3, device_qty: 0, sales: 12.5 },
+            { id: 2, name: "Jessica Wilson", brand: "Reenex", shop: "PP", trial_qty: 10, package_sales: 50000, combo_qty: 5, plla_qty: 6, polyca_qty: 0, device_qty: 1, sales: 45.2 },
+            { id: 3, name: "Elena Rodriguez", brand: "Elyze", shop: "TST", trial_qty: 2, package_sales: 10000, combo_qty: 1, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 9.8 },
+            { id: 4, name: "Michelle Chang", brand: "Dermes", shop: "LP", trial_qty: 6, package_sales: 30000, combo_qty: 3, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 26.5 },
+            { id: 5, name: "Anna Patel", brand: "Reenex", shop: "TS", trial_qty: 12, package_sales: 60000, combo_qty: 6, plla_qty: 9, polyca_qty: 6, device_qty: 2, sales: 62.5 },
+            { id: 6, name: "Lisa Wang", brand: "Elyze", shop: "PP", trial_qty: 8, package_sales: 40000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 31.0 },
+            { id: 7, name: "Tiffany Baker", brand: "Dermes", shop: "TST", trial_qty: 2, package_sales: 5000, combo_qty: 1, plla_qty: 0, polyca_qty: 0, device_qty: 0, sales: 8.2 },
+            { id: 8, name: "Kelly Sato", brand: "Reenex", shop: "LP", trial_qty: 4, package_sales: 25000, combo_qty: 2, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 19.5 },
+            { id: 9, name: "Amanda Lewis", brand: "Elyze", shop: "TS", trial_qty: 3, package_sales: 15000, combo_qty: 0, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 11.0 },
+            { id: 10, name: "Jenny T.", brand: "Dermes", shop: "PP", trial_qty: 5, package_sales: 22000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 22.0 }
+        ];
+
+        // --- VISUAL COMPONENTS ---
+
+        const F1Card = ({ children, className = "" }) => (
+            <div className={`bg-white/80 backdrop-blur-md rounded-xl border border-sky-200 shadow-xl overflow-hidden relative group hover:border-cyan-400 transition-all duration-300 clip-hud ${className}`}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                {children}
+            </div>
+        );
+
+        // Modern Speed Pattern background
+        const SpeedPattern = () => (
+            <div className="absolute inset-0 opacity-20 pointer-events-none" 
+                style={{ 
+                backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, #e0f2fe 10px, #e0f2fe 12px)`,
+                }} 
+            />
+        );
+
+        // --- COMPONENT: IMPACTFUL STRAIGHT TRACK (TOP 15 - 5 per Brand) ---
+        const ImpactfulStraightTrack = ({ data, title, height = "auto" }) => {
+            const maxSales = Math.max(...data.map(r => r.sales), 10); 
+            // Scale ensuring landmarks visible (at least 85 miles now, or leader * 1.35)
+            const trackMax = Math.max(maxSales * 1.35, 85); 
+            
+            const formatMiles = (val) => `${val.toFixed(1)} 英里`;
+            const getBrandGif = (brand) => BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
+
+            const racerCount = data.length || 1;
+            // Compact Mode: Reduce lane height to 80px per racer (approx) - BIGGER VERTICALLY
+            // Minimum track height 300px
+            const LANE_HEIGHT = 80;
+            // More space between turf and lanes
+            const VERTICAL_PADDING = 100;
+
+            const computedHeight = Math.max((racerCount * LANE_HEIGHT) + (VERTICAL_PADDING * 2), 300);
+            
+            return (
+                /* REMOVED overflow-hidden from main container to let labels stick out */
+                <div className="bg-slate-900 rounded-3xl border-4 border-slate-700 shadow-2xl relative">
+                    {/* Header - Added rounded-t-2xl to match container radius manually */}
+                    <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 p-4 flex flex-col md:flex-row justify-between items-center relative z-20 shadow-md border-b-4 border-yellow-500 rounded-t-[1.3rem]">
+                        <h2 className="text-xl md:text-2xl font-racing flex items-center text-white italic tracking-wider mb-2 md:mb-0">
+                        <span className="mr-3 text-3xl">🏁</span> {title}
+                        </h2>
+                        <div className="text-sm font-numbers text-yellow-400 bg-black/40 px-4 py-1 rounded border border-yellow-500/50 shadow-sm uppercase tracking-widest">
+                            賽程範圍: 0 - {formatMiles(trackMax)}
+                        </div>
+                    </div>
+                    
+                    {/* Track Area - Dynamic Height based on racer count */}
+                    {/* REMOVED overflow-hidden from here too, but apply it to the inner lanes layer */}
+                    <div className="relative w-full bg-asphalt rounded-b-[1.3rem]" style={{ height: `${computedHeight}px` }}>
+                        
+                        {/* 1. Track Surface & Racers (CLIPPED) - This layer clips trails/cows but is underneath labels */}
+                        <div className="absolute inset-0 overflow-hidden rounded-b-[1.3rem]">
+                             {/* Spectator Stands Top */}
+                             <div className="absolute top-0 left-0 right-0 h-10 bg-crowd z-10 border-b-4 border-slate-400 shadow-lg"></div>
+                             
+                             {/* Spectator Stands Bottom */}
+                             <div className="absolute bottom-0 left-0 right-0 h-10 bg-crowd z-10 border-t-4 border-slate-400 shadow-lg"></div>
+                             
+                             {/* Stadium Lights Effect */}
+                             <div className="absolute top-0 left-0 w-64 h-64 bg-white/20 blur-3xl rounded-full pointer-events-none"></div>
+                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 blur-3xl rounded-full pointer-events-none"></div>
+
+                             {/* Lanes */}
+                             {Array.from({length: racerCount}).map((_, i) => (
+                                <div key={i} className="absolute w-full border-b border-dashed border-slate-500/30" 
+                                     style={{ top: `${VERTICAL_PADDING + (i * LANE_HEIGHT)}px`, height: `${LANE_HEIGHT}px` }}></div>
+                             ))}
+                             
+                             {/* Fixed Left Ranking Column (UPDATED ALIGNMENT) */}
+                             <div className="absolute left-2 top-0 bottom-0 w-8 z-30 pointer-events-none">
+                                {Array.from({length: racerCount}).map((_, i) => (
+                                    <div 
+                                        key={i} 
+                                        className="absolute left-0 w-full flex items-center justify-center"
+                                        style={{ 
+                                            top: `${VERTICAL_PADDING + (i * LANE_HEIGHT)}px`, 
+                                            height: `${LANE_HEIGHT}px` 
+                                        }}
+                                    >
+                                        <div className={`w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-sm font-numbers font-bold text-white border border-slate-600 shadow-lg transform -skew-x-12
+                                            ${i === 0 ? 'bg-yellow-500 text-black border-yellow-300 scale-125' : 
+                                              i === 1 ? 'bg-slate-300 text-black' : 
+                                              i === 2 ? 'bg-amber-700' : ''}`}>
+                                            {i + 1}
+                                        </div>
+                                    </div>
+                                ))}
+                             </div>
+                             
+                             {/* Start Line Grid */}
+                             <div className="absolute left-20 w-16 z-0 flex flex-col justify-center items-center opacity-50"
+                                  style={{ top: `${VERTICAL_PADDING}px`, bottom: `${VERTICAL_PADDING}px` }}>
+                                <div className="w-full h-full" style={{ backgroundImage: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%), linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}></div>
+                                <div className="absolute transform -rotate-90 text-white/50 font-racing text-4xl tracking-widest whitespace-nowrap">START</div>
+                             </div>
+
+                             {/* 3. The Racers (UPDATED ALIGNMENT) - Inside clipped area for trails */}
+                            <div className="absolute inset-0 pointer-events-none pl-16"> 
+                                {data.map((racer, index) => {
+                                    const progress = Math.min((racer.sales / trackMax) * 100, 95); 
+                                    const leftPos = 5 + (progress * 0.9);
+                                    
+                                    // Logic to prevent label going off-screen (flip to left if > 55% - Earlier flip)
+                                    const isNearEnd = progress > 55;
+                                    const labelClass = isNearEnd 
+                                        ? "right-full mr-6 flex-row-reverse" // Increased from mr-4 to mr-6
+                                        : "left-full ml-6"; // Increased from ml-4 to ml-6
+
+                                    let trailColor = "from-transparent to-white";
+                                    if (racer.brand === "Dermes") trailColor = "from-transparent via-orange-500 to-orange-200";
+                                    if (racer.brand === "Reenex") trailColor = "from-transparent via-red-600 to-red-400";
+                                    if (racer.brand === "Elyze") trailColor = "from-transparent via-emerald-500 to-emerald-200";
+
+                                    return (
+                                        <div 
+                                            key={racer.id} 
+                                            className="absolute w-full group z-20 hover:z-50 pointer-events-auto"
+                                            style={{ 
+                                                top: `${VERTICAL_PADDING + (index * LANE_HEIGHT)}px`, 
+                                                height: `${LANE_HEIGHT}px` 
+                                            }}
+                                        >
+                                            <div className="relative w-full h-full">
+                                                <div 
+                                                    className="absolute transform -translate-y-1/2 transition-all duration-1000 ease-linear flex items-center group-hover:z-[100]"
+                                                    style={{ left: `${leftPos}%`, top: '50%' }}
+                                                >
+                                                    {/* Turbo Trail */}
+                                                    <div className={`absolute right-8 top-1/2 -translate-y-1/2 h-3 md:h-4 w-48 md:w-64 bg-gradient-to-r ${trailColor} rounded-full blur-[4px] animate-trail origin-right -z-10 opacity-70`}></div>
+                                                    <div className={`absolute right-10 top-1/2 -translate-y-1/2 h-0.5 md:h-1 w-32 md:w-48 bg-white/90 rounded-full blur-[1px] animate-trail origin-right -z-10`} style={{ animationDelay: '0.05s' }}></div>
+                                                    
+                                                    {/* Particles */}
+                                                    <div className="absolute right-12 top-1/2 -translate-y-1/2 -z-20">
+                                                        <div className={`w-2 h-2 rounded-full bg-white animate-particle absolute -top-4 right-0`}></div>
+                                                        <div className={`w-1 h-1 rounded-full bg-white animate-particle absolute top-4 right-10`} style={{ animationDelay: '0.2s' }}></div>
+                                                        <div className={`w-1.5 h-1.5 rounded-full bg-white animate-particle absolute top-0 right-20`} style={{ animationDelay: '0.4s' }}></div>
+                                                    </div>
+
+                                                    {/* Cow - Smaller size for compact lanes */}
+                                                    <div className="relative z-30 transform group-hover:scale-125 transition-transform cursor-pointer">
+                                                        {index < 3 && (
+                                                            <div className="absolute -inset-8 bg-white/20 rounded-full blur-xl animate-pulse -z-10"></div>
+                                                        )}
+                                                        
+                                                        <img 
+                                                            src={getBrandGif(racer.brand)} 
+                                                            alt={racer.name} 
+                                                            className={`h-12 md:h-16 w-auto object-contain filter drop-shadow-2xl ${index===0 ? 'scale-110' : ''}`}
+                                                        />
+                                                        
+                                                        {/* Name Tag - Adaptive Positioning & Z-Index */}
+                                                        <div className={`absolute ${labelClass} bg-slate-900/90 text-white px-2 py-0.5 md:px-3 md:py-1 rounded-lg text-[9px] md:text-[10px] font-bold shadow-xl border border-slate-500 z-[60] backdrop-blur-md transition-all whitespace-nowrap min-w-max group-hover:scale-100 group-hover:opacity-100 top-1/2 -translate-y-1/2 flex items-center`}>
+                                                            <span className={isNearEnd ? "ml-1 order-2" : "mr-1"}>{racer.name.split(' ')[0]}</span>
+                                                            <span className={`text-yellow-400 bg-black/30 px-1 rounded ${isNearEnd ? "order-1" : ""}`}>{formatMiles(racer.sales)}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* 2. Milestones (Holographic Arches) - NOW OUTSIDE CLIPPED AREA */}
+                        <div className="absolute inset-0 pointer-events-none">
+                            {[20, 40, 60].map((mile, idx) => {
+                                const pct = (mile / trackMax) * 100;
+                                if (pct > 95) return null; 
+                                
+                                let archColor = "border-cyan-400";
+                                let badgeColor = "bg-cyan-500";
+                                if(mile===40) { archColor = "border-blue-500"; badgeColor = "bg-blue-600"; }
+                                if(mile===60) { archColor = "border-purple-500"; badgeColor = "bg-purple-600"; }
+
+                                // Stagger logic: alternate TOP/BOTTOM placement with SIGNIFICANTLY INCREASED SPACE
+                                const isTop = idx % 2 === 0;
+                                const labelPositionClass = isTop 
+                                    ? "-top-16" // Increased from -top-12 to -top-16
+                                    : "top-full mt-16"; // Increased from mt-8 to mt-16
+
+                                return (
+                                    /* INCREASED Z-INDEX TO 40 to ensure it is ABOVE the header/crowd */
+                                    <div key={mile} className="absolute w-1 z-40 pointer-events-none" 
+                                         style={{ 
+                                             left: `calc(5% + ${pct * 0.9}%)`,
+                                             top: `${VERTICAL_PADDING}px`,
+                                             bottom: `${VERTICAL_PADDING}px`
+                                         }}>
+                                        {/* Holographic Wall Effect */}
+                                        <div className={`h-full w-full border-l-2 ${archColor} shadow-[0_0_15px_rgba(34,211,238,0.5)] opacity-40`}></div>
+                                        <div className={`absolute top-0 bottom-0 -left-4 w-8 bg-gradient-to-r from-transparent via-${archColor.split('-')[1]}-400/20 to-transparent`}></div>
+                                        
+                                        {/* Floating Label - Alternating Top/Bottom */}
+                                        <div className={`absolute ${labelPositionClass} -left-20 w-40 flex flex-col items-center z-50`}>
+                                            <div className={`w-full ${badgeColor} text-white text-[10px] md:text-[12px] font-bold py-1 px-2 md:px-3 rounded shadow-[0_0_10px_rgba(255,255,255,0.5)] text-center tracking-widest border border-white/50 transform whitespace-nowrap`}>
+                                                完成{mile}英里
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAIN COMPONENT ---
+
+        function SalesDerbyBlue() {
+            // Initial State: Use Sample Data first, will be overwritten by Google Sheet if URL provided
+            const [racers, setRacers] = useState(SAMPLE_RACERS);
+            const [isLoading, setIsLoading] = useState(false);
+            const [lastUpdated, setLastUpdated] = useState(null);
+            const [fetchError, setFetchError] = useState(false); // New state to track error
+            
+            const [isAdminOpen, setIsAdminOpen] = useState(false);
+            
+            // Scorecard State - Separate Filters
+            const [scBrand, setScBrand] = useState("ALL");
+            const [scShop, setScShop] = useState("ALL");
+            const [scRacerId, setScRacerId] = useState("");
+
+            // --- DATA FETCHING ---
+            const fetchData = () => {
+                if (!GOOGLE_SCRIPT_URL) return; // Skip if no URL set
+                
+                setIsLoading(true);
+                setFetchError(false);
+                
+                // Add redirect: 'follow' and try/catch block
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'GET',
+                    redirect: 'follow', // Important for Google Scripts
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Fetched Data:", data);
+                    if (data && data.length > 0) {
+                        // Helper to normalize keys (remove spaces, underscores, lowercase)
+                        const normalizeKeys = (obj) => {
+                            const newObj = {};
+                            Object.keys(obj).forEach(key => {
+                                const newKey = key.toLowerCase().replace(/[\s_]/g, '');
+                                newObj[newKey] = obj[key];
+                            });
+                            return newObj;
+                        };
+
+                        // Helper to safely parse numbers/currency
+                        const parseNum = (val) => {
+                            if (typeof val === 'number') return val;
+                            if (typeof val === 'string') return parseFloat(val.replace(/[$,]/g, '')) || 0;
+                            return 0;
+                        };
+
+                        const newRacers = data
+                            .map((row) => normalizeKeys(row)) // Normalize keys first
+                            .filter(row => row.name) // Filter out empty rows
+                            .map((row, index) => {
+                                // Access using normalized keys: trialqty, packagesales, etc.
+                                const trialQty = parseNum(row.trialqty);
+                                const packageSales = parseNum(row.packagesales);
+                                const comboQty = parseNum(row.comboqty);
+                                const pllaQty = parseNum(row.pllaqty);
+                                const polycaQty = parseNum(row.polycaqty);
+                                const deviceQty = parseNum(row.deviceqty);
+
+                                // CALCULATE MILES BASED ON RULES
+                                // Rule 1: 2 Trial = 1 Mile
+                                const milesTrial = Math.floor(trialQty / 2) * 1;
+                                
+                                // Rule 2: $10000 Sales = 1 Mile
+                                const milesPackage = Math.floor(packageSales / 10000) * 1;
+                                
+                                // Rule 3: 1 Combo = 2 Miles
+                                const milesCombo = comboQty * 2;
+                                
+                                // Rule 4: 3 Plla = 2 Miles
+                                const milesPlla = Math.floor(pllaQty / 3) * 2;
+                                
+                                // Rule 5: 3 Polyca = 2 Miles
+                                const milesPolyca = Math.floor(polycaQty / 3) * 2;
+                                
+                                // Rule 6: 1 Device = 2 Miles
+                                const milesDevice = deviceQty * 2;
+
+                                const totalMiles = milesTrial + milesPackage + milesCombo + milesPlla + milesPolyca + milesDevice;
+
+                                return {
+                                    id: index + 1,
+                                    name: row.name,
+                                    brand: row.brand || "Unknown",
+                                    shop: row.shop || "HQ", 
+                                    
+                                    // Store raw values for breakdown
+                                    trial_qty: trialQty,
+                                    package_sales: packageSales,
+                                    combo_qty: comboQty,
+                                    plla_qty: pllaQty,
+                                    polyca_qty: polycaQty,
+                                    device_qty: deviceQty,
+
+                                    sales: totalMiles, // TOTAL MILES
+                                    color: BRAND_COLORS[row.brand] || "#94a3b8"
+                                };
+                            });
+                        
+                        setRacers(newRacers);
+                        setLastUpdated(new Date());
+                        setFetchError(false);
+                    }
+                    setIsLoading(false);
+                })
+                .catch(err => {
+                    console.warn("Error fetching data (using sample data):", err);
+                    setFetchError(true);
+                    setIsLoading(false);
+                    // Do NOT clear racers here, keep using sample/previous data
+                });
+            };
+
+            // Fetch on mount and interval
+            useEffect(() => {
+                fetchData(); // Initial fetch
+                const interval = setInterval(fetchData, 30000); // 30s polling
+                return () => clearInterval(interval);
+            }, []);
+
+
+            // Data Logic
+            const sortedGlobal = [...racers].sort((a, b) => b.sales - a.sales);
+            const top3 = sortedGlobal.slice(0, 3);
+            
+            // --- NEW LOGIC: TOP 5 FROM EACH BRAND (15 Total) ---
+            const getTop5ByBrand = (brandName) => {
+                return racers
+                    .filter(r => r.brand === brandName)
+                    .sort((a, b) => b.sales - a.sales)
+                    .slice(0, 5);
+            };
+
+            const top5Dermes = getTop5ByBrand("Dermes");
+            const top5Reenex = getTop5ByBrand("Reenex");
+            const top5Elyze = getTop5ByBrand("Elyze");
+
+            // Combine all top 5s and sort them by speed for the race track display
+            const top15Combined = [...top5Dermes, ...top5Reenex, ...top5Elyze]
+                .sort((a, b) => b.sales - a.sales);
+            
+            const brands = [...new Set(racers.map(r => r.brand))];
+            const shops = [...new Set(racers.map(r => r.shop))].sort();
+
+            const scAvailableRacers = useMemo(() => {
+                return racers.filter(r => {
+                    const matchBrand = scBrand === "ALL" || r.brand === scBrand;
+                    const matchShop = scShop === "ALL" || r.shop === scShop;
+                    return matchBrand && matchShop;
+                }).sort((a, b) => a.name.localeCompare(b.name));
+            }, [racers, scBrand, scShop]);
+
+            useEffect(() => {
+                if (scAvailableRacers.length > 0) {
+                    const exists = scAvailableRacers.find(r => r.id.toString() === scRacerId);
+                    if (!exists) {
+                        setScRacerId(scAvailableRacers[0].id.toString());
+                    }
+                } else {
+                    setScRacerId("");
+                }
+            }, [scAvailableRacers, scRacerId]);
+
+            const updateSales = (id, amount) => {
+                setRacers(racers.map(r => r.id === id ? { ...r, sales: Math.max(0, r.sales + amount) } : r));
+            };
+
+            const formatMiles = (val) => `${val.toFixed(1)} 英里`;
+            const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'HKD', maximumFractionDigits: 0 }).format(val);
+
+            const getBrandGif = (brand) => {
+                return BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
+            };
+
+            // Helper to generate breakdown data FROM REAL VALUES
+            const getRacerBreakdown = (racer) => {
+                if (!racer) return null;
+                // If using sample data (initial load), we might not have the raw keys, so fallback
+                // But generally we expect the keys to be there from fetchData or SAMPLE_RACERS
+                return {
+                    pnPaidTrial: racer.trial_qty || 0,
+                    pnPackage: racer.package_sales || 0, // This is value amount
+                    combo: racer.combo_qty || 0,
+                    plla: racer.plla_qty || 0,
+                    polyca: racer.polyca_qty || 0,
+                    home: racer.device_qty || 0,
+                    
+                    // Count for package implies 'units' of 10k? No, scorecard displays revenue directly.
+                    // Scorecard logic below uses these raw values.
+                };
+            };
+
+            return (
+                <div className="min-h-screen bg-f1-pattern text-slate-800 font-sans selection:bg-cyan-200 selection:text-cyan-900 relative">
+                
+                {/* --- SECTION 1: GAME POSTER --- */}
+                <section className="relative w-full bg-white shadow-xl z-20 border-b-4 border-cyan-500">
+                    <div className="w-full">
+                        <img 
+                        src="https://i.postimg.cc/90qwfFYV/jimeng-2026-01-17-3723-ji-zhi-pang-pang-de-niu-zai-zhuan-ye-sai-dao-shang-gun-dong-zhe-fa-guang-de-qiu-ti-jin-xing-bi-sai-qiu-ti-dai-biao-jiao-yuan-dan-bai-zeng-qiang-qiu-yi-ban-xian.png" 
+                        alt="Main Event Poster" 
+                        className="w-full h-auto object-cover block"
+                        />
+                    </div>
+                </section>
+
+                <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-16 pb-24">
+
+                    {/* --- SECTION 2: STATS HUD --- */}
+                    <section className="w-full">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl md:text-6xl font-racing text-transparent bg-clip-text bg-gradient-to-br from-blue-700 to-cyan-500 uppercase tracking-widest drop-shadow-sm mb-2">
+                            飛輪帶飛輪無限可能
+                            </h1>
+                            <div className="inline-block bg-slate-900 text-cyan-300 px-6 py-1 rounded transform -skew-x-12 border border-cyan-500/50">
+                                <span className="block transform skew-x-12 font-numbers text-xl tracking-widest">全民競跑 • 人人二十英里</span>
+                            </div>
+                        </div>
+
+                        {/* TELEMETRY CARDS */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                             {/* Revenue HUD - Total Miles x something or just Total Miles? Let's show Total Miles instead of fake revenue now, or keep mock revenue based on miles */}
+                             <F1Card className="p-4 md:p-6 flex flex-col justify-between h-auto md:h-40">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-slate-500 text-base md:text-lg font-bold tracking-wider">團隊總里程</h3>
+                                    <Award className="text-cyan-500 animate-pulse" size={24} />
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-3xl md:text-4xl font-numbers font-bold text-slate-800">{racers.reduce((a,b)=>a+b.sales,0).toFixed(1)} MILES</div>
+                                    <div className="w-full bg-slate-200 h-1 mt-2 rounded-full overflow-hidden">
+                                        <div className="bg-cyan-500 h-full w-2/3"></div>
+                                    </div>
+                                </div>
+                             </F1Card>
+
+                             {/* Racers HUD */}
+                             <F1Card className="p-4 md:p-6 flex flex-col justify-between h-auto md:h-40">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-slate-500 text-base md:text-lg font-bold tracking-wider">選手數量</h3>
+                                    <Store className="text-blue-500" size={24} />
+                                </div>
+                                <div className="flex items-end justify-between">
+                                     <div className="text-4xl md:text-5xl font-numbers font-bold text-slate-800">{racers.length}</div>
+                                     <div className="text-xs text-slate-400 mb-2 font-racing">PILOTS ON TRACK</div>
+                                </div>
+                             </F1Card>
+
+                             {/* Top Leader HUD */}
+                             <F1Card className="p-4 md:p-6 flex flex-col justify-between h-auto md:h-40 bg-gradient-to-br from-slate-900 to-blue-900 border-none">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-cyan-300 text-base md:text-lg font-bold tracking-wider">排頭位選手</h3>
+                                    <Trophy className="text-yellow-400" size={24} />
+                                </div>
+                                <div>
+                                    <div className="text-2xl md:text-3xl font-bold text-white truncate">{top3[0]?.name}</div>
+                                    <div className="text-cyan-400 font-numbers text-xl">{top3[0]?.sales.toFixed(1)} MILES</div>
+                                </div>
+                             </F1Card>
+                        </div>
+                    </section>
+
+                    {/* --- SECTION 3: THE RACING COURSE (TOP 5 FROM EACH BRAND) --- */}
+                    <section>
+                        <ImpactfulStraightTrack data={top15Combined} title="各品牌 Top 5 激戰" height="1500px" />
+                    </section>
+
+                    {/* --- SECTION 4: GAME RULES (STRATEGY CARDS) --- */}
+                    <section className="grid grid-cols-1 gap-8">
+                        <div className="relative">
+                             <div className="text-center mb-10">
+                                <h3 className="text-2xl md:text-3xl font-racing text-slate-800 uppercase tracking-widest flex items-center justify-center gap-3">
+                                    <Info className="text-cyan-600" /> 膠原飛輪跑加速條件
+                                </h3>
+                                <p className="text-slate-500 font-numbers text-lg md:text-xl">掌握以下六大法則，助力肥牛飛速衝刺！</p>
+                             </div>
+
+                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {/* Rule 1 */}
+                                <F1Card className="p-6 group hover:bg-slate-50">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-10 h-10 bg-teal-100 text-teal-700 rounded flex items-center justify-center font-numbers font-bold text-2xl">1</div>
+                                        <h4 className="font-bold text-slate-700">PN+ Paid Trial</h4>
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4">每賣出 <strong className="text-slate-800">2 個</strong> PN+ Paid Trial</p>
+                                    <div className="bg-teal-500 text-white text-center py-2 rounded font-racing text-sm uppercase tracking-wider shadow-lg shadow-teal-200">
+                                        向前移動 1 英里 🆕
+                                    </div>
+                                </F1Card>
+
+                                {/* Rule 2 */}
+                                <F1Card className="p-6 group hover:bg-slate-50">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-10 h-10 bg-cyan-100 text-cyan-700 rounded flex items-center justify-center font-numbers font-bold text-2xl">2</div>
+                                        <h4 className="font-bold text-slate-700">含 PN+ Package</h4>
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4">每賣出滿 <strong className="text-slate-800">$10,000</strong></p>
+                                    <div className="bg-cyan-500 text-white text-center py-2 rounded font-racing text-sm uppercase tracking-wider shadow-lg shadow-cyan-200">
+                                        向前移動 1 英里 ⚡
+                                    </div>
+                                </F1Card>
+
+                                {/* Rule 3 */}
+                                <F1Card className="p-6 group hover:bg-slate-50">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded flex items-center justify-center font-numbers font-bold text-2xl">3</div>
+                                        <h4 className="font-bold text-slate-700">PN+ Combo System</h4>
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4">每賣出 <strong className="text-slate-800">1 個</strong></p>
+                                    <div className="bg-blue-600 text-white text-center py-2 rounded font-racing text-sm uppercase tracking-wider shadow-lg shadow-blue-200">
+                                        向前移動 2 英里 🚀
+                                    </div>
+                                </F1Card>
+
+                                {/* Rule 4 */}
+                                <F1Card className="p-6 group hover:bg-slate-50">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-10 h-10 bg-purple-100 text-purple-700 rounded flex items-center justify-center font-numbers font-bold text-2xl">4</div>
+                                        <h4 className="font-bold text-slate-700">Plla 5 Product</h4>
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4">每賣出 <strong className="text-slate-800">3 個</strong> Plla 5 product</p>
+                                    <div className="bg-purple-600 text-white text-center py-2 rounded font-racing text-sm uppercase tracking-wider shadow-lg shadow-purple-200">
+                                        向前移動 2 英里 ✨
+                                    </div>
+                                </F1Card>
+                                
+                                {/* Rule 5 */}
+                                <F1Card className="p-6 group hover:bg-slate-50">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-10 h-10 bg-orange-100 text-orange-700 rounded flex items-center justify-center font-numbers font-bold text-2xl">5</div>
+                                        <h4 className="font-bold text-slate-700">Polyca</h4>
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4">每賣出 <strong className="text-slate-800">3 個</strong> Polyca</p>
+                                    <div className="bg-orange-500 text-white text-center py-2 rounded font-racing text-sm uppercase tracking-wider shadow-lg shadow-orange-200">
+                                        向前移動 2 英里 🔥
+                                    </div>
+                                </F1Card>
+
+                                {/* Rule 6 */}
+                                <F1Card className="p-6 group hover:bg-slate-50">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-10 h-10 bg-pink-100 text-pink-700 rounded flex items-center justify-center font-numbers font-bold text-2xl">6</div>
+                                        <h4 className="font-bold text-slate-700">Home Device</h4>
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4">每賣出 <strong className="text-slate-800">1 套</strong> home device</p>
+                                    <div className="bg-pink-500 text-white text-center py-2 rounded font-racing text-sm uppercase tracking-wider shadow-lg shadow-pink-200">
+                                        向前移動 2 英里 🏠
+                                    </div>
+                                </F1Card>
+                             </div>
+                        </div>
+                    </section>
+
+                    {/* --- SECTION 5: DRIVER LICENSE (SCORECARD) --- */}
+                    <section className="pt-8 border-t border-slate-300">
+                         {/* Header & Filters */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                            <div>
+                                <h2 className="text-2xl md:text-3xl font-racing text-slate-800 flex items-center uppercase">
+                                    <Target className="mr-3 text-cyan-600" /> 個人成績單 (Score Card)
+                                </h2>
+                                <p className="text-slate-500 mt-1 font-numbers text-lg">查看個別參賽者的詳細得分與任務達成狀況</p>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-white p-2 rounded-lg shadow-sm border border-slate-200 w-full md:w-auto">
+                                <div className="relative flex-1">
+                                    <select value={scBrand} onChange={(e) => setScBrand(e.target.value)} className="w-full bg-slate-50 text-slate-700 text-sm rounded pl-3 pr-8 py-2 focus:ring-2 focus:ring-cyan-500 outline-none border-none font-bold uppercase">
+                                        <option value="ALL">所有品牌</option>
+                                        {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                                    </select>
+                                </div>
+                                <div className="relative flex-1">
+                                    <select value={scShop} onChange={(e) => setScShop(e.target.value)} className="w-full bg-slate-50 text-slate-700 text-sm rounded pl-3 pr-8 py-2 focus:ring-2 focus:ring-cyan-500 outline-none border-none font-bold uppercase">
+                                        <option value="ALL">所有樓層</option>
+                                        {shops.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                                <div className="relative flex-1">
+                                    <select value={scRacerId} onChange={(e) => setScRacerId(e.target.value)} className="w-full bg-slate-800 text-cyan-400 text-sm rounded pl-3 pr-8 py-2 focus:ring-2 focus:ring-cyan-500 outline-none border-none font-bold uppercase min-w-[150px]">
+                                        {scAvailableRacers.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* License Card */}
+                        {scRacerId && (() => {
+                            const racer = racers.find(r => r.id.toString() === scRacerId);
+                            // Note: using scRacerId for lookup
+                            const actualRank = sortedGlobal.findIndex(r => r.id.toString() === scRacerId) + 1;
+                            const breakdown = getRacerBreakdown(racer);
+
+                            if (!racer) return null; // Guard
+
+                            return (
+                                <div className="bg-slate-900 rounded-2xl shadow-2xl overflow-hidden relative border-t-8 border-cyan-500 text-white">
+                                    <div className="absolute top-0 right-0 p-32 bg-cyan-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                                    
+                                    <div className="grid grid-cols-1 lg:grid-cols-3">
+                                        {/* Left: Profile */}
+                                        <div className="p-8 bg-slate-800/50 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-700 relative">
+                                            <div className="w-32 h-32 rounded-full bg-white p-1 mb-4 relative">
+                                                <img src={getBrandGif(racer.brand)} className="w-full h-full object-contain rounded-full bg-slate-100" />
+                                                <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-black w-10 h-10 flex items-center justify-center font-black rounded-full border-2 border-slate-900 text-xl font-numbers">#{actualRank}</div>
+                                            </div>
+                                            <h2 className="text-3xl font-racing text-center mb-1">{racer.name}</h2>
+                                            <div className="flex gap-2">
+                                                <span className="px-2 py-0.5 bg-slate-700 rounded text-xs text-cyan-400 font-bold uppercase tracking-wider">{racer.brand}</span>
+                                                <span className="px-2 py-0.5 bg-slate-700 rounded text-xs text-slate-300 font-bold uppercase tracking-wider">{racer.shop}</span>
+                                            </div>
+                                            
+                                            {/* Big Speedometer Number */}
+                                            <div className="mt-8 text-center">
+                                                <div className="text-xs text-slate-500 uppercase tracking-[0.2em] mb-1">總里程 (Total Distance)</div>
+                                                <div className="text-6xl font-numbers font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 leading-none">
+                                                    {racer.sales.toFixed(1)}
+                                                </div>
+                                                <div className="text-cyan-500 text-sm font-bold mt-1">MILES</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Data */}
+                                        <div className="lg:col-span-2 p-8">
+                                            <h4 className="text-slate-400 font-racing uppercase text-sm mb-6 flex items-center">
+                                                <Zap size={16} className="mr-2 text-yellow-500" /> 表現分析 (Performance Breakdown)
+                                            </h4>
+                                            
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                {[
+                                                    { 
+                                                        label: "PN+ Paid Trial", 
+                                                        count: breakdown.pnPaidTrial, 
+                                                        points: Math.floor(breakdown.pnPaidTrial / 2), // 2 units = 1 mile
+                                                        color: "teal" 
+                                                    },
+                                                    { 
+                                                        label: "PN+ Package", 
+                                                        count: breakdown.pnPackage, 
+                                                        points: Math.floor(breakdown.pnPackage / 10000), 
+                                                        color: "cyan",
+                                                        revenue: breakdown.pnPackage // Display raw revenue in subtext
+                                                    },
+                                                    { label: "PN+ Combo Sys", count: breakdown.combo, points: breakdown.combo * 2, color: "blue" },
+                                                    { label: "Plla 5 Prod", count: breakdown.plla, points: Math.floor(breakdown.plla / 3) * 2, color: "purple" }, // 3 units = 2 miles
+                                                    { label: "Polyca", count: breakdown.polyca, points: Math.floor(breakdown.polyca / 3) * 2, color: "orange" }, // 3 units = 2 miles
+                                                    { label: "Home Device", count: breakdown.home, points: breakdown.home * 2, color: "pink" },
+                                                ].map((item, idx) => (
+                                                    <div key={idx} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-colors">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <span className="text-slate-400 text-xs font-bold uppercase">{item.label}</span>
+                                                            <span className={`text-${item.color}-400 font-numbers text-xl font-bold`}>+{item.points} 英里</span>
+                                                        </div>
+                                                        <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                                            {/* Simple visual bar based on count relative to a guess max of 20 */}
+                                                            <div className={`h-full bg-${item.color}-500 w-1/2`} style={{ width: `${Math.min((item.revenue ? item.points : item.count) * 5, 100)}%` }}></div>
+                                                        </div>
+                                                        <div className="text-right text-[10px] text-slate-500 mt-1 font-mono">
+                                                            {item.label === "PN+ Package" 
+                                                                ? `金額: ${formatCurrency(item.revenue)}` 
+                                                                : `數量: ${item.count}`
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </section>
+                </main>
+
+                {/* --- DATA SOURCE STATUS BAR (BOTTOM LEFT) --- */}
+                <div className="fixed bottom-4 left-4 z-50 text-[10px] text-slate-400 bg-white/80 px-2 py-1 rounded shadow-sm border border-slate-200 backdrop-blur-sm pointer-events-none">
+                     {lastUpdated && !fetchError ? (
+                        <span className="flex items-center text-green-600"><span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>已連接 Google Sheet (上次更新: {lastUpdated.toLocaleTimeString()})</span>
+                     ) : (
+                        <span className="flex items-center text-yellow-600"><span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>{fetchError ? '連接失敗: 使用演示數據' : '使用預設演示數據'}</span>
+                     )}
+                </div>
+
+                {/* --- ADMIN FLOATING BUTTON (MANUAL REFRESH) --- */}
+                <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
+                    <button 
+                        onClick={fetchData}
+                        className={`p-4 bg-blue-600 text-white rounded-full shadow-2xl hover:bg-blue-700 transition-all group ${isLoading ? 'animate-spin' : ''}`}
+                        title="立即刷新數據"
+                    >
+                        <RotateCcw className="w-6 h-6" />
+                    </button>
+                </div>
+            </div>
+            );
+        }
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<SalesDerbyBlue />);
+    </script>
+</body>
+</html>

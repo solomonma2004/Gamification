@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Infographic: The Autonomous Revenue Engine (Demo)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800;900&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            /* THEME: Modern Medical Tech (Light & Clean) */
+            --bg-color: #f0f4f8;       
+            --card-bg: #ffffff;        
+            --accent: #00bcd4;         
+            --accent-dark: #00838f;    
+            --accent-glow: rgba(0, 188, 212, 0.6);
+            --text-main: #1c1e21;      
+            --text-sub: #5f6368;       
+            --line-color: #cfd8dc;     
+            --node-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden; 
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px; 
+        }
+
+        .infographic-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            padding-bottom: 200px; 
+        }
+
+        h1 {
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 800;
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #102a43;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-sub);
+            margin-bottom: 60px;
+            font-size: 18px;
+        }
+
+        /* --- BOSS MODE STYLES --- */
+        .boss-highlight-text {
+            color: var(--accent-dark);
+            font-weight: 800;
+            font-size: 1.15em;
+            background: rgba(0, 188, 212, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .container-label.boss-outcome {
+            font-size: 24px;
+            background: var(--accent);
+            color: #ffffff;
+            padding: 12px 35px;
+            top: -34px;
+            border: 4px solid #fff;
+            box-shadow: 0 10px 25px rgba(0, 188, 212, 0.3);
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            white-space: nowrap;
+        }
+
+        /* --- NODES & CARDS --- */
+        .step-row {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 100px; 
+            position: relative;
+            z-index: 2;
+        }
+
+        .agent-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: var(--node-shadow);
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 2;
+        }
+
+        .agent-card.processing {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .agent-card.crystallized {
+            border-color: var(--accent);
+            box-shadow: 0 0 40px var(--accent-glow);
+            animation: crystallize-pop 0.8s ease-out forwards;
+            background: linear-gradient(to bottom, #fff, #e0f7fa);
+        }
+
+        @keyframes crystallize-pop {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); box-shadow: 0 0 60px var(--accent-glow); }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background-color: #f0fdff;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            box-shadow: 0 4px 10px rgba(0, 188, 212, 0.15);
+            transition: transform 0.3s;
+        }
+
+        .agent-name {
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #102a43;
+        }
+
+        .agent-role {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .agent-desc {
+            font-size: 13px;
+            color: var(--text-sub);
+            line-height: 1.5;
+            min-height: 42px;
+        }
+        
+        .dynamic-text {
+            color: #006064;
+            font-style: italic;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-size: 13px;
+            animation: fadeIn 1s ease-in;
+            background: #e0f7fa;
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- PHONE MOCKUPS --- */
+        .mockup-wrapper {
+            position: absolute;
+            left: 50%;
+            margin-left: -90px;
+            top: 110%;
+            width: 180px;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            transition: all 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .mockup-wrapper.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .phone-frame {
+            background: #fff;
+            border: 4px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            border-bottom-width: 10px;
+        }
+        
+        .mockup-wrapper.active .phone-frame {
+            border-color: var(--accent);
+        }
+
+        .phone-screen {
+            background: #fafafa;
+            flex: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .app-header {
+            background: #fff;
+            padding: 8px;
+            font-size: 8px;
+            display: flex;
+            justify-content: space-between;
+            color: #333;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .app-hero {
+            height: 80px;
+            background: linear-gradient(135deg, #00bcd4, #0097a7);
+            margin: 5px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-hero i {
+            font-size: 30px;
+            color: #fff;
+            opacity: 0.9;
+        }
+
+        .app-body {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .app-title {
+            color: #102a43;
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .app-desc {
+            color: #555;
+            font-size: 9px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .app-btn {
+            background: var(--accent);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 5px;
+            width: 100%;
+            display: block;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 188, 212, 0.3);
+        }
+        
+        .countdown-badge {
+            background: #ff5252;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 8px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        
+        .ref-code {
+            border: 1px dashed #bdbdbd;
+            color: var(--accent);
+            padding: 5px;
+            font-family: monospace;
+            font-size: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            background: #e0f7fa;
+        }
+
+        /* --- DYNAMIC SVG LAYER --- */
+        #svg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Behind cards */
+            pointer-events: none;
+        }
+
+        path {
+            stroke: var(--line-color);
+            stroke-width: 4px;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.3s;
+        }
+        
+        path.active-path {
+            stroke: var(--accent);
+            stroke-width: 4;
+            filter: drop-shadow(0 0 3px var(--accent));
+        }
+
+        /* ENERGY ORB (DIV implementation to stay on top) */
+        #energy-orb {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #00bcd4;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00bcd4, 0 0 30px #00bcd4;
+            border: 3px solid #fff;
+            z-index: 99; 
+            opacity: 0; 
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* --- SPECIFIC LAYOUTS --- */
+        
+        .user-input {
+            border: 2px dashed #90a4ae;
+            background: #fff;
+            width: 460px; 
+        }
+        
+        .input-group {
+            width: 100%;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .scenario-btn {
+            background: #fff;
+            color: #546e7a;
+            border: 1px solid #cfd8dc;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px; 
+            white-space: nowrap; 
+        }
+        
+        .scenario-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: #f0fdff;
+            transform: translateX(2px);
+        }
+        
+        .scenario-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .parallel-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .intent-subgroup {
+            border: 2px dashed #00bcd4;
+            background: rgba(0, 188, 212, 0.05);
+            border-radius: 20px;
+            padding: 40px 40px 20px 40px;
+            position: relative;
+            display: flex;
+            gap: 60px;
+            margin-top: 20px;
+        }
+        
+        .intent-subgroup-label {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-color);
+            padding: 0 15px;
+            color: #00838f;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 14px;
+            white-space: nowrap;
+            letter-spacing: 1px;
+            z-index: 5;
+        }
+
+        .output-split {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .output-card {
+            flex: 1;
+            max-width: 280px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        .output-card.selected {
+            opacity: 1;
+            border-color: var(--accent);
+            transform: scale(1.05);
+            background: #e0f7fa;
+            z-index: 10;
+        }
+
+        .badge {
+            background-color: #eceff1;
+            color: #546e7a;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .selected .badge {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(0,188,212,0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 8px;
+        }
+        
+        .outcome-container {
+            border: 2px dashed #90a4ae;
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            width: 100%;
+            max-width: 1100px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container-label {
+            position: absolute;
+            background: var(--bg-color);
+            padding: 0 10px;
+            color: #546e7a;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+        }
+
+        /* --- DETAILED CONCEPT VISUALIZATION --- */
+        .concept-section {
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px;
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
+            align-self: center;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 Columns */
+            gap: 30px;
+            margin-top: 40px;
+            justify-items: center; 
+        }
+
+        .concept-card {
+            width: 100%;
+            background: #f9fbfd;
+            border: 1px solid #eee;
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .concept-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #102a43;
+            font-weight: 700;
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .concept-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px 10px;
+            height: 140px;
+            position: relative;
+        }
+
+        .flow-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 30%;
+            text-align: center;
+        }
+
+        .flow-arrow {
+            color: #cfd8dc;
+            font-size: 16px;
+        }
+
+        .stage-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #90a4ae;
+            font-weight: 700;
+        }
+
+        .data-tag {
+            background: #eef2f6;
+            color: #546e7a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-bottom: 4px;
+            display: block;
+            border: 1px solid #cfd8dc;
+            white-space: nowrap;
+        }
+
+        .process-icon {
+            font-size: 32px;
+            color: var(--accent);
+        }
+
+        .output-tag {
+            background: #e0f7fa;
+            color: #006064;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid #b2ebf2;
+        }
+
+        .concept-desc {
+            font-size: 13px;
+            color: #5f6368;
+            line-height: 1.6;
+        }
+
+        @keyframes wiggle { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
+        @keyframes walk-in { 0% { transform: translateX(-20px); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateX(20px); opacity: 0; } }
+        @keyframes appear { 0% { opacity: 0; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } 100% { opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes highlight { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); background: #81c784; } }
+        @keyframes drop-in { 0% { transform: translateY(-20px); opacity: 0; } 60% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes fit-in { 0% { top: -20px; opacity: 0; } 50% { top: 0; opacity: 1; } 100% { top: 0; opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes rock { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        @keyframes pop-tag { 0% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes ripple { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes flash { 0%, 100% { color: #546e7a; } 50% { color: var(--accent); } }
+
+        .footprints { display: flex; gap: 5px; opacity: 0; animation: walk-in 2s infinite; color: #bdbdbd; }
+        .brain-core { animation: pulse 2s infinite; }
+        .intent-badge { background: var(--accent); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 10px; opacity: 0; animation: appear 2s infinite 1s; }
+        .puzzle-gap { color: #bdbdbd; font-size: 24px; position: relative; }
+        .puzzle-piece { position: absolute; top: -20px; left: 0; color: var(--accent); animation: fit-in 2s infinite; }
+        .gear-spin { font-size: 28px; color: #546e7a; animation: spin 4s linear infinite; }
+        .level-up { color: #4caf50; font-size: 24px; animation: bounce 2s infinite; }
+        .signal-tower { font-size: 28px; color: var(--accent); position: relative; }
+        .wave { position: absolute; top: -10px; left: -10px; width: 40px; height: 40px; border: 2px solid var(--accent); border-radius: 50%; opacity: 0; animation: ripple 2s infinite; }
+        .device-group { display: flex; gap: 5px; color: #546e7a; }
+        .device-icon.active { color: var(--accent); animation: flash 2s infinite; }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- SIMULATION SECTION -->
+        <div class="infographic-container">
+            <h1>Scenario Demo</h1>
+            <p class="subtitle">User Behavior & Footprint</p>
+
+            <!-- Dynamic SVG Layer -->
+            <svg id="svg-canvas"></svg>
+            <!-- Traveling Energy Orb -->
+            <div id="energy-orb"></div>
+
+            <!-- ROW 1: USER INPUT -->
+            <div class="step-row" id="row-input">
+                <div class="agent-card user-input" id="card-input">
+                    <div class="icon-box" style="border-style: dashed; color: #b0bec5; border-color: #cfd8dc;">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                    </div>
+                    <div class="agent-name">User Simulator</div>
+                    <div class="agent-desc">Select a customer profile to trigger the engine:</div>
+                    
+                    <div class="input-group">
+                        <button class="scenario-btn" onclick="runSimulation('edu')">
+                            <i class="fa-solid fa-book-open"></i> <strong>Customer A:</strong>&nbsp;Reading CoolSculpting Reviews
+                        </button>
+                        <button class="scenario-btn" onclick="runSimulation('action')">
+                            <i class="fa-solid fa-magnifying-glass-dollar"></i> <strong>Customer B:</strong>&nbsp;Browsed CoolSculpting 3x
+                        </button>
+                        <button class="scenario-btn" onclick="runSimulation('referral')">
+                            <i class="fa-solid fa-star"></i> <strong>Customer C:</strong>&nbsp;Finished Cellujet Treatment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: SENSOR -->
+            <div class="step-row" id="row-intent">
+                <div class="agent-card" id="card-intent">
+                    <div class="icon-box"><i class="fa-solid fa-brain"></i></div>
+                    <div class="agent-role">Step 1: <span class="boss-highlight-text">Intent Detection</span></div>
+                    <div class="agent-name">User Intent Agent</div>
+                    <div class="agent-desc">Detects latent or active intent signals from user behavior.</div>
+                    <div class="dynamic-text" id="out-intent"></div>
+                </div>
+            </div>
+
+            <!-- ROW 3: STRATEGY -->
+            <div class="step-row parallel-container" id="row-strategy">
+                <div class="intent-subgroup">
+                    <div class="intent-subgroup-label">Intent Agent Extensions</div>
+                    
+                    <!-- Left: Flywheel -->
+                    <div class="agent-card" id="card-flywheel">
+                        <div class="icon-box"><i class="fa-solid fa-chess"></i></div>
+                        <div class="agent-role">Step 2A: The Strategist</div>
+                        <div class="agent-name">Flywheel Upsell Agent</div>
+                        <div class="agent-desc">Audits customer history for Tech Gaps.</div>
+                        <div class="dynamic-text" id="out-flywheel"></div>
+                    </div>
+
+                    <!-- Right: Referral (Merged Node) -->
+                    <div class="agent-card" id="card-referral-logic">
+                        <div class="icon-box"><i class="fa-solid fa-users-rays"></i></div>
+                        <div class="agent-role">Step 2B: Multiplier & Tail Select</div>
+                        <div class="agent-name">Referral Growth Agent</div>
+                        <div class="agent-desc">Strategizes viral loops & auto-selects optimal Tail candidate.</div>
+                        <div class="dynamic-text" id="out-referral-logic"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 4: SCHEDULER -->
+            <div class="step-row" id="row-promo">
+                <div class="agent-card" id="card-promo">
+                    <div class="icon-box"><i class="fa-solid fa-server"></i></div>
+                    <div class="agent-role">Step 3: The Deal-Maker</div>
+                    <div class="agent-name">Offer & Promotion Agent</div>
+                    <div class="agent-desc">Queries Offer CMS to prescribe format (Gift, Flash, Trial) based on Tx Category.</div>
+                    <div class="dynamic-text" id="out-promo"></div>
+                </div>
+            </div>
+
+            <!-- ROW 5: UI/UX -->
+            <div class="step-row" id="row-ui">
+                <div class="agent-card" id="card-ui">
+                    <div class="icon-box"><i class="fa-solid fa-layer-group"></i></div>
+                    <div class="agent-role">Step 4: Landing Generator</div>
+                    <div class="agent-name">UI/UX Agent</div>
+                    <div class="agent-desc">Builds the <span class="boss-highlight-text">Intent Formation Landing</span> to crystallize desire.</div>
+                    <div class="dynamic-text" id="out-ui"></div>
+                </div>
+            </div>
+
+            <!-- ROW 6: ENGAGEMENT -->
+            <div class="step-row" id="row-engagement">
+                <div class="agent-card" id="card-engagement">
+                    <div class="icon-box"><i class="fa-solid fa-paper-plane"></i></div>
+                    <div class="agent-role">Step 5: Context Delivery</div>
+                    <div class="agent-name">Engagement & Micromoment Agent</div>
+                    <div class="agent-desc">Delivers via: <strong>App Push</strong>, <strong>Center Check-in (QR)</strong>, or <strong>Post-Purchase Page</strong>.</div>
+                    <div class="dynamic-text" id="out-engagement"></div>
+                </div>
+            </div>
+
+            <!-- ROW 7: OUTPUTS -->
+            <div class="step-row" id="row-output">
+                <div class="outcome-container">
+                    <div class="container-label boss-outcome">Timely Outcome Triggers</div>
+                    <div class="output-split">
+                        <!-- Output A -->
+                        <div class="agent-card output-card" id="card-result-edu">
+                            <span class="badge">Type: Education</span>
+                            <div class="icon-box"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="agent-name">Education Hub</div>
+                            <div class="agent-desc" id="res-edu-desc">Builds trust with safety videos.</div>
+                            <div class="mockup-wrapper" id="mockup-edu">
+                                <div class="phone-frame"><div class="phone-screen">
+                                    <div class="app-header"><span>9:41</span><span><i class="fa-solid fa-wifi"></i></span></div>
+                                    <div class="app-hero" style="background: #000; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-play-circle" style="font-size: 40px; color: #fff;"></i></div>
+                                    <div class="app-body">
+                                        <span class="countdown-badge" style="background: #00bcd4;">Dr. Lee Explains</span>
+                                        <div class="app-title">Is CoolSculpting Safe?</div>
+                                        <div class="app-desc">"Learn about the science..."</div>
+                                        <button class="app-btn" style="background: #333;">Watch Video (3 min)</button>
+                                    </div>
+                                </div></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Output B -->
+                        <div class="agent-card output-card" id="card-result-action">
+                            <span class="badge">Type: Action</span>
+                            <div class="icon-box"><i class="fa-solid fa-bolt"></i></div>
+                            <div class="agent-name">Fast-Pass Action</div>
+                            <div class="agent-desc" id="res-action-desc">Triggers one-click checkout.</div>
+                            <div class="mockup-wrapper" id="mockup-action">
+                                <div class="phone-frame"><div class="phone-screen">
+                                    <div class="app-header"><span>9:41</span><span><i class="fa-solid fa-wifi"></i></span></div>
+                                    <div class="app-hero"><i class="fa-solid fa-stopwatch"></i></div>
+                                    <div class="app-body">
+                                        <span class="countdown-badge">ENDS 02:00:00</span>
+                                        <div class="app-title">Flash Deal</div>
+                                        <div class="app-desc"><strong>20% OFF CoolSculpting</strong><br>Spot opened for tomorrow!</div>
+                                        <button class="app-btn">Book Tomorrow</button>
+                                    </div>
+                                </div></div>
+                            </div>
+                        </div>
+
+                        <!-- Output C -->
+                        <div class="agent-card output-card" id="card-result-referral">
+                            <span class="badge">Type: Referral</span>
+                            <div class="icon-box"><i class="fa-solid fa-gift"></i></div>
+                            <div class="agent-name">Referral Gift Card</div>
+                            <div class="agent-desc" id="res-ref-desc">Generates viral invite card.</div>
+                            <div class="mockup-wrapper" id="mockup-referral">
+                                <div class="phone-frame"><div class="phone-screen">
+                                    <div class="app-header"><span>9:41</span><span><i class="fa-solid fa-wifi"></i></span></div>
+                                    <div class="app-hero" style="background: linear-gradient(135deg, #0097a7, #006064);"><i class="fa-solid fa-gift"></i></div>
+                                    <div class="app-body">
+                                        <div class="app-title">Referral Suggestion</div>
+                                        <div class="app-desc" style="font-size: 10px; margin-bottom: 5px;">Based on your history, these friends might like Cellujet:</div>
+                                        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:5px;">
+                                            <div style="background:#eee; padding:2px 5px; border-radius:4px; font-size:9px;">Amy</div>
+                                            <div style="background:#eee; padding:2px 5px; border-radius:4px; font-size:9px;">Chloe</div>
+                                            <div style="background:#eee; padding:2px 5px; border-radius:4px; font-size:9px;">Jen</div>
+                                        </div>
+                                        <div style="font-size: 9px; color: #4caf50; margin-bottom: 5px;">Auto-sending in 5s...</div>
+                                        <button class="app-btn">Agree & Send Now</button>
+                                    </div>
+                                </div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AGENT CONCEPT SECTION -->
+        <div class="concept-section">
+            <h1 style="font-size: 32px; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; text-align: left;">Agent Concept & Architecture</h1>
+            
+            <div class="concept-grid">
+                
+                <!-- 1. INTENT AGENT (PARENT CONTAINER) -->
+                <div class="concept-card" style="grid-column: 1 / -1; background: #e0f7fa; border: 2px dashed #00bcd4;">
+                    <div class="concept-header"><i class="fa-solid fa-radar" style="color:var(--accent)"></i> User Intent Agent (Parent Logic)</div>
+                    <div class="concept-desc" style="margin-bottom: 20px;">The central brain that detects signals and delegates strategy to its subsets.</div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                        <!-- SUBSET: DETECTION -->
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #b2ebf2;">
+                            <div class="stage-label" style="margin-bottom:5px;">Core Function</div>
+                            <div class="concept-visual" style="height: 100px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+                                <div class="footprints"><i class="fa-solid fa-shoe-prints"></i></div>
+                                <i class="fa-solid fa-brain process-icon brain-core"></i>
+                                <div class="intent-badge">INTENT</div>
+                            </div>
+                            <div class="concept-desc" style="font-size: 11px; margin-top: 5px;">Classifies user behavior into Purchase, Learn, or Churn.</div>
+                        </div>
+
+                        <!-- SUBSET: FLYWHEEL STRATEGY -->
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #b2ebf2;">
+                            <div class="stage-label" style="margin-bottom:5px;">Subset: Flywheel Agent</div>
+                            <div class="concept-visual" style="height: 100px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+                                <div class="puzzle-gap"><i class="fa-solid fa-puzzle-piece"></i></div>
+                                <i class="fa-solid fa-gears process-icon gear-spin"></i>
+                                <span class="output-tag">Laser</span>
+                            </div>
+                            <div class="concept-desc" style="font-size: 11px; margin-top: 5px;">Calculates the "Tech Gap" to bridge low-tier to high-tier services.</div>
+                        </div>
+
+                        <!-- SUBSET: REFERRAL STRATEGY -->
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #b2ebf2;">
+                            <div class="stage-label" style="margin-bottom:5px;">Subset: Referral Agent</div>
+                            <div class="concept-visual" style="height: 100px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+                                <i class="fa-solid fa-users" style="color:#bdbdbd; font-size:20px;"></i>
+                                <i class="fa-solid fa-share-nodes process-icon" style="color:var(--accent);"></i>
+                                <span class="output-tag">Gift</span>
+                            </div>
+                            <div class="concept-desc" style="font-size: 11px; margin-top: 5px;">Strategizes viral loops & auto-selects optimal Tail candidate.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. PROMO -->
+                <div class="concept-card">
+                    <div class="concept-header"><i class="fa-solid fa-server" style="color:var(--accent)"></i> Offer & Promotion Agent</div>
+                    <div class="concept-flow">
+                        <div class="flow-stage">
+                            <span class="stage-label">Inputs</span>
+                            <span class="data-tag">Intent + Cap.</span>
+                            <span class="data-tag">Tx Category</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                        <div class="flow-stage">
+                            <span class="stage-label">CMS Lookup</span>
+                            <i class="fa-solid fa-database process-icon"></i>
+                            <span style="font-size:9px;">Format Select</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                        <div class="flow-stage">
+                            <span class="stage-label">Prescription</span>
+                            <span class="output-tag">Flash Deal</span>
+                            <span class="output-tag">Gift Card</span>
+                        </div>
+                    </div>
+                    <div class="concept-desc">Queries the <strong>Offer CMS</strong> to prescribe the optimal format (Flash, Trial, Gift) based on Treatment Category and Business Objective.</div>
+                </div>
+
+                <!-- 5. UI/UX AGENT (NEW) -->
+                <div class="concept-card">
+                    <div class="concept-header"><i class="fa-solid fa-layer-group" style="color:var(--accent)"></i> UI/UX Agent</div>
+                    <div class="concept-flow">
+                        <div class="flow-stage">
+                            <span class="stage-label">Element Feeds</span>
+                            <span class="data-tag">Promo Logic</span>
+                            <span class="data-tag">Booking Slot</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                        <div class="flow-stage">
+                            <span class="stage-label">Assembly</span>
+                            <i class="fa-solid fa-wand-magic-sparkles process-icon" style="animation: wiggle 2s infinite;"></i>
+                            <span style="font-size:9px;">Gen-UI Engine</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                        <div class="flow-stage">
+                            <span class="stage-label">Final Interface</span>
+                            <span class="output-tag">Animated Poster</span>
+                            <span class="output-tag">Action Button</span>
+                        </div>
+                    </div>
+                    <div class="concept-desc">Synthesizes all strategic inputs to generate the perfect visual format (Poster, Animation, Modal) and call-to-action.</div>
+                </div>
+
+                <!-- 6. ENGAGEMENT -->
+                <div class="concept-card">
+                    <div class="concept-header"><i class="fa-solid fa-paper-plane" style="color:var(--accent)"></i> Engagement Agent</div>
+                    <div class="concept-flow">
+                        <div class="flow-stage">
+                            <span class="stage-label">The Signal</span>
+                            <span class="data-tag">Urgent Deal</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                        <div class="flow-stage">
+                            <span class="stage-label">Routing</span>
+                            <i class="fa-solid fa-tower-broadcast process-icon signal-tower"><div class="wave"></div></i>
+                            <span style="font-size:9px;">Context Aware</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                        <div class="flow-stage">
+                            <span class="stage-label">Touchpoint</span>
+                            <span class="output-tag">Push Notif.</span>
+                            <span class="output-tag">Center QR</span>
+                        </div>
+                    </div>
+                    <div class="concept-desc">Routes the final offer to the most effective device layer (App, Lock Screen, Kiosk).</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        // --- DYNAMIC CONNECTION SYSTEM ---
+        const connections = [
+            { from: 'card-input', to: 'card-intent', id: 'line-input-intent' },
+            { from: 'card-intent', to: 'card-flywheel', id: 'line-intent-flywheel' },
+            { from: 'card-intent', to: 'card-referral-logic', id: 'line-intent-referral' },
+            
+            // Flywheel Path: Direct -> Promo
+            { from: 'card-flywheel', to: 'card-promo', id: 'line-flywheel-promo' },
+            
+            // Referral Path: Direct -> Promo (Consolidated Step 2B)
+            { from: 'card-referral-logic', to: 'card-promo', id: 'line-referral-promo' },
+            
+            { from: 'card-promo', to: 'card-ui', id: 'line-promo-ui' },
+            { from: 'card-ui', to: 'card-engagement', id: 'line-ui-engagement' },
+            { from: 'card-engagement', to: 'card-result-edu', id: 'line-eng-edu' },
+            { from: 'card-engagement', to: 'card-result-action', id: 'line-eng-action' },
+            { from: 'card-engagement', to: 'card-result-referral', id: 'line-eng-referral' }
+        ];
+
+        function drawConnections() {
+            const svgCanvas = document.getElementById('svg-canvas');
+            svgCanvas.innerHTML = ''; 
+
+            connections.forEach(conn => {
+                const fromEl = document.getElementById(conn.from);
+                const toEl = document.getElementById(conn.to);
+                
+                if (fromEl && toEl) {
+                    const fromRect = fromEl.getBoundingClientRect();
+                    const toRect = toEl.getBoundingClientRect();
+                    const containerRect = document.querySelector('.infographic-container').getBoundingClientRect();
+
+                    const x1 = (fromRect.left + fromRect.width / 2) - containerRect.left;
+                    const y1 = (fromRect.bottom) - containerRect.top;
+                    const x2 = (toRect.left + toRect.width / 2) - containerRect.left;
+                    const y2 = (toRect.top) - containerRect.top;
+
+                    // Elbow Logic for cleaner lines (Circuit Style)
+                    const midY = y1 + (y2 - y1) / 2;
+                    let d = '';
+
+                    // Direct Vertical (No Elbow needed)
+                    if (Math.abs(x1 - x2) < 2) {
+                        d = `M ${x1} ${y1} L ${x2} ${y2}`;
+                    } else {
+                        // Standard Elbow: Down -> Over -> Down
+                        d = `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
+                    }
+                    
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute('d', d);
+                    path.setAttribute('id', conn.id);
+                    svgCanvas.appendChild(path);
+                }
+            });
+        }
+
+        // AUTO-REDRAW ON ANY DOM CHANGE
+        const resizeObserver = new ResizeObserver(() => drawConnections());
+        resizeObserver.observe(document.body);
+        window.addEventListener('resize', drawConnections);
+        setTimeout(drawConnections, 500);
+
+        // --- 2. SMOOTH SCROLL ---
+        function smoothScrollToCenter(elementId) {
+            return new Promise(resolve => {
+                const element = document.getElementById(elementId);
+                if (!element) { resolve(); return; }
+                
+                // Use scrollIntoView with smooth behavior
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(resolve, 1200); 
+            });
+        }
+
+        // --- 3. ANIMATION LOGIC ---
+        function travel(lineId) {
+            return new Promise(resolve => {
+                const line = document.getElementById(lineId);
+                const orb = document.getElementById('energy-orb');
+                
+                if (!line) { resolve(); return; }
+
+                const length = line.getTotalLength();
+                
+                orb.style.opacity = 1;
+                line.classList.add('active-path');
+
+                let start = null;
+                const duration = 1500; 
+
+                function step(timestamp) {
+                    if (!start) start = timestamp;
+                    const progress = Math.min((timestamp - start) / duration, 1);
+                    const point = line.getPointAtLength(progress * length);
+                    
+                    orb.style.left = point.x + 'px';
+                    orb.style.top = point.y + 'px';
+
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        resolve();
+                    }
+                }
+                window.requestAnimationFrame(step);
+            });
+        }
+
+        async function runSimulation(type) {
+            resetUI();
+            drawConnections(); 
+            const btns = document.querySelectorAll('.scenario-btn');
+            btns.forEach(b => b.disabled = true);
+
+            try {
+                // Step 1
+                await travel('line-input-intent');
+                await smoothScrollToCenter('card-intent');
+                document.getElementById('card-intent').classList.add('processing');
+                
+                await new Promise(r => setTimeout(r, 1000));
+                const result = await mockAIResponse(type);
+                document.getElementById('out-intent').innerText = `"${result.intent}"`;
+
+                // Step 2
+                let stratLine = (result.strategy_type === 'REFERRAL') ? 'line-intent-referral' : 'line-intent-flywheel';
+                let stratCard = (result.strategy_type === 'REFERRAL') ? 'card-referral-logic' : 'card-flywheel';
+                let stratOutID = (result.strategy_type === 'REFERRAL') ? 'out-referral-logic' : 'out-flywheel';
+                
+                await travel(stratLine);
+                await smoothScrollToCenter(stratCard);
+                document.getElementById(stratCard).classList.add('processing');
+                document.getElementById(stratOutID).innerText = `"${result.strategy_out}"`;
+                await new Promise(r => setTimeout(r, 1500));
+
+                // Step 3 (Direct to Promo)
+                // Note: result.strategy_type determines the line path. 
+                // Both Flywheel and Referral now go straight to promo.
+                let nextLine = (result.strategy_type === 'REFERRAL') ? 'line-referral-promo' : 'line-flywheel-promo';
+                
+                await travel(nextLine);
+                await smoothScrollToCenter('card-promo');
+                document.getElementById('card-promo').classList.add('processing');
+                document.getElementById('out-promo').innerText = `"${result.promo_out}"`;
+                await new Promise(r => setTimeout(r, 1500));
+
+                // Step 4 (UI/UX)
+                await travel('line-promo-ui');
+                await smoothScrollToCenter('card-ui');
+                document.getElementById('card-ui').classList.add('processing');
+                document.getElementById('out-ui').innerText = `"${result.ui_out}"`;
+                await new Promise(r => setTimeout(r, 1500));
+
+                // Step 5 (Engagement)
+                await travel('line-ui-engagement');
+                await smoothScrollToCenter('card-engagement');
+                document.getElementById('card-engagement').classList.add('processing');
+                document.getElementById('out-engagement').innerText = `"${result.engagement_out}"`;
+                await new Promise(r => setTimeout(r, 1500));
+
+                // Step 6 (Outcome)
+                let finalLine = '';
+                let finalCard = '';
+                if (result.type === 'EDU') { finalLine = 'line-eng-edu'; finalCard = 'card-result-edu'; }
+                else if (result.type === 'ACTION') { finalLine = 'line-eng-action'; finalCard = 'card-result-action'; }
+                else { finalLine = 'line-eng-referral'; finalCard = 'card-result-referral'; }
+
+                await travel(finalLine);
+                await smoothScrollToCenter(finalCard);
+                const cardEl = document.getElementById(finalCard);
+                cardEl.classList.add('selected', 'crystallized');
+                
+                if (result.type === 'EDU') {
+                    document.getElementById('res-edu-desc').innerText = result.landing_copy;
+                    document.getElementById('mockup-edu').classList.add('active');
+                } else if (result.type === 'ACTION') {
+                    document.getElementById('res-action-desc').innerText = result.landing_copy;
+                    document.getElementById('mockup-action').classList.add('active');
+                } else {
+                    document.getElementById('res-ref-desc').innerText = result.landing_copy;
+                    document.getElementById('mockup-referral').classList.add('active');
+                }
+
+            } catch (error) {
+                console.error("Simulation error", error);
+            } finally {
+                btns.forEach(b => b.disabled = false);
+            }
+        }
+
+        async function mockAIResponse(type) {
+            await new Promise(r => setTimeout(r, 800)); 
+            if (type === 'edu') {
+                return {
+                    type: "EDU",
+                    intent: "Intent: Learning/Safety.",
+                    strategy_type: "FLYWHEEL",
+                    strategy_out: "Gap: Needs Trust Education.",
+                    promo_out: "Cat: Body | Obj: Trust | Fmt: Content Hub",
+                    ui_out: "Format: Video Hub.",
+                    engagement_out: "Channel: App Home Feed (Education).",
+                    landing_copy: "Watch Safety Video."
+                };
+            } else if (type === 'referral') {
+                return {
+                    type: "REFERRAL",
+                    intent: "Intent: Post-Realized Satisfaction.",
+                    strategy_type: "REFERRAL",
+                    strategy_out: "Strategy: Suggest 3 Members (History Based). Candidates: Amy, Chloe, Jen.",
+                    promo_out: "Txt: Cellujet | Obj: Viral | Format: Double gifting",
+                    ui_out: "Format: Gift Card.",
+                    engagement_out: "Channel: Post-Purchase Thank You Page.",
+                    landing_copy: "Double-Sided Gift Card Ready"
+                };
+            } else {
+                return {
+                    type: "ACTION",
+                    intent: "Intent: Purchase Intent.",
+                    strategy_type: "FLYWHEEL",
+                    strategy_out: "Gap: Facial -> Body.",
+                    promo_out: "Cat: CoolSculpting | Obj: Upsell | Fmt: Flash Deal",
+                    ui_out: "Format: Flash Card.",
+                    engagement_out: "Channel: App Push Notification.",
+                    landing_copy: "20% Off Expires Soon."
+                };
+            }
+        }
+
+        function resetUI() {
+            document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('processing', 'selected', 'crystallized'));
+            document.querySelectorAll('path').forEach(l => l.classList.remove('active-path'));
+            document.querySelectorAll('.mockup-wrapper').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.dynamic-text').forEach(t => t.innerText = '');
+            document.getElementById('energy-orb').style.opacity = 0;
+            // Restore defaults
+            document.getElementById('res-edu-desc').innerText = "Builds trust with safety videos.";
+            document.getElementById('res-action-desc').innerText = "Triggers one-click checkout.";
+            document.getElementById('res-ref-desc').innerText = "Generates viral invite card.";
+        }
+    </script>
+
+</body>
+</html>
