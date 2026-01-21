@@ -32,7 +32,6 @@
         .tab-active-Reenex { background-color: #15803d; color: white; border-color: #15803d; }
         .tab-active-Elyze { background-color: #a21caf; color: white; border-color: #a21caf; }
         
-        /* 樓層實力條背景 - 精確進度 */
         .strength-bar { 
             position: absolute; left: 0; top: 0; height: 100%; opacity: 0.25; 
             transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 0; 
@@ -44,10 +43,16 @@
 </head>
 <body class="pb-6 overflow-x-hidden">
 
+    <!-- 全域變數預定義，防止 ReferenceError -->
+    <script>
+        window.currentLang = 'zh';
+        window.currentRankBrand = 'Dermes';
+    </script>
+
     <!-- Language Switcher -->
     <div class="fixed top-4 right-4 z-[100] flex gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-full shadow-2xl border border-gray-100">
         <button onclick="changeLanguage('zh')" id="btn-zh" class="px-4 py-1.5 rounded-full text-sm font-black transition-all bg-red-600 text-white shadow-md">中</button>
-        <button onclick="changeLanguage('en')" id="btn-en" class="px-4 py-1.5 rounded-full text-sm font-black transition-all text-gray-500 hover:bg-gray-50">EN</button>
+        <button onclick="changeLanguage('en')" id="btn-en" class="px-4 py-1.5 rounded-full text-sm font-black text-gray-500 hover:bg-gray-50">EN</button>
     </div>
 
     <!-- Header Image -->
@@ -89,8 +94,8 @@
         <div class="w-full max-w-[98%] mx-auto relative z-10">
            <div class="flex flex-col items-center justify-center gap-4 mb-14">
                 <div class="flex items-center gap-6 bg-white/25 backdrop-blur-md px-10 md:px-16 py-6 md:py-10 rounded-[4rem] border-2 border-white/60 shadow-2xl transition-all duration-500 hover:scale-[1.02]">
-                    <i data-lucide="trophy" class="w-12 h-12 md:w-24 md:h-24 text-yellow-300 drop-shadow-[0_0_15px_rgba(253,224,71,0.7)]"></i>
-                    <h2 id="txt-leaderboard-title" class="font-black text-white text-5xl md:text-9xl tracking-tighter drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)]">肥牛牧場排行榜</h2>
+                    <i data-lucide="trophy" class="w-12 h-12 md:w-24 md:h-24 text-yellow-300 drop-shadow-[0_0_25px_rgba(253,224,71,0.7)]"></i>
+                    <h2 id="txt-leaderboard-title" class="font-black text-white text-5xl md:text-9xl tracking-tighter drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]">肥牛牧場排行榜</h2>
                 </div>
                 <div class="bg-red-600/90 text-white px-12 py-3 rounded-full text-3xl md:text-5xl tracking-[0.6em] font-black animate-pulse mt-8 shadow-2xl border-4 border-red-300/40">LIVE UPDATE</div>
            </div>
@@ -104,7 +109,7 @@
         </div>
     </section>
 
-    <!-- Brand Floor Ranking -->
+    <!-- Brand Floor Ranking & Distribution Diagram -->
     <section class="px-2 py-20 relative z-10 bg-white border-t border-b border-gray-100 shadow-sm overflow-hidden">
         <div class="max-w-5xl mx-auto">
             <div class="text-center mb-10 px-4">
@@ -113,7 +118,6 @@
                 </h3>
                 <div class="flex items-center justify-center gap-6 mt-8">
                     <div class="h-1.5 w-16 md:w-32 bg-blue-200 rounded-full"></div>
-                    <!-- Info Legend Trigger -->
                     <button onclick="toggleMissionModal(true)" class="flex items-center gap-3 px-8 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-2xl active:scale-95 group border-2 border-blue-400/30">
                         <i data-lucide="info" class="w-6 h-6 fill-white/20"></i>
                         <span class="font-black text-base md:text-lg tracking-widest uppercase" id="txt-btn-explain">圖標說明</span>
@@ -122,13 +126,38 @@
                 </div>
             </div>
 
+            <!-- Brand Selection Tabs -->
             <div class="flex justify-center p-2 bg-gray-200/50 rounded-[2.5rem] mb-12 shadow-inner max-w-md mx-auto border border-gray-200/80">
                 <button onclick="switchRankBrand('Dermes')" id="tab-Dermes" class="flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all tab-active-Dermes shadow-xl">Dermes</button>
                 <button onclick="switchRankBrand('Reenex')" id="tab-Reenex" class="flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all text-gray-500">Reenex</button>
                 <button onclick="switchRankBrand('Elyze')" id="tab-Elyze" class="flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all text-gray-500">Elyze</button>
             </div>
 
-            <div id="floor-ranking-content" class="space-y-8 px-2 min-h-[400px]"></div>
+            <!-- Tab 1: Ranking View -->
+            <div id="floor-ranking-content" class="space-y-8 px-2"></div>
+
+            <!-- Tab 2: Distribution Diagram (NEW SECTION) -->
+            <div class="mt-20 pt-16 border-t border-gray-100">
+                <div class="text-center mb-10">
+                    <h4 id="txt-dist-title" class="text-3xl md:text-5xl font-black text-gray-800 flex items-center justify-center gap-3">
+                        <i data-lucide="pie-chart" class="w-10 h-10 text-orange-500"></i>樓層牛隻等級分佈圖
+                    </h4>
+                    <p id="txt-dist-sub" class="text-gray-400 font-bold mt-2 uppercase tracking-widest text-xs">Floor Level Distribution</p>
+                </div>
+                
+                <!-- Legend for Diagram -->
+                <div class="flex flex-wrap justify-center gap-3 mb-8 px-4">
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-gray-100 rounded-full text-[10px] font-bold text-gray-500"><span class="w-2.5 h-2.5 bg-gray-400 rounded-full"></span> 瘦牛</div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full text-[10px] font-bold text-green-700 border border-green-100"><span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span> 澳洲牛</div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-full text-[10px] font-bold text-blue-700 border border-blue-100"><span class="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> 美國牛</div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-purple-50 rounded-full text-[10px] font-bold text-purple-700 border border-purple-100"><span class="w-2.5 h-2.5 bg-purple-500 rounded-full"></span> 日本和牛</div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-yellow-50 rounded-full text-[10px] font-bold text-yellow-700 border border-yellow-200"><span class="w-2.5 h-2.5 bg-yellow-500 rounded-full"></span> 金牛</div>
+                </div>
+
+                <div id="floor-distribution-content" class="space-y-6 px-2">
+                    <!-- JS Injected Diagram Rows -->
+                </div>
+            </div>
         </div>
     </section>
 
@@ -147,7 +176,7 @@
                     <span class="text-4xl">🏪</span><div><div class="text-[11px] text-orange-600 font-black uppercase tracking-widest mb-0.5">Task 2</div><div id="txt-modal-task2" class="text-base font-black text-gray-700 leading-tight">新增一個ACB成為店主</div></div>
                 </div>
                 <div class="flex items-start gap-5 p-5 rounded-[1.8rem] bg-orange-50/50 border border-orange-100 shadow-sm">
-                    <span class="text-4xl">🧧</span><div><div class="text-[11px] text-orange-600 font-black uppercase tracking-widest mb-0.5">Task 3</div><div id="txt-modal-task3" class="text-sm font-bold text-gray-700 leading-tight">客人由自己小店搶得利是 (最多領取25次)</div></div>
+                    <span class="text-4xl">🧧</span><div><div class="text-[11px] text-orange-600 font-black uppercase tracking-widest mb-0.5">Task 3</div><div id="txt-modal-task3" class="text-base font-black text-gray-700 leading-tight">客人由自己小店搶得利是 (最多領取25次)</div></div>
                 </div>
                 <div class="flex items-start gap-5 p-5 rounded-[1.8rem] bg-orange-50/50 border border-orange-100 shadow-sm">
                     <span class="text-4xl">🤝</span><div><div class="text-[11px] text-orange-600 font-black uppercase tracking-widest mb-0.5">Task 4</div><div id="txt-modal-task4" class="text-base font-black text-gray-700 leading-tight">成功驅動ACB邀請好友至其小店參與「搶利是」活動並獲贈$1,888 禮券。</div></div>
@@ -157,7 +186,7 @@
         </div>
     </div>
 
-    <!-- Tier & Reward Guide -->
+    <!-- Evolution Guide -->
     <section class="px-3 py-16 relative z-10 bg-[#FFF3E0]">
         <div class="max-w-lg mx-auto">
              <div class="mb-14 shadow-2xl rounded-3xl overflow-hidden border-4 border-[#8D6E63] bg-white relative">
@@ -182,7 +211,7 @@
         </div>
     </section>
 
-    <!-- Search Cow Section -->
+    <!-- Search Section -->
     <section class="px-4 py-16 bg-white border-t border-gray-100 relative shadow-inner">
          <div class="max-w-md mx-auto">
              <h2 class="text-center font-black text-gray-800 text-2xl mb-8 flex items-center justify-center gap-3">
@@ -204,7 +233,7 @@
                  </select>
              </div>
              
-             <!-- Individual Result Card -->
+             <!-- Card -->
              <div id="user-card" class="bg-[#FFF8E1] rounded-[2.5rem] p-6 border-4 border-[#8D6E63] relative hidden shadow-2xl">
                 <div class="absolute top-4 left-4 w-3 h-3 rounded-full bg-[#5D4037]"></div><div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-[#5D4037]"></div><div class="absolute bottom-4 left-4 w-3 h-3 rounded-full bg-[#5D4037]"></div><div class="absolute bottom-4 right-4 w-3 h-3 rounded-full bg-[#5D4037]"></div>
                 <div class="flex justify-between items-start mb-6">
@@ -214,10 +243,10 @@
                 <div class="cow-image-container mb-6 border-4 border-white shadow-xl rounded-2xl"><img id="card-cow-img" src="" alt="Cow Image" onerror="this.src='https://placehold.co/640x480?text=Loading';"></div>
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-white p-4 rounded-3xl text-center border-2 border-[#FFE082] shadow-md"><span id="txt-card-weight-label" class="block text-[11px] text-[#8D6E63] font-black uppercase tracking-widest mb-1">目前體重</span><span id="card-weight" class="block text-2xl font-black text-red-600">0kg</span></div>
-                    <div class="bg-white p-4 rounded-3xl text-center border-2 border-[#FFE082] shadow-md"><span id="txt-card-feed-label" class="block text-[11px] text-[#8D6E63] font-black uppercase tracking-widest mb-1">累積飼料</span><span id="card-feeds" class="block text-xl font-black text-orange-500">0份</span></div>
+                    <div class="bg-white p-4 rounded-3xl text-center border-2 border-[#FFE082] shadow-md"><span id="txt-card-feed-label" class="block text-[11px] text-[#8D6E63] font-black uppercase tracking-widest mb-1">累積飼料</span><span id="card-feeds" class="block text-2xl font-black text-orange-500">0份</span></div>
                 </div>
                 <div id="unlocked-reward-panel" class="bg-yellow-50/80 rounded-3xl p-5 border-2 border-yellow-200 mb-6 flex items-center gap-4 shadow-inner">
-                    <div class="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shrink-0 shadow-md"><i data-lucide="gift" class="w-7 h-7 text-white"></i></div>
+                    <div class="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shrink-0 shadow-lg border-2 border-white"><i data-lucide="gift" class="w-7 h-7 text-white"></i></div>
                     <div><div class="text-[10px] text-yellow-700 font-black uppercase tracking-[0.2em] mb-1"><span id="txt-unlocked-title">目前可獲獎勵</span></div><div id="card-reward-name" class="text-base font-black text-gray-800 leading-tight">Reward Info</div></div>
                 </div>
                 <div class="bg-white rounded-3xl p-5 border-2 border-[#FFE082] mb-6 shadow-md">
@@ -236,9 +265,6 @@
     <footer class="text-center text-gray-400 text-xs py-10 tracking-widest font-bold opacity-60">© 2026 Neoderm New Year Event</footer>
 
     <script>
-        // --- GLOBAL VARIABLES DEFINITION (Scope Safety) ---
-        window.currentLang = 'zh';
-        window.currentRankBrand = 'Dermes';
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFLJr6n8QGwaDb-hBjC6xOwd2ANzDyW1b-iInQfQkxZEDDmP1U6F5lJampP6JNWjR6/exec'; 
 
         const i18n = {
@@ -260,7 +286,8 @@
                 tierUltimate: "最終極大獎 • 榮耀巔峰", tierBottom: "努力加餐飯，脫離瘦弱！",
                 rewardLabel: "獎品內容", valueLabel: "價值", unlockedTitle: "目前可獲獎勵",
                 floorRankTitle: "品牌樓層平均實力榜", avgWeight: "平均體重",
-                modalTitle: "任務圖標說明", modalClose: "我知道了", btnExplain: "圖標說明"
+                modalTitle: "任務圖標說明", modalClose: "我知道了", btnExplain: "圖標說明",
+                distTitle: "樓層牛隻等級分佈圖"
             },
             en: {
                 utilizeAi: "Utilizing AI Shop", make: "Turning", cust: "Customers", bestPromoter: "Into Strong Promoters",
@@ -280,7 +307,8 @@
                 tierUltimate: "Grand Prize • Peak of Honor", tierBottom: "Keep eating to leave the lean stage!",
                 rewardLabel: "Reward", valueLabel: "Value", unlockedTitle: "Current Eligible Reward",
                 floorRankTitle: "Brand Floor Average Ranking", avgWeight: "Avg Weight",
-                modalTitle: "Mission Icon Legend", modalClose: "Got it", btnExplain: "Legend"
+                modalTitle: "Mission Icon Legend", modalClose: "Got it", btnExplain: "Legend",
+                distTitle: "Floor Level Distribution"
             }
         };
 
@@ -295,21 +323,13 @@
         // --- Core Helpers ---
         function getCowStatus(weight) { return MILESTONES.find(m => weight >= m.min && weight <= m.max) || MILESTONES[0]; }
         function getNextMilestone(weight) { return MILESTONES.find(m => m.min > weight); }
-
-        // UPDATED: Calculate stats with Task 3 Cap (25 times)
         function calculateStats(t1, t2, t3, t4) {
-            const cappedT3 = Math.min(25, t3); // Apply Cap for rewards calculation
+            const cappedT3 = Math.min(25, t3);
             const totalFeeds = (t1 * 1) + (t2 * 2) + (cappedT3 * 2) + (t4 * 3);
             return { totalFeeds, weight: 300 + (totalFeeds * 5) };
         }
-
         function getProp(obj, names) {
-            for (let name of names) {
-                if (obj[name] !== undefined) {
-                    const val = obj[name];
-                    return typeof val === 'string' ? val.trim() : val;
-                }
-            }
+            for (let name of names) { if (obj[name] !== undefined) { const val = obj[name]; return typeof val === 'string' ? val.trim() : val; } }
             return "";
         }
         function toggleMissionModal(show) {
@@ -344,6 +364,7 @@
             document.getElementById('txt-unlocked-title').textContent = lang.unlockedTitle;
             document.getElementById('txt-btn-explain').textContent = lang.btnExplain;
             document.getElementById('txt-floor-rank-title').innerHTML = `<i data-lucide="shield-check" class="w-10 h-10 md:w-16 md:h-16 text-blue-600"></i> ${lang.floorRankTitle}`;
+            document.getElementById('txt-dist-title').innerHTML = `<i data-lucide="pie-chart" class="w-10 h-10 text-orange-500"></i> ${lang.distTitle}`;
 
             document.getElementById('txt-modal-title').textContent = lang.modalTitle;
             document.getElementById('txt-modal-task1').textContent = lang.task1;
@@ -356,13 +377,12 @@
             const sortedMilestones = [...MILESTONES].reverse();
             tierList.innerHTML = sortedMilestones.map((m, idx) => {
                 const isGold = m.min >= 800;
-                return `<div class="${isGold ? 'relative bg-gradient-to-r from-yellow-100 via-yellow-50 to-white p-5 rounded-2xl border-[4px] border-yellow-500 shadow-2xl transform hover:scale-[1.03] transition-transform' : 'bg-white p-5 rounded-2xl border-2 border-gray-100 shadow-md'}">
-                    ${isGold ? `<div class="absolute -top-3 -right-2 bg-yellow-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg animate-bounce ring-2 ring-white">ULTIMATE</div>` : ''}
+                return `<div class="${isGold ? 'relative bg-gradient-to-r from-yellow-100 via-yellow-50 to-white p-5 rounded-2xl border-[4px] border-yellow-500 shadow-2xl' : 'bg-white p-5 rounded-2xl border-2 border-gray-100 shadow-md'}">
                     <div class="flex items-start gap-4">
                         <div class="w-24 h-20 rounded-xl border border-gray-200 overflow-hidden shrink-0 bg-white shadow-inner"><img src="${m.img}" class="w-full h-full object-contain ${m.min < 500 ? 'grayscale' : ''}"></div>
                         <div class="flex-1"><div class="font-black text-gray-800 text-2xl leading-tight mb-1">${m.title[window.currentLang]}</div><div class="font-black ${isGold ? 'text-yellow-600' : 'text-gray-500'} text-xl mb-3">${m.min}kg${m.min >= 800 ? '+' : ''}</div>
                         <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 shadow-inner"><div class="text-[10px] text-gray-400 font-bold uppercase mb-1">${lang.rewardLabel}</div><div class="text-[14px] font-black ${isGold ? 'text-yellow-800' : 'text-gray-800'} leading-snug">${m.reward[window.currentLang]}</div></div></div>
-                    </div></div>${idx < sortedMilestones.length - 1 ? `<div class="flex justify-center -my-3 opacity-40 text-gray-400"><i data-lucide="chevron-up" class="w-8 h-8"></i></div>` : ''}`;
+                    </div></div>`;
             }).join('');
 
             const tasksCont = document.getElementById('tasks-container');
@@ -371,6 +391,7 @@
 
             populateFilterOptions();
             renderFloorRankings();
+            renderFloorDistribution();
             lucide.createIcons();
             renderLeaderboard();
             populateUserSelect();
@@ -383,6 +404,7 @@
                 if(btn) btn.className = `flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all ${b === brand ? `tab-active-${brand} shadow-md` : 'text-gray-500'}`;
             });
             renderFloorRankings();
+            renderFloorDistribution();
         }
 
         function renderFloorRankings() {
@@ -438,36 +460,75 @@
                 </div>`).join('') : `<p class="text-gray-400 text-sm italic text-center py-24">目前沒有符合 ${brand} 的樓層數據。</p>`;
         }
 
-        function populateFilterOptions() {
-            const brandSelect = document.getElementById('brand-filter');
-            const locationSelect = document.getElementById('location-filter');
-            if(!locationSelect || !brandSelect) return;
-            const selectedBrand = brandSelect.value;
+        // --- NEW: Floor Distribution Diagram Engine ---
+        function renderFloorDistribution() {
+            const container = document.getElementById('floor-distribution-content');
+            if(!container) return;
+            const brand = window.currentRankBrand;
             const brandPrefixMap = { 'Dermes': 'D', 'Reenex': 'R', 'Elyze': 'E' };
-            const prefix = brandPrefixMap[selectedBrand];
-            const currentVal = locationSelect.value;
-            let locations = [...new Set(USERS.map(u => u.location))].filter(l => l).sort();
-            if (prefix) locations = locations.filter(loc => loc.toUpperCase().startsWith(prefix));
-            locationSelect.innerHTML = `<option id="opt-all-locations" value="">${i18n[window.currentLang].allLocations}</option>`;
-            locations.forEach(loc => { const opt = document.createElement('option'); opt.value = loc; opt.textContent = loc; locationSelect.appendChild(opt); });
-            if (locations.includes(currentVal)) locationSelect.value = currentVal; else locationSelect.value = "";
+            const prefix = brandPrefixMap[brand];
+            
+            const floorLevelCounts = {};
+            USERS.forEach(u => {
+                const matchBrand = u.brand.toLowerCase().includes(brand.toLowerCase());
+                const matchPrefix = u.location && u.location.toUpperCase().startsWith(prefix);
+                if (matchBrand && matchPrefix) {
+                    const loc = u.location;
+                    if (!floorLevelCounts[loc]) floorLevelCounts[loc] = [0,0,0,0,0]; // one index for each MILESTONE
+                    const status = getCowStatus(u.weight);
+                    const milestoneIdx = MILESTONES.findIndex(m => m.min === status.min);
+                    if(milestoneIdx !== -1) floorLevelCounts[loc][milestoneIdx]++;
+                }
+            });
+
+            const barColors = ['bg-gray-400', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-yellow-500'];
+            
+            container.innerHTML = Object.entries(floorLevelCounts).length > 0 ? Object.entries(floorLevelCounts).map(([loc, counts]) => {
+                const total = counts.reduce((a,b) => a+b, 0);
+                return `
+                    <div class="bg-white p-5 rounded-[2rem] shadow-lg border border-gray-50 transition-all hover:shadow-xl">
+                        <div class="flex justify-between items-end mb-3">
+                            <h5 class="font-black text-gray-800 text-lg uppercase tracking-tighter">${loc}</h5>
+                            <span class="text-[10px] font-bold text-gray-400">Total: ${total} Therapists</span>
+                        </div>
+                        <div class="w-full h-8 flex rounded-full overflow-hidden shadow-inner bg-gray-100">
+                            ${counts.map((count, idx) => {
+                                if(count === 0) return '';
+                                const pct = (count / total) * 100;
+                                return `<div class="${barColors[idx]} h-full border-r border-white/20 last:border-0 flex items-center justify-center transition-all duration-1000" style="width: ${pct}%">
+                                    <span class="text-[10px] font-black text-white drop-shadow-sm">${count}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('') : `<p class="text-gray-400 text-sm italic text-center py-10">No distribution data for ${brand}</p>`;
+        }
+
+        function populateFilterOptions() {
+            const bS = document.getElementById('brand-filter'), lS = document.getElementById('location-filter');
+            if(!lS || !bS) return;
+            const b = bS.value, bPM = { 'Dermes': 'D', 'Reenex': 'R', 'Elyze': 'E' }, p = bPM[b], cV = lS.value;
+            let locs = [...new Set(USERS.map(u => u.location))].filter(l => l).sort();
+            if (p) locs = locs.filter(loc => loc.toUpperCase().startsWith(p));
+            lS.innerHTML = `<option value="">${i18n[window.currentLang].allLocations}</option>`;
+            locs.forEach(loc => { const opt = document.createElement('option'); opt.value = loc; opt.textContent = loc; lS.appendChild(opt); });
+            if (locs.includes(cV)) lS.value = cV; else lS.value = "";
         }
 
         function populateUserSelect() {
-            const bSelect = document.getElementById('brand-filter'), lSelect = document.getElementById('location-filter'), uSelect = document.getElementById('user-select'), uCard = document.getElementById('user-card');
-            if(!bSelect || !lSelect || !uSelect) return;
-            const b = bSelect.value, l = lSelect.value;
-            uSelect.innerHTML = '';
-            const brandPrefixMap = { 'Dermes': 'D', 'Reenex': 'R', 'Elyze': 'E' };
-            const prefix = brandPrefixMap[b];
+            const bS = document.getElementById('brand-filter'), lS = document.getElementById('location-filter'), uS = document.getElementById('user-select'), uC = document.getElementById('user-card');
+            if(!bS || !lS || !uS) return;
+            const b = bS.value, l = lS.value, bPM = { 'Dermes': 'D', 'Reenex': 'R', 'Elyze': 'E' }, p = bPM[b];
+            uS.innerHTML = '';
             const filtered = USERS.filter(u => {
-                const brandMatch = !b || u.brand.toLowerCase() === b.toLowerCase();
-                const prefixMatch = !b || (u.location && u.location.toUpperCase().startsWith(prefix));
-                const locMatch = !l || u.location === l;
-                return brandMatch && prefixMatch && locMatch;
+                const bM = !b || u.brand.toLowerCase() === b.toLowerCase();
+                const pM = !b || (u.location && u.location.toUpperCase().startsWith(p));
+                const lM = !l || u.location === l;
+                return bM && pM && lM;
             });
-            if (filtered.length === 0) { uSelect.innerHTML = `<option disabled selected>${i18n[window.currentLang].noMatch}</option>`; if(uCard) uCard.classList.add('hidden'); return; }
-            filtered.forEach(u => { const opt = document.createElement('option'); opt.value = u.id; opt.textContent = `${u.name} (${u.brand}-${u.location})`; uSelect.appendChild(opt); });
+            if (filtered.length === 0) { uS.innerHTML = `<option disabled selected>${i18n[window.currentLang].noMatch}</option>`; if(uC) uC.classList.add('hidden'); return; }
+            filtered.forEach(u => { const o = document.createElement('option'); o.value = u.id; o.textContent = `${u.name} (${u.brand}-${u.location})`; uS.appendChild(o); });
             updateUserCard(filtered[0].id);
         }
 
@@ -484,16 +545,8 @@
             document.getElementById('card-brand').textContent = user.brand;
             document.getElementById('card-brand').className = `brand-badge brand-${user.brand} text-[10px]`;
             document.getElementById('card-location').textContent = user.location;
-            
-            // Render Report Card (showing ACTUAL RAW data from Google Sheet)
             const cardTasksGrid = document.getElementById('card-tasks-grid');
-            cardTasksGrid.innerHTML = [
-                { label: lang.tLabel1, count: user.task1 }, 
-                { label: lang.tLabel2, count: user.task2 }, 
-                { label: lang.tLabel3, count: user.task3 }, // Actual Number
-                { label: lang.tLabel4, count: user.task4 }
-            ].map(t => `<div class="bg-white p-2 rounded border border-[#D7CCC8] flex justify-between items-center shadow-sm"><span class="text-[#5D4037] font-black">${t.label}</span><span class="font-black text-white bg-[#8D6E63] px-2 py-0.5 rounded-full">${t.count}</span></div>`).join('');
-            
+            cardTasksGrid.innerHTML = [{ label: lang.tLabel1, count: user.task1 }, { label: lang.tLabel2, count: user.task2 }, { label: lang.tLabel3, count: user.task3 }, { label: lang.tLabel4, count: user.task4 }].map(t => `<div class="bg-white p-2 rounded border border-[#D7CCC8] flex justify-between items-center shadow-sm"><span class="text-[#5D4037] font-black">${t.label}</span><span class="font-black text-white bg-[#8D6E63] px-2 py-0.5 rounded-full">${t.count}</span></div>`).join('');
             document.getElementById('card-cow-img').src = status.img;
             const nextEl = document.getElementById('card-next-level'), prgEl = document.getElementById('card-progress-bar'), diffEl = document.getElementById('card-diff-text');
             if (next) {
@@ -520,15 +573,8 @@
                     const loc = getProp(item, ["location", "Location", "LOCATION"]);
                     const name = getProp(item, ["name", "Name", "NAME", "Staff Name"]);
                     const id = parseInt(getProp(item, ["id", "ID"])) || 0;
-                    const t1 = parseInt(getProp(item, ["task1", "Task1"])) || 0;
-                    const t2 = parseInt(getProp(item, ["task2", "Task2"])) || 0;
-                    const t3 = parseInt(getProp(item, ["task3", "Task3"])) || 0;
-                    const t4 = parseInt(getProp(item, ["task4", "Task4"])) || 0;
-                    
-                    // Calculation with CAP applied inside calculateStats
-                    const stats = calculateStats(t1, t2, t3, t4);
-                    
-                    return { id, name, brand, location: loc, task1: t1, task2: t2, task3: t3, task4: t4, feeds: stats.totalFeeds, weight: stats.weight };
+                    const stats = calculateStats(parseInt(getProp(item, ["task1", "Task1"]))||0, parseInt(getProp(item, ["task2", "Task2"]))||0, parseInt(getProp(item, ["task3", "Task3"]))||0, parseInt(getProp(item, ["task4", "Task4"]))||0);
+                    return { id, name, brand, location: loc, task1: parseInt(getProp(item, ["task1", "Task1"]))||0, task2: parseInt(getProp(item, ["task2", "Task2"]))||0, task3: parseInt(getProp(item, ["task3", "Task3"]))||0, task4: parseInt(getProp(item, ["task4", "Task4"]))||0, feeds: stats.totalFeeds, weight: stats.weight };
                 }).filter(u => u.name).sort((a, b) => b.weight - a.weight);
                 updateUI(); 
             } catch (error) {
