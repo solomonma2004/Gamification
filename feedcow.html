@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新春肥牛飼養大賽 | Team Intelligence Dashboard</title>
+    <title>新春肥牛飼養大賽 | Intelligence Dashboard</title>
     <!-- CSS & Frameworks -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,21 +16,23 @@
             border-radius: 0.5rem; background-color: #f3f4f6; border: 2px solid #fff; 
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        .cow-image-container img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease; }
+        .cow-image-container img { width: 100%; height: 100%; object-fit: contain; }
         .fence-bg {
             background-color: #81C784;
             background-image: radial-gradient(#A5D6A7 15%, transparent 16%), radial-gradient(#A5D6A7 15%, transparent 16%);
             background-size: 20px 20px; background-position: 0 0, 10px 10px;
         }
         .rank-badge { display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 50; }
-        .brand-badge { font-size: 0.7rem; padding: 1px 6px; border-radius: 9999px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .brand-badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 9999px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
         .brand-Dermes { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .brand-Reenex { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
         .brand-Elyze { background-color: #fdf4ff; color: #a21caf; border: 1px solid #f5d0fe; }
-        .tab-active-Dermes { background-color: #0369a1; color: white; border-color: #0369a1; }
-        .tab-active-Reenex { background-color: #15803d; color: white; border-color: #15803d; }
-        .tab-active-Elyze { background-color: #a21caf; color: white; border-color: #a21caf; }
         
+        .tab-active-Dermes { background-color: #0369a1 !important; color: white !important; border-color: #0369a1 !important; }
+        .tab-active-Reenex { background-color: #15803d !important; color: white !important; border-color: #15803d !important; }
+        .tab-active-Elyze { background-color: #a21caf !important; color: white !important; border-color: #a21caf !important; }
+        .view-active { background-color: #4b5563 !important; color: white !important; }
+
         .strength-bar { 
             position: absolute; left: 0; top: 0; height: 100%; opacity: 0.12; 
             transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 0; 
@@ -43,17 +45,18 @@
 <body class="pb-6 overflow-x-hidden">
 
     <script>
-        // --- 核心全域變數與配置 ---
+        // --- 核心全域變數 ---
         window.GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFLJr6n8QGwaDb-hBjC6xOwd2ANzDyW1b-iInQfQkxZEDDmP1U6F5lJampP6JNWjR6/exec'; 
         window.currentLang = 'zh';
         window.currentRankBrand = 'Dermes';
-        window.currentNJFilter = 'all'; // 'all', 'Y' (新人), 'N' (舊人)
+        window.currentNJFilter = 'all'; 
+        window.currentViewLevel = 'floor'; // 'brand', 'hub', 'floor'
         window.USERS = [];
 
         window.i18n = {
             zh: {
                 utilizeAi: "利用 AI 小店", make: "令", cust: "客人", bannerSlogan: "做任務贏取飼料 儲糧養肥牛",
-                leaderboardTitle: "肥牛牧場排行榜", loading: "正在讀取數據...", tierTitle: "牛牛進化階級與獎項",
+                leaderboardTitle: "肥牛排行榜", loading: "正在讀取數據...", tierTitle: "等級與獎項",
                 feedGuideTitle: "飼料獲取攻略", startWeightLabel: "起始體重", ratioLabel: "成長換算",
                 searchTitle: "搜尋我的牛牛", allBrands: "所有品牌", allLocations: "所有樓層",
                 cardWeightLabel: "目前體重", cardFeedLabel: "累積飼料", unlockedTitle: "目前可獲獎勵",
@@ -61,13 +64,15 @@
                 task4: "成功驅動ACB邀請好友參與活動並獲贈$1,888禮券",
                 tLabel1: "追蹤", tLabel2: "ACB店主", tLabel3: "搶利是", tLabel4: "驅動ACB",
                 goal: "目標", maxLevel: "已達最高級", feedsToUpgrade: "尚欠 {n} 份升級", congrats: "已養出金牛！",
-                noMatch: "沒有符合條件的同事", floorRankTitle: "品牌樓層實力看板", avgWeight: "平均體重",
+                noMatch: "沒有結果", floorRankTitle: "實力分佈看板", avgWeight: "平均體重",
                 modalTitle: "任務說明", modalClose: "我知道了", btnExplain: "圖標說明", distTitle: "分佈",
                 hcLabel: "HC",
-                njAll: "全部人員", njNew: "新人 (NJ)", njSenior: "舊人 (Non-NJ)"
+                njAll: "全部人員", njNew: "新人 (NJ)", njSenior: "舊人 (Non-NJ)",
+                viewBrand: "品牌級", viewHub: "區域級", viewFloor: "樓層級",
+                brandTotal: "品牌總計", hubTotal: "區域總計", floorDetail: "樓層詳情"
             },
             en: {
-                utilizeAi: "Utilizing AI Shop", make: "Turning", cust: "Customers", bannerSlogan: "Complete Tasks to Grow Your Cow",
+                utilizeAi: "Utilizing AI Shop", make: "Turning", cust: "Customers", bannerSlogan: "Complete Tasks to Grow",
                 leaderboardTitle: "Fat Cow Leaderboard", loading: "Loading...", tierTitle: "Cow Evolution Tiers",
                 feedGuideTitle: "Feed Acquisition Guide", startWeightLabel: "Start Weight", ratioLabel: "Ratio",
                 searchTitle: "Search My Cow", allBrands: "All Brands", allLocations: "All Floors",
@@ -76,19 +81,21 @@
                 task4: "Drive ACB to refer friends for $1,888",
                 tLabel1: "Follows", tLabel2: "ACB Owner", tLabel3: "Packets", tLabel4: "Drive ACB",
                 goal: "Goal", maxLevel: "Max Level", feedsToUpgrade: "{n} feeds needed", congrats: "Golden Cow Raised!",
-                noMatch: "No matches", floorRankTitle: "Brand Floor Board", avgWeight: "Avg Weight",
+                noMatch: "No matches", floorRankTitle: "Intelligence Board", avgWeight: "Avg Weight",
                 modalTitle: "Task Legend", modalClose: "Got it", btnExplain: "Legend", distTitle: "Dist",
                 hcLabel: "HC",
-                njAll: "All Staff", njNew: "New Joiner (NJ)", njSenior: "Senior (Non-NJ)"
+                njAll: "All Staff", njNew: "New Joiner (NJ)", njSenior: "Senior (Non-NJ)",
+                viewBrand: "Brand", viewHub: "Hub", viewFloor: "Floor",
+                brandTotal: "Brand Total", hubTotal: "Hub Total", floorDetail: "Floor Detail"
             }
         };
 
         window.MILESTONES = [
-            { min: 300, max: 499, title: {zh: "瘦牛", en: "Lean Cow"}, color: "text-gray-400", barColor: "bg-gray-400", img: "https://i.postimg.cc/pdy5zLJq/Whats-App-Image-2026-01-16-at-15-00-48.jpg", reward: { zh: "繼續努力！加油！", en: "Keep trying!" } }, 
-            { min: 500, max: 599, title: {zh: "信望愛澳洲牛", en: "FHL Australian Beef"}, color: "text-green-700", barColor: "bg-green-500", img: "https://i.postimg.cc/52sFXCLL/Whats-App-Image-2026-01-16-at-15-01-13.jpg", reward: { zh: "Bicelle 3D MASK X5", en: "Bicelle 3D Mask X5" } }, 
-            { min: 600, max: 699, title: {zh: "公義美國穀飼牛", en: "Righteous US Beef"}, color: "text-blue-700", barColor: "bg-blue-500", img: "https://i.postimg.cc/9QLqD7ZP/Whats-App-Image-2026-01-16-at-15-00-50.jpg", reward: { zh: "Exuviance AP25煥膚組合", en: "Exuviance AP25 Kit" } }, 
+            { min: 300, max: 499, title: {zh: "瘦牛", en: "Lean Cow"}, color: "text-gray-400", barColor: "bg-gray-400", img: "https://i.postimg.cc/pdy5zLJq/Whats-App-Image-2026-01-16-at-15-00-48.jpg", reward: { zh: "繼續努力！", en: "Keep trying!" } }, 
+            { min: 500, max: 599, title: {zh: "信望愛澳洲牛", en: "Aus Beef"}, color: "text-green-700", barColor: "bg-green-500", img: "https://i.postimg.cc/52sFXCLL/Whats-App-Image-2026-01-16-at-15-01-13.jpg", reward: { zh: "Bicelle 3D Mask X5", en: "Bicelle Mask X5" } }, 
+            { min: 600, max: 699, title: {zh: "公義美國穀飼牛", en: "US Beef"}, color: "text-blue-700", barColor: "bg-blue-500", img: "https://i.postimg.cc/9QLqD7ZP/Whats-App-Image-2026-01-16-at-15-00-50.jpg", reward: { zh: "Exuviance AP25煥膚組合", en: "Exuviance AP25 Kit" } }, 
             { min: 700, max: 799, title: {zh: "平安日本和牛", en: "Peaceful Japanese Wagyu"}, color: "text-purple-700", barColor: "bg-purple-500", img: "https://i.postimg.cc/Bnm1jKH1/Whats-App-Image-2026-01-16-at-15-00-49.jpg", reward: { zh: "Celluion 活性膠原組合", en: "Celluion Kit" } }, 
-            { min: 800, max: 99999, title: {zh: "喜樂豐盛金牛", en: "Joyful Abundant Golden Cow"}, color: "text-yellow-700 font-black", barColor: "bg-yellow-500", img: "https://i.postimg.cc/2S0B1Zhv/Whats-App-Image-2026-01-16-at-15-00-49-(1).jpg", reward: { zh: "Celluion 超聲波 PLLA 套裝", en: "Celluion PLLA Set" } } 
+            { min: 800, max: 99999, title: {zh: "喜樂豐盛金牛", en: "Abundant Golden Cow"}, color: "text-yellow-700 font-black", barColor: "bg-yellow-500", img: "https://i.postimg.cc/2S0B1Zhv/Whats-App-Image-2026-01-16-at-15-00-49-(1).jpg", reward: { zh: "Celluion 超聲波 PLLA 套裝", en: "Celluion PLLA Set" } } 
         ];
 
         function getCowStatus(w) { return window.MILESTONES.find(m => w >= m.min && w <= m.max) || window.MILESTONES[0]; }
@@ -113,89 +120,87 @@
         <img src="https://i.postimg.cc/dVZ3Wyrh/Whats-App-Image-2026-01-16-at-13-05-41.jpg" alt="Poster" class="w-full h-auto block">
     </div>
 
-    <!-- Intro Header Section -->
-    <div class="relative w-screen ml-[calc(-50vw+50%)] shadow-2xl overflow-hidden bg-red-900 group flex items-center justify-center py-8 border-b-4 border-yellow-500 text-center md:text-left">
+    <!-- Intro Banner -->
+    <div class="relative w-screen ml-[calc(-50vw+50%)] shadow-2xl overflow-hidden bg-red-900 group flex items-center justify-center py-6 border-b-4 border-yellow-500 text-center md:text-left">
         <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-800 to-red-950 z-0 opacity-80"></div>
-        <div class="relative z-10 w-full max-w-7xl px-4 sm:px-8 md:px-20 text-white flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10">
-            <div class="flex-1 flex flex-col justify-center space-y-1">
-                <h2 class="text-4xl sm:text-5xl lg:text-7xl font-black leading-none tracking-tighter">
-                    <span id="txt-make">令</span><span class="text-yellow-400">20,000</span><span id="txt-cust">客人</span>
+        <div class="relative z-10 w-full max-w-7xl px-4 sm:px-8 md:px-20 text-white flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex-1 space-y-1">
+                <h2 class="text-4xl sm:text-5xl lg:text-7xl font-black leading-none tracking-tighter text-center md:text-left">
+                    <span id="txt-make">令</span><span class="text-yellow-400 animate-pulse">20,000</span><span id="txt-cust">客人</span>
                 </h2>
                 <div class="mt-2 inline-block bg-white/10 border border-white/20 px-4 py-1.5 rounded-xl">
-                    <p id="txt-banner-slogan" class="text-lg sm:text-xl font-black text-yellow-400 tracking-wider">做任務贏取飼料 儲糧養肥牛</p>
+                    <p id="txt-banner-slogan" class="text-lg sm:text-xl font-black text-yellow-400">做任務贏取飼料 儲糧養肥牛</p>
                 </div>
             </div>
-            <div id="txt-event-title" class="text-xs sm:text-sm font-black bg-yellow-500 text-red-900 px-4 py-1.5 mt-2 transform -skew-x-12 inline-block shadow-lg uppercase tracking-widest">全民養牛 • 玩出豐盛</div>
+            <div id="txt-event-title" class="text-xs sm:text-sm font-black bg-yellow-500 text-red-900 px-4 py-1.5 mt-2 transform -skew-x-12 inline-block shadow-lg uppercase">全民養牛 • 玩出豐盛</div>
         </div>
     </div>
 
-    <!-- Leaderboard Section -->
+    <!-- Top 10 Leaderboard -->
     <section class="px-2 pb-12 relative z-0 fence-bg pt-12 shadow-inner text-center">
         <div class="w-full max-w-[98%] mx-auto relative z-10">
-           <div class="flex flex-col items-center justify-center gap-4 mb-14">
+           <div class="flex flex-col items-center justify-center gap-4 mb-10">
                 <div class="flex items-center gap-4 bg-white/25 backdrop-blur-md px-8 py-4 rounded-full border-2 border-white/60 shadow-2xl">
-                    <i data-lucide="trophy" class="w-12 h-12 md:w-24 md:h-24 text-yellow-300 drop-shadow-[0_0_25px_rgba(253,224,71,0.7)]"></i>
-                    <h2 id="txt-leaderboard-title" class="font-black text-white text-5xl md:text-9xl tracking-tighter">肥牛排行榜</h2>
+                    <i data-lucide="trophy" class="w-12 h-12 text-yellow-300"></i>
+                    <h2 id="txt-leaderboard-title" class="font-black text-white text-3xl md:text-7xl tracking-tighter">肥牛排行榜</h2>
                 </div>
-                <div class="bg-red-600/90 text-white px-12 py-3 rounded-full text-3xl md:text-5xl font-black animate-pulse mt-8 shadow-2xl border-4 border-red-300/40">LIVE UPDATE</div>
+                <div class="bg-red-600/90 text-white px-8 py-1.5 rounded-full text-lg md:text-3xl font-black animate-pulse shadow-xl">LIVE UPDATE</div>
            </div>
-
            <div id="loading-indicator" class="flex flex-col items-center justify-center py-16">
                <div class="w-16 h-16 border-8 border-yellow-400 border-t-transparent rounded-full animate-spin mb-6"></div>
-               <p id="txt-loading" class="text-white text-2xl font-black animate-pulse tracking-widest">正在讀取牧場數據...</p>
+               <p id="txt-loading" class="text-white text-2xl font-black animate-pulse tracking-widest text-center">正在讀取數據...</p>
            </div>
-
-           <div id="leaderboard-grid" class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-16 px-2 lg:px-16"></div>
+           <div id="leaderboard-grid" class="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-10 px-1 lg:px-16"></div>
         </div>
     </section>
 
-    <!-- Combined Floor Dashboard -->
-    <section class="px-2 py-16 relative z-10 bg-white border-t border-b border-gray-100 shadow-sm overflow-hidden">
+    <!-- Combined Floor Intelligence Board -->
+    <section class="px-2 py-16 relative z-10 bg-white border-t border-b border-gray-100 shadow-sm overflow-hidden text-center">
         <div class="max-w-4xl mx-auto">
             <div class="text-center mb-10 px-4">
-                <h3 id="txt-floor-rank-title" class="text-4xl md:text-7xl font-black text-gray-800 flex flex-col items-center justify-center gap-2 leading-tight">
-                    <i data-lucide="shield-check" class="w-14 h-14 text-blue-600"></i>品牌樓層實力看板
+                <h3 id="txt-floor-rank-title" class="text-4xl md:text-7xl font-black text-gray-800 flex flex-col items-center justify-center gap-2 leading-tight tracking-tight">
+                    <i data-lucide="shield-check" class="w-14 h-14 text-blue-600"></i>實力分佈看板
                 </h3>
-                <div class="flex items-center justify-center gap-6 mt-8">
-                    <div class="h-1.5 w-16 md:w-32 bg-blue-200 rounded-full"></div>
-                    <button onclick="toggleMissionModal(true)" class="flex items-center gap-3 px-8 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-2xl active:scale-95 group border-2 border-blue-400/30">
-                        <i data-lucide="info" class="w-6 h-6 fill-white/20"></i>
-                        <span class="font-black text-base md:text-lg tracking-widest uppercase" id="txt-btn-explain">圖標說明</span>
-                    </button>
-                    <div class="h-1.5 w-16 md:w-32 bg-blue-200 rounded-full"></div>
-                </div>
+                <button onclick="toggleMissionModal(true)" class="inline-flex items-center gap-2 mt-6 px-6 py-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95 text-xs font-black">
+                    <i data-lucide="info" class="w-4 h-4"></i> <span id="txt-btn-explain">圖標說明</span>
+                </button>
             </div>
 
-            <!-- Brand Selection Tabs -->
-            <div class="flex justify-center p-2 bg-gray-200/50 rounded-[2.5rem] mb-6 shadow-inner max-w-md mx-auto border border-gray-200/80">
-                <button onclick="switchRankBrand('Dermes')" id="tab-Dermes" class="flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all tab-active-Dermes shadow-xl">Dermes</button>
-                <button onclick="switchRankBrand('Reenex')" id="tab-Reenex" class="flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all text-gray-500">Reenex</button>
-                <button onclick="switchRankBrand('Elyze')" id="tab-Elyze" class="flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all text-gray-500">Elyze</button>
+            <!-- Brand Selection -->
+            <div class="flex justify-center p-1.5 bg-gray-100 rounded-[2.5rem] mb-6 shadow-inner max-w-sm mx-auto border border-gray-200">
+                <button onclick="switchRankBrand('Dermes')" id="tab-Dermes" class="flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all tab-active-Dermes shadow-md">Dermes</button>
+                <button onclick="switchRankBrand('Reenex')" id="tab-Reenex" class="flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all text-gray-500">Reenex</button>
+                <button onclick="switchRankBrand('Elyze')" id="tab-Elyze" class="flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all text-gray-500">Elyze</button>
             </div>
 
-            <!-- NJ Filter (New Joiner) -->
+            <!-- View Level Selection -->
+            <div class="flex justify-center p-1 bg-gray-200 rounded-xl mb-6 max-w-xs mx-auto border border-gray-300 shadow-sm">
+                <button onclick="switchViewLevel('brand')" id="view-brand" class="flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all text-gray-500">品牌級</button>
+                <button onclick="switchViewLevel('hub')" id="view-hub" class="flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all text-gray-500">區域級</button>
+                <button onclick="switchViewLevel('floor')" id="view-floor" class="flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all view-active shadow-sm">樓層級</button>
+            </div>
+
+            <!-- NJ Status Filter -->
             <div class="flex justify-center mb-10">
-                <div class="inline-flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 shadow-sm">
-                    <select id="nj-rank-filter" onchange="switchNJFilter(this.value)" class="bg-transparent text-gray-700 text-xs font-black px-4 py-1.5 outline-none appearance-none cursor-pointer">
+                <div class="inline-flex items-center bg-gray-50 p-1 px-4 rounded-full border border-gray-200 shadow-sm">
+                    <select id="nj-rank-filter" onchange="switchNJFilter(this.value)" class="bg-transparent text-gray-700 text-[10px] font-black outline-none appearance-none cursor-pointer">
                         <option value="all" id="txt-njAll">全部人員</option>
                         <option value="Y" id="txt-njNew">新人 (NJ)</option>
                         <option value="N" id="txt-njSenior">舊人 (Non-NJ)</option>
                     </select>
-                    <i data-lucide="chevron-down" class="w-3 h-3 mr-2 text-gray-400 pointer-events-none"></i>
+                    <i data-lucide="chevron-down" class="w-3 h-3 ml-2 text-gray-400 pointer-events-none"></i>
                 </div>
             </div>
 
-            <!-- Combined Ranking & Distribution Rows -->
-            <div id="combined-floor-content" class="space-y-4 px-1 min-h-[400px]">
-                <!-- JS Injected Combined Cards -->
-            </div>
+            <!-- Dynamic Board Content -->
+            <div id="combined-floor-content" class="space-y-4 px-1 min-h-[400px]"></div>
         </div>
     </section>
 
     <!-- Mission Legend Modal -->
     <div id="mission-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" onclick="toggleMissionModal(false)">
-        <div class="bg-white rounded-[3rem] w-full max-w-sm p-10 shadow-[0_30px_60px_rgba(0,0,0,0.5)] animate-modal border-2 border-blue-50" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-8">
+        <div class="bg-white rounded-[3rem] w-full max-sm p-10 shadow-2xl animate-modal border-2 border-blue-50" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
                 <h4 id="txt-modal-title" class="text-xl font-black text-gray-800 uppercase tracking-tight">任務說明</h4>
                 <button onclick="toggleMissionModal(false)" class="text-gray-400 hover:text-red-500 transition-colors"><i data-lucide="x-circle" class="w-10 h-10"></i></button>
             </div>
@@ -204,70 +209,50 @@
         </div>
     </div>
 
-    <!-- Tier & Guide -->
-    <section class="px-3 py-12 relative z-10 bg-[#FFF3E0]">
+    <!-- Guide & Tiers -->
+    <section class="px-3 py-16 relative z-10 bg-[#FFF3E0]">
         <div class="max-w-lg mx-auto">
              <div class="mb-10 shadow-xl rounded-3xl overflow-hidden border-4 border-[#8D6E63] bg-white relative">
                  <h4 class="font-black text-[#5D4037] text-xl p-4 bg-[#FFECB3] border-b-2 border-[#8D6E63] flex items-center justify-center gap-3 uppercase">
-                    <i data-lucide="award" class="w-6 h-6 text-yellow-700"></i> <span id="txt-tier-title">牛牛進化階級與獎項</span>
+                    <i data-lucide="award" class="w-6 h-6 text-yellow-700"></i> <span id="txt-tier-title">等級與獎項</span>
                  </h4>
-                 <div id="tier-list-container" class="p-4 space-y-3 relative z-10"></div>
+                 <div id="tier-list-container" class="divide-y divide-gray-100 text-left"></div>
              </div>
-             <div class="bg-white rounded-[2rem] p-6 shadow-xl border-4 border-orange-200">
+             <div class="bg-white rounded-[2rem] p-8 shadow-xl border-4 border-orange-200">
                  <h4 class="font-black text-orange-900 text-xl mb-6 flex items-center gap-3 border-b-2 border-orange-100 pb-3 text-left">
                     <i data-lucide="flame" class="w-6 h-6 text-red-500 fill-red-500"></i> <span id="txt-feed-guide-title">飼料獲取攻略</span>
                  </h4>
-                 <div id="tasks-container" class="space-y-4 text-left"></div>
+                 <div id="tasks-container" class="grid grid-cols-2 gap-3 text-left"></div>
                  <div class="mt-8 bg-orange-50 rounded-2xl p-4 text-center border border-orange-100 flex justify-around">
-                    <div class="flex flex-col"><span id="txt-start-weight-label" class="text-[10px] text-orange-800 font-bold">起始體重</span><span class="text-xl font-black text-red-600">300kg</span></div>
-                    <div class="flex flex-col"><span id="txt-ratio-label" class="text-[10px] text-orange-800 font-bold">成長換算</span><span id="txt-ratio-value" class="text-xl font-black text-orange-700">1份 = +5kg</span></div>
+                    <div class="flex flex-col"><span id="txt-start-weight-label" class="text-[10px] text-orange-800 font-bold uppercase tracking-widest">起始體重</span><span class="text-xl font-black text-red-600">300kg</span></div>
+                    <div class="flex flex-col"><span id="txt-ratio-label" class="text-[10px] text-orange-800 font-bold uppercase tracking-widest">成長換算</span><span id="txt-ratio-value" class="text-xl font-black text-orange-700">1份 = +5kg</span></div>
                  </div>
              </div>
         </div>
     </section>
 
-    <!-- Search Section -->
+    <!-- Search Tool -->
     <section class="px-4 py-16 bg-white border-t border-gray-100 text-center">
          <div class="max-w-md mx-auto">
              <h2 id="txt-search-title" class="font-black text-gray-800 text-2xl mb-8 flex items-center justify-center gap-3">搜尋我的牛牛</h2>
              <div class="grid grid-cols-2 gap-3 mb-4">
-                 <select id="brand-filter" class="block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base bg-gray-50 focus:border-red-500 font-black appearance-none">
-                    <option value="">所有品牌</option><option value="Dermes">Dermes</option><option value="Reenex">Reenex</option><option value="Elyze">Elyze</option>
-                 </select>
-                 <select id="location-filter" class="block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base bg-gray-50 focus:border-red-500 font-black appearance-none">
-                    <option value="">所有樓層</option>
-                 </select>
+                 <select id="brand-filter" class="block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base bg-gray-50 focus:border-red-500 font-black appearance-none"><option value="">所有品牌</option><option value="Dermes">Dermes</option><option value="Reenex">Reenex</option><option value="Elyze">Elyze</option></select>
+                 <select id="location-filter" class="block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base bg-gray-50 focus:border-red-500 font-black appearance-none"><option value="">所有樓層</option></select>
              </div>
              <div class="relative mb-8"><select id="user-select" class="block w-full px-5 py-4 border-2 border-red-100 rounded-[1.5rem] bg-white focus:border-red-500 font-black shadow-lg appearance-none"></select></div>
-             
-             <!-- Individual Result Card -->
-             <div id="user-card" class="bg-[#FFF8E1] rounded-[2.5rem] p-5 border-4 border-[#8D6E63] hidden shadow-xl relative animate-modal text-left">
-                <div class="flex justify-between items-start mb-4">
-                    <div><div class="flex gap-2 mb-1"><span id="card-brand" class="brand-badge text-[10px]">BRAND</span><span id="card-location" class="bg-[#8D6E63] text-white px-2 py-0.5 rounded-full text-[10px] font-black uppercase shadow-sm">LOC</span></div><h3 id="card-name" class="text-3xl font-black text-[#3E2723]">姓名</h3></div>
-                    <span id="card-rank" class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-xl text-lg font-black shadow-md border-2 border-white"># -</span>
-                </div>
-                <div class="cow-image-container mb-4 border-2 border-white shadow-md"><img id="card-cow-img" src="" alt="Cow"></div>
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="bg-white p-3 rounded-2xl text-center border-2 border-[#FFE082] shadow-sm"><span id="txt-card-weight-label" class="block text-[10px] text-[#8D6E63] font-black uppercase">目前體重</span><span id="card-weight" class="block text-2xl font-black text-red-600">0kg</span></div>
-                    <div class="bg-white p-3 rounded-2xl text-center border-2 border-[#FFE082] shadow-sm"><span id="txt-card-feed-label" class="block text-[10px] text-[#8D6E63] font-black uppercase">累積飼料</span><span id="card-feeds" class="block text-2xl font-black text-orange-500">0份</span></div>
-                </div>
-                <div id="unlocked-reward-panel" class="bg-yellow-50 rounded-2xl p-4 border-2 border-yellow-200 mb-4 flex items-center gap-3 shadow-inner">
-                    <div class="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center shrink-0 border border-white shadow-sm"><i data-lucide="gift" class="w-6 h-6 text-white"></i></div>
-                    <div><div class="text-[9px] text-yellow-700 font-black uppercase leading-none mb-1">目前獎勵</div><div id="card-reward-name" class="text-sm font-black text-gray-800 leading-tight">Reward</div></div>
-                </div>
-                <div class="bg-white rounded-2xl p-4 border-2 border-[#FFE082] mb-4 shadow-sm text-center">
-                    <div class="flex justify-between text-xs font-black text-[#5D4037] mb-1"><span id="card-level-title">等級</span><span id="card-next-level" class="text-red-500 italic font-black uppercase">目標</span></div>
-                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200 shadow-inner"><div id="card-progress-bar" class="bg-green-500 h-full transition-all duration-1000 shadow-inner"></div></div>
-                </div>
-                <div class="border-t-2 border-[#D7CCC8] pt-4 border-dashed"><div id="card-tasks-grid" class="grid grid-cols-2 gap-2 text-[10px]"></div></div>
+             <div id="user-card" class="bg-[#FFF8E1] rounded-[2rem] p-5 border-4 border-[#8D6E63] hidden shadow-xl relative animate-modal text-left">
+                <div class="flex items-start gap-4 mb-4 relative z-10 text-left"><div class="w-24 h-18 cow-image-container border-2 border-white shadow-md shrink-0"><img id="card-cow-img" src="" alt="Cow"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-start mb-1"><h3 id="card-name" class="text-2xl font-black text-[#3E2723] truncate">姓名</h3><span id="card-rank" class="bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-lg text-sm font-black shadow-md border-2 border-white"># -</span></div><div class="flex gap-1 mb-2"><span id="card-brand" class="brand-badge text-[8px]">BRAND</span><span id="card-location" class="bg-[#8D6E63] text-white px-2 py-0.5 rounded-full text-[8px] font-black uppercase shadow-sm">LOC</span></div><div class="flex items-baseline gap-2"><span id="card-weight" class="text-3xl font-black text-red-600 leading-none">0kg</span><span id="card-level-title" class="text-[10px] font-black text-[#8D6E63] uppercase truncate">等級</span></div></div></div>
+                <div id="unlocked-reward-panel" class="bg-yellow-50 rounded-xl p-2.5 border-2 border-yellow-200 mb-4 flex items-center gap-3"><div class="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center shrink-0 shadow-sm"><i data-lucide="gift" class="w-4 h-4 text-white"></i></div><div class="min-w-0 flex-1"><div id="card-reward-name" class="text-xs font-black text-gray-800 leading-tight truncate">Reward</div></div></div>
+                <div class="bg-white rounded-xl p-3 border-2 border-[#FFE082] mb-4 shadow-sm relative text-center"><div class="flex justify-between text-[10px] font-black text-[#5D4037] mb-1"><span>PROGRESS</span><span id="card-next-level" class="text-red-500 italic uppercase font-black">GOAL</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden"><div id="card-progress-bar" class="bg-green-500 h-full"></div></div></div>
+                <div class="border-t-2 border-[#D7CCC8] pt-4 border-dashed text-center"><div id="card-tasks-grid" class="grid grid-cols-2 gap-2 text-[10px]"></div></div>
              </div>
          </div>
     </section>
 
     <footer class="text-center text-gray-400 text-xs py-10 font-bold opacity-60 uppercase tracking-widest">© 2026 Neoderm New Year Event</footer>
 
+    <!-- Logic Script Area -->
     <script>
-        // --- UI Rendering ---
         function updateUI() {
             if (typeof i18n === 'undefined') return;
             const lang = window.i18n[window.currentLang];
@@ -280,10 +265,13 @@
                 }
             });
 
-            // NJ Filter Labeling Update
-            const njAll = document.getElementById('txt-njAll'); if(njAll) njAll.textContent = lang.njAll;
-            const njNew = document.getElementById('txt-njNew'); if(njNew) njNew.textContent = lang.njNew;
-            const njSenior = document.getElementById('txt-njSenior'); if(njSenior) njSenior.textContent = lang.njSenior;
+            // NJ & Hub Level filters
+            document.getElementById('txt-njAll').textContent = lang.njAll;
+            document.getElementById('txt-njNew').textContent = lang.njNew;
+            document.getElementById('txt-njSenior').textContent = lang.njSenior;
+            document.getElementById('view-brand').textContent = lang.viewBrand;
+            document.getElementById('view-hub').textContent = lang.viewHub;
+            document.getElementById('view-floor').textContent = lang.viewFloor;
 
             // Modal Legend
             const modalCont = document.getElementById('modal-tasks-container');
@@ -292,11 +280,11 @@
                 modalCont.innerHTML = taskList.map(t => `<div class="flex items-start gap-4 p-4 rounded-3xl bg-orange-50/50 border border-orange-100 text-left"><span class="text-3xl">${t.icon}</span><div><div class="text-[10px] text-orange-600 font-black uppercase mb-0.5">${t.label}</div><div class="text-sm font-bold text-gray-700 leading-tight text-left">${t.text}</div></div></div>`).join('');
             }
 
-            // Tiers
+            // Condensed Tiers
             const tl = document.getElementById('tier-list-container');
             if(tl) {
                 tl.innerHTML = [...window.MILESTONES].reverse().map(m => `
-                    <div class="bg-white p-3 border-b border-gray-100 last:border-0 flex items-center gap-4">
+                    <div class="bg-white p-3 border-b border-gray-100 last:border-0 flex items-center gap-4 transition-all hover:bg-gray-50">
                         <div class="w-12 h-10 rounded overflow-hidden shrink-0 bg-gray-50 border border-gray-100 shadow-sm flex items-center justify-center">
                             <img src="${m.img}" class="w-full h-full object-contain ${m.min < 500 ? 'grayscale opacity-60' : ''}">
                         </div>
@@ -311,15 +299,11 @@
                 `).join('');
             }
 
-            // Task Guides
+            // Compact 2x2 Grid Task Guides
             const tc = document.getElementById('tasks-container');
             if(tc) {
                 const td = [{ icon: "👀", title: lang.task1, reward: "x1" }, { icon: "🏪", title: lang.task2, reward: "x2" }, { icon: "🧧", title: lang.task3, reward: "x2" }, { icon: "🤝", title: lang.task4, reward: "x3" }];
-                tc.innerHTML = td.map((t, i) => `<div class="flex items-center gap-3 bg-orange-50/30 p-4 rounded-xl border border-orange-100">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-xl shadow-sm shrink-0 border border-orange-50">${t.icon}</div>
-                    <div class="flex-1 text-xs font-black text-gray-800 leading-tight text-left">${t.title}</div>
-                    <div class="bg-orange-600 text-white px-2 py-1 rounded-lg font-black text-[10px] shrink-0 shadow-md">${t.reward}</div>
-                </div>`).join('');
+                tc.innerHTML = td.map(t => `<div class="flex flex-col gap-2 bg-orange-50/40 p-3 rounded-2xl border border-orange-100 shadow-sm text-left transition-all hover:bg-orange-50 group"><div class="flex justify-between items-center"><span class="text-xl group-hover:scale-110 transition-transform">${t.icon}</span><span class="bg-orange-600 text-white px-2 py-0.5 rounded-lg font-black text-[10px] shadow-sm">x${t.reward.replace('x','')}</span></div><div class="text-[10px] font-black text-gray-700 leading-tight h-8 line-clamp-2">${t.title}</div></div>`).join('');
             }
 
             populateFilterOptions();
@@ -333,7 +317,7 @@
             window.currentRankBrand = b;
             ['Dermes', 'Reenex', 'Elyze'].forEach(tab => {
                 const btn = document.getElementById(`tab-${tab}`);
-                if(btn) btn.className = `flex-1 py-4 px-2 rounded-[2rem] text-sm md:text-lg font-black transition-all ${tab === b ? `tab-active-${tab} shadow-xl` : 'text-gray-500'}`;
+                if(btn) btn.className = `flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all ${tab === b ? `tab-active-${tab} shadow-xl` : 'text-gray-500'}`;
             });
             renderCombinedFloorDashboard();
         }
@@ -343,75 +327,134 @@
             renderCombinedFloorDashboard();
         }
 
-        // --- UPDATED DASHBOARD ENGINE WITH NJ FILTER LOGIC FIXED ---
+        function switchViewLevel(level) {
+            window.currentViewLevel = level;
+            ['brand', 'hub', 'floor'].forEach(l => {
+                const btn = document.getElementById(`view-${l}`);
+                if(btn) btn.className = `flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all ${l === level ? 'view-active shadow-sm' : 'text-gray-500'}`;
+            });
+            renderCombinedFloorDashboard();
+        }
+
+        // --- NEW HUB IDENTIFICATION ENGINE: SEPARATE 32/F & 60/F FOR DERMES ---
         function renderCombinedFloorDashboard() {
             const container = document.getElementById('combined-floor-content');
             if(!container) return;
-            const lang = i18n[window.currentLang];
+            const lang = window.i18n[window.currentLang];
             const brand = window.currentRankBrand;
             const prefix = brand === 'Dermes' ? 'D' : brand === 'Reenex' ? 'R' : 'E';
             const njFilter = window.currentNJFilter;
+            const viewLevel = window.currentViewLevel;
             
-            const floorStats = {};
-            window.USERS.forEach(u => {
-                const isBrand = u.brand.toLowerCase().includes(brand.toLowerCase());
-                const isPrefix = u.location && u.location.toUpperCase().startsWith(prefix);
+            // Hub priority mapping
+            const hubsList = ['60/F', '32/F', 'TST', 'LP', 'PP', 'TS']; 
+
+            let displayData = [];
+
+            const filteredUsers = window.USERS.filter(u => {
+                const isBrandMatch = u.brand.toLowerCase().includes(brand.toLowerCase());
+                const isPrefixMatch = u.location && u.location.toUpperCase().startsWith(prefix);
                 const isNJMatch = (njFilter === 'all') || (u.nj === njFilter);
-                
-                if (isBrand && isPrefix && isNJMatch) {
-                    const loc = u.location;
-                    if (!floorStats[loc]) floorStats[loc] = { totalWeight: 0, count: 0, t1: 0, t2: 0, t3: 0, t4: 0, dist: [0,0,0,0,0] };
-                    floorStats[loc].totalWeight += u.weight;
-                    floorStats[loc].t1 += u.task1; floorStats[loc].t2 += u.task2; floorStats[loc].t3 += u.task3; floorStats[loc].t4 += u.task4;
-                    floorStats[loc].count += 1;
-                    const s = getCowStatus(u.weight);
-                    const mIdx = window.MILESTONES.findIndex(m => m.min === s.min);
-                    if(mIdx !== -1) floorStats[loc].dist[mIdx]++;
-                }
+                return isBrandMatch && isPrefixMatch && isNJMatch;
             });
 
-            const sorted = Object.entries(floorStats).map(([loc, d]) => {
-                const avg = Math.round(d.totalWeight / d.count);
-                const s = getCowStatus(avg);
-                const next = getNextMilestone(avg);
-                let prg = 100; if(next) prg = Math.min(100, Math.max(0, ((avg - s.min) / (next.min - s.min)) * 100));
-                return { loc, avg, s, prg, t1: d.t1, t2: d.t2, t3: d.t3, t4: d.t4, dist: d.dist, total: d.count };
-            }).sort((a, b) => b.avg - a.avg);
+            if (viewLevel === 'brand') {
+                const total = filteredUsers.reduce((acc, u) => {
+                    const s = getCowStatus(u.weight);
+                    const mIdx = window.MILESTONES.findIndex(m => m.min === s.min);
+                    acc.totalWeight += u.weight; acc.t1 += u.task1; acc.t2 += u.task2; acc.t3 += u.task3; acc.t4 += u.task4; acc.count += 1;
+                    if(mIdx !== -1) acc.dist[mIdx]++;
+                    return acc;
+                }, { label: brand.toUpperCase(), totalWeight: 0, count: 0, t1: 0, t2: 0, t3: 0, t4: 0, dist: [0,0,0,0,0], isSummary: true, sub: lang.brandTotal });
+                if(total.count > 0) displayData = [total];
+            } 
+            else if (viewLevel === 'hub') {
+                const hubMap = hubsList.reduce((acc, h) => ({ ...acc, [h]: { label: h, totalWeight: 0, count: 0, t1: 0, t2: 0, t3: 0, t4: 0, dist: [0,0,0,0,0], isSummary: true, sub: lang.hubTotal }}), {});
+                filteredUsers.forEach(u => {
+                    const locUpper = u.location.toUpperCase();
+                    let hubCode = null;
+
+                    // DERMES SPECIFIC: Seperate 60 & 32
+                    if (brand === 'Dermes') {
+                        if (locUpper.includes("60")) hubCode = "60/F";
+                        else if (locUpper.includes("32")) hubCode = "32/F";
+                    }
+
+                    // Standard Matching if not already assigned
+                    if (!hubCode) {
+                        if (locUpper.includes("PK RD") || locUpper.includes("TST")) hubCode = "TST";
+                        else if (locUpper.includes("LP")) hubCode = "LP";
+                        else if (locUpper.includes("PP")) hubCode = "PP";
+                        else if (locUpper.includes("TS")) hubCode = "TS";
+                    }
+
+                    if(hubCode) {
+                        const s = getCowStatus(u.weight);
+                        const mIdx = window.MILESTONES.findIndex(m => m.min === s.min);
+                        hubMap[hubCode].totalWeight += u.weight; hubMap[hubCode].count += 1;
+                        hubMap[hubCode].t1 += u.task1; hubMap[hubCode].t2 += u.task2; hubMap[hubCode].t3 += u.task3; hubMap[hubCode].t4 += u.task4;
+                        if(mIdx !== -1) hubMap[hubCode].dist[mIdx]++;
+                    }
+                });
+                displayData = Object.values(hubMap).filter(h => h.count > 0).sort((a,b) => (b.totalWeight/b.count) - (a.totalWeight/a.count));
+            } 
+            else {
+                const floorMap = {};
+                filteredUsers.forEach(u => {
+                    const loc = u.location;
+                    if (!floorMap[loc]) floorMap[loc] = { label: loc, totalWeight: 0, count: 0, t1: 0, t2: 0, t3: 0, t4: 0, dist: [0,0,0,0,0], isSummary: false, sub: lang.floorDetail };
+                    const s = getCowStatus(u.weight);
+                    const mIdx = window.MILESTONES.findIndex(m => m.min === s.min);
+                    floorMap[loc].totalWeight += u.weight; floorMap[loc].count += 1;
+                    floorMap[loc].t1 += u.task1; floorMap[loc].t2 += u.task2; floorMap[loc].t3 += u.task3; floorMap[loc].t4 += u.task4;
+                    if(mIdx !== -1) floorMap[loc].dist[mIdx]++;
+                });
+                displayData = Object.values(floorMap).sort((a,b) => (b.totalWeight/b.count) - (a.totalWeight/a.count));
+            }
 
             const distColors = ['bg-gray-400', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-yellow-500'];
             const milestoneShortNames = ['瘦牛', '澳洲', '美國', '和牛', '金牛'];
 
-            container.innerHTML = sorted.length > 0 ? sorted.map((f, idx) => `
-                <div class="relative flex flex-col gap-4 p-5 pb-4 rounded-[2.5rem] bg-white border border-gray-100 shadow-xl overflow-hidden group">
-                    <div class="strength-bar ${f.s.barColor}" style="width: ${f.prg}%"></div>
+            container.innerHTML = displayData.length > 0 ? displayData.map((f, idx) => {
+                const avg = Math.round(f.totalWeight / f.count);
+                const s = getCowStatus(avg);
+                const next = getNextMilestone(avg);
+                let prg = 100; if(next) prg = Math.min(100, Math.max(0, ((avg - s.min) / (next.min - s.min)) * 100));
+
+                return `
+                <div class="relative flex flex-col gap-4 p-5 pb-4 rounded-[2.5rem] bg-white border ${f.isSummary ? 'border-blue-200 shadow-lg' : 'border-gray-100'} shadow-xl overflow-hidden group">
+                    <div class="strength-bar ${s.barColor}" style="width: ${prg}%"></div>
                     <div class="flex items-center gap-4 z-10 relative">
                         <div class="flex flex-col items-center min-w-[45px] shrink-0 text-center">
-                            <span class="w-10 h-10 flex items-center justify-center font-black rounded-full text-lg ${idx === 0 ? 'bg-yellow-400 text-white shadow-lg border-2 border-white' : idx === 1 ? 'bg-gray-300 text-white' : idx === 2 ? 'bg-orange-300 text-white' : 'bg-gray-100 text-gray-400'}">${idx + 1}</span>
-                            <span class="font-black text-gray-900 text-[11px] mt-1 uppercase tracking-tighter">${f.loc}</span>
+                            ${f.isSummary ? `<div class="bg-blue-600 text-white p-2 rounded-full shadow-lg"><i data-lucide="${f.label.length > 5 ? 'award' : 'map-pin'}" class="w-4 h-4"></i></div>` : `<span class="w-10 h-10 flex items-center justify-center font-black rounded-full text-lg ${idx === 0 ? 'bg-yellow-400 text-white shadow-lg border-2 border-white' : 'bg-gray-100 text-gray-400'}">${idx + 1}</span>`}
+                            <span class="font-black text-gray-900 text-[11px] mt-1 uppercase tracking-tighter">${f.label}</span>
                         </div>
-                        <div class="w-18 h-14 rounded-xl border-2 border-white overflow-hidden bg-white shrink-0 shadow-md flex items-center justify-center"><img src="${f.s.img}" class="w-full h-full object-contain"></div>
+                        <div class="w-18 h-14 rounded-xl border-2 border-white overflow-hidden bg-white shrink-0 shadow-md flex items-center justify-center"><img src="${s.img}" class="w-full h-full object-contain"></div>
                         <div class="flex-1 min-w-0 text-left">
-                            <div class="text-[9px] font-black uppercase tracking-widest ${f.s.color}">${f.s.title[window.currentLang]}</div>
-                            <div class="text-4xl font-black ${idx === 0 ? 'text-orange-600' : 'text-gray-800'} tracking-tighter leading-none">${f.avg}<span class="text-xs font-bold text-gray-400 uppercase ml-0.5">kg</span></div>
+                            <div class="text-[8px] font-black uppercase tracking-widest ${f.isSummary ? 'text-blue-600' : 'text-gray-400'}">${f.sub}</div>
+                            <div class="text-[9px] font-black uppercase tracking-widest ${s.color}">${s.title[window.currentLang]}</div>
+                            <div class="text-4xl font-black ${idx === 0 && !f.isSummary ? 'text-orange-600' : 'text-gray-800'} tracking-tighter leading-none">${avg}<span class="text-xs font-bold text-gray-400 uppercase ml-0.5">kg</span></div>
                         </div>
                         <div class="flex flex-col gap-1 items-end min-w-[85px] shrink-0 opacity-60 scale-90 origin-right">
                             <div class="flex gap-1.5"><span class="text-[9px]">👀${f.t1}</span> <span class="text-[9px]">🏪${f.t2}</span></div>
                             <div class="flex gap-1.5"><span class="text-[9px]">🧧${f.t3}</span> <span class="text-[9px]">🤝${f.t4}</span></div>
-                            <div class="text-[8px] font-black text-gray-300 tracking-tighter">HC:${f.total}</div>
+                            <div class="text-[8px] font-black text-gray-300 tracking-tighter">HC:${f.count}</div>
                         </div>
                     </div>
                     <div class="z-10 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
                         <div class="w-full h-5 flex rounded-full overflow-hidden bg-gray-200 shadow-inner">
                             ${f.dist.map((c, i) => {
                                 if(c === 0) return '';
-                                const pct = Math.round((c/f.total)*100);
+                                const pct = Math.round((c/f.count)*100);
                                 return `<div class="${distColors[i]} h-full border-r border-white/20 last:border-0 flex items-center justify-center transition-all duration-1000 overflow-hidden" style="width: ${pct}%">
                                     <span class="text-[7px] font-black text-white leading-none truncate px-0.5 whitespace-nowrap">${milestoneShortNames[i]}: ${c} (${pct}%)</span>
                                 </div>`;
                             }).join('')}
                         </div>
                     </div>
-                </div>`).join('') : `<p class="text-gray-400 text-xs italic text-center py-20">沒有數據。</p>`;
+                </div>`;
+            }).join('') : `<p class="text-gray-400 text-xs italic text-center py-20">沒有數據。</p>`;
+            lucide.createIcons(); 
         }
 
         function populateFilterOptions() {
@@ -461,8 +504,9 @@
                 const data = await response.json();
                 window.USERS = data.map(item => {
                     const nj = getProp(item, ["nj", "NJ"]);
-                    const stats = calculateStats(parseInt(getProp(item, ["task1", "Task1"]))||0, parseInt(getProp(item, ["task2", "Task2"]))||0, parseInt(getProp(item, ["task3", "Task3"]))||0, parseInt(getProp(item, ["task4", "Task4"]))||0);
-                    return { id: parseInt(getProp(item, ["id", "ID"])) || 0, name: getProp(item, ["name", "Name"]), brand: getProp(item, ["brand", "Brand"]), location: getProp(item, ["location", "Location"]), task1: parseInt(getProp(item, ["task1", "Task1"]))||0, task2: parseInt(getProp(item, ["task2", "Task2"]))||0, task3: parseInt(getProp(item, ["task3", "Task3"]))||0, task4: parseInt(getProp(item, ["task4", "Task4"]))||0, feeds: stats.totalFeeds, weight: stats.weight, nj: nj };
+                    const t1 = parseInt(getProp(item, ["task1", "Task1"]))||0, t2 = parseInt(getProp(item, ["task2", "Task2"]))||0, t3 = parseInt(getProp(item, ["task3", "Task3"]))||0, t4 = parseInt(getProp(item, ["task4", "Task4"]))||0;
+                    const stats = calculateStats(t1, t2, t3, t4);
+                    return { id: parseInt(getProp(item, ["id", "ID"])) || 0, name: getProp(item, ["name", "Name"]), brand: getProp(item, ["brand", "Brand"]), location: getProp(item, ["location", "Location"]), task1: t1, task2: t2, task3: t3, task4: t4, feeds: stats.totalFeeds, weight: stats.weight, nj: nj };
                 }).filter(u => u.name).sort((a, b) => b.weight - a.weight);
                 updateUI(); 
             } catch (error) { console.error("Fetch error:", error); if(loading) loading.innerHTML = `<p class="text-red-500 font-black px-6 text-sm italic text-center">數據讀取失敗。</p>`; } finally { if (loading) loading.classList.add('hidden'); }
@@ -482,6 +526,18 @@
                 grid.appendChild(card);
             });
         }
+
+        function changeLanguage(lang) {
+            window.currentLang = lang;
+            if(document.getElementById('btn-zh')) document.getElementById('btn-zh').className = `px-4 py-1.5 rounded-full text-sm font-black transition-all ${lang === 'zh' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500'}`;
+            if(document.getElementById('btn-en')) document.getElementById('btn-en').className = `px-4 py-1.5 rounded-full text-sm font-black transition-all ${lang === 'en' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500'}`;
+            updateUI();
+        }
+
+        const bFlt = document.getElementById('brand-filter'), lFlt = document.getElementById('location-filter'), uSlt = document.getElementById('user-select');
+        if(bFlt) bFlt.addEventListener('change', () => { populateFilterOptions(); populateUserSelect(); });
+        if(lFlt) lFlt.addEventListener('change', populateUserSelect);
+        if(uSlt) uSlt.addEventListener('change', (e) => updateUserCard(e.target.value));
 
         fetchLeaderboardData();
     </script>
