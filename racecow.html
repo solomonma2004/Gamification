@@ -150,25 +150,43 @@
             "Reenex": "#991b1b", // Red
             "Elyze": "#4ade80"   // Green
         };
+        
+        // GLOBAL HELPERS
+        const getBrandGif = (brand) => {
+            return BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
+        };
 
-        // Fallback Sample Data (Updated with Hub, Floor[Shop] and NJ)
+        const formatMiles = (val) => `${val.toFixed(1)} 英里`;
+        const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'HKD', maximumFractionDigits: 0 }).format(val);
+
+        const getRacerBreakdown = (racer) => {
+            if (!racer) return null;
+            return {
+                pnPaidTrial: racer.trial_qty || 0,
+                pnPackage: racer.package_sales || 0, 
+                combo: racer.combo_qty || 0,
+                plla: racer.plla_qty || 0,
+                device: racer.device_qty || 0,
+            };
+        };
+
+        // Fallback Sample Data
         const SAMPLE_RACERS = [
             { id: 1, name: "Sarah Miller", brand: "Dermes", hub: "Kln", floor: "D 35/F TS (A)", nj: "Y", trial_qty: 4, package_sales: 20000, combo_qty: 2, plla_qty: 3, polyca_qty: 3, device_qty: 0, sales: 12.5 },
             { id: 2, name: "Jessica Wilson", brand: "Reenex", hub: "HK", floor: "R 18/F PP", nj: "N", trial_qty: 10, package_sales: 50000, combo_qty: 5, plla_qty: 6, polyca_qty: 0, device_qty: 1, sales: 45.2 },
             { id: 3, name: "Elena Rodriguez", brand: "Elyze", hub: "Kln", floor: "E TST", nj: "N", trial_qty: 2, package_sales: 10000, combo_qty: 1, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 9.8 },
-            { id: 4, name: "Michelle Chang", brand: "Dermes", hub: "Kln", floor: "D LP", nj: "Y", trial_qty: 6, package_sales: 30000, combo_qty: 3, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 26.5 },
+            { id: 4, name: "Michelle Chang", brand: "Dermes", hub: "LP 60", floor: "D LP 60 AB", nj: "Y", trial_qty: 6, package_sales: 30000, combo_qty: 3, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 26.5 },
             { id: 5, name: "Anna Patel", brand: "Reenex", hub: "Kln", floor: "R TS", nj: "N", trial_qty: 12, package_sales: 60000, combo_qty: 6, plla_qty: 9, polyca_qty: 6, device_qty: 2, sales: 62.5 },
             { id: 6, name: "Lisa Wang", brand: "Elyze", hub: "HK", floor: "E PP", nj: "N", trial_qty: 8, package_sales: 40000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 31.0 },
             { id: 7, name: "Tiffany Baker", brand: "Dermes", hub: "Kln", floor: "D PK", nj: "Y", trial_qty: 2, package_sales: 5000, combo_qty: 1, plla_qty: 0, polyca_qty: 0, device_qty: 0, sales: 8.2 },
             { id: 8, name: "Kelly Sato", brand: "Reenex", hub: "Kln", floor: "R LP", nj: "N", trial_qty: 4, package_sales: 25000, combo_qty: 2, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 19.5 },
             { id: 9, name: "Amanda Lewis", brand: "Elyze", hub: "Kln", floor: "E TS", nj: "N", trial_qty: 3, package_sales: 15000, combo_qty: 0, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 11.0 },
-            { id: 10, name: "Jenny T.", brand: "Dermes", hub: "HK", floor: "D PP", nj: "Y", trial_qty: 5, package_sales: 22000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 22.0 }
+            { id: 10, name: "Jenny T.", brand: "Dermes", hub: "LP 32", floor: "D LP 32", nj: "Y", trial_qty: 5, package_sales: 22000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 22.0 }
         ];
 
         // --- VISUAL COMPONENTS ---
 
         const F1Card = ({ children, className = "", theme }) => (
-            // Added transition-transform and hover:scale for fun interaction
             <div className={`${theme.cardBg} rounded-3xl overflow-hidden relative group hover:scale-[1.02] transition-all duration-300 ${className}`}>
                 {children}
             </div>
@@ -180,9 +198,6 @@
             // Scale ensuring landmarks visible (at least 85 miles now, or leader * 1.35)
             const trackMax = Math.max(maxSales * 1.35, 85); 
             
-            const formatMiles = (val) => `${val.toFixed(1)} 英里`;
-            const getBrandGif = (brand) => BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
-
             const racerCount = data.length || 1;
             // Compact Mode: Reduce lane height to 65px per racer (approx) - MORE COMPACT
             // Minimum track height 300px
@@ -399,7 +414,7 @@
             
             const theme = THEME; 
 
-            // Derived Lists
+            // Derived Lists for Scorecard Filters
             const uniqueHubs = useMemo(() => {
                 let filtered = racers;
                 if (scBrand !== "ALL") filtered = filtered.filter(r => r.brand === scBrand);
@@ -412,6 +427,23 @@
                 if (scHub !== "ALL") filtered = filtered.filter(r => r.hub === scHub);
                 return [...new Set(filtered.map(r => r.floor))].sort();
             }, [racers, scBrand, scHub]);
+
+            // Define scAvailableRacers
+            const scAvailableRacers = useMemo(() => {
+                return racers.filter(r => {
+                    const matchBrand = scBrand === "ALL" || r.brand === scBrand;
+                    const matchHub = scHub === "ALL" || r.hub === scHub;
+                    const matchFloor = scFloor === "ALL" || r.floor === scFloor;
+                    return matchBrand && matchHub && matchFloor;
+                }).sort((a, b) => a.name.localeCompare(b.name));
+            }, [racers, scBrand, scHub, scFloor]);
+
+            useEffect(() => {
+                if (scAvailableRacers.length > 0) {
+                    const exists = scAvailableRacers.find(r => r.id.toString() === scRacerId);
+                    if (!exists) setScRacerId(scAvailableRacers[0].id.toString());
+                } else { setScRacerId(""); }
+            }, [scAvailableRacers, scRacerId]);
 
             const fetchData = () => {
                 if (!GOOGLE_SCRIPT_URL) return;
@@ -431,8 +463,6 @@
                             if (typeof val === 'string') return parseFloat(val.replace(/[$,]/g, '')) || 0;
                             return 0;
                         };
-                        
-                        // Robust normalization for Brand
                         const normalizeBrand = (str) => {
                             if (!str) return null;
                             const lower = str.trim().toLowerCase();
@@ -441,19 +471,21 @@
                             if (lower.includes('elyze') || lower.startsWith('e')) return 'Elyze';
                             return null;
                         };
-
                         const deriveBrand = (str) => {
                             if (!str) return "Unknown";
-                            // Try basic start char check again if normalization failed on raw brand column
                             const firstChar = str.trim().charAt(0).toUpperCase();
                             if (firstChar === 'D') return "Dermes";
                             if (firstChar === 'R') return "Reenex";
                             if (firstChar === 'E') return "Elyze";
                             return "Unknown";
                         }
-                        const deriveHub = (str) => {
+                        const deriveHub = (str, brand) => {
                             if (!str) return "General";
                             const s = str.toUpperCase();
+                            if (brand === 'Dermes' && s.includes('LP')) {
+                                if (s.includes('60')) return 'LP 60';
+                                if (s.includes('32')) return 'LP 32';
+                            }
                             if (s.includes('TS')) return 'TS';
                             if (s.includes('LP')) return 'LP';
                             if (s.includes('PP')) return 'PP';
@@ -474,16 +506,15 @@
                             const totalMiles = milesTrial + milesPackage + milesCombo + milesPlla + milesDevice;
                             const njValue = row.nj ? row.nj.toUpperCase() : 'N';
                             let rawFloorStr = row.floor || row.shop || "HQ";
-                            
-                            // 1. Try to get brand from row.brand first (normalized)
                             let brand = normalizeBrand(row.brand);
-                            
-                            // 2. If not found, try to derive from floor/shop string
                             if (!brand) brand = deriveBrand(rawFloorStr);
-                            
                             let hub = row.hub;
-                            if (!hub) hub = deriveHub(rawFloorStr);
-                            
+                            let derivedHub = deriveHub(rawFloorStr, brand);
+                            if (brand === 'Dermes' && (derivedHub === 'LP 60' || derivedHub === 'LP 32')) {
+                                hub = derivedHub;
+                            } else if (!hub) {
+                                hub = derivedHub;
+                            }
                             return {
                                 id: index + 1, name: row.name, brand: brand, hub: hub, floor: rawFloorStr, nj: njValue,
                                 trial_qty: trialQty, package_sales: packageSales, combo_qty: comboQty, plla_qty: pllaQty, device_qty: deviceQty,
@@ -499,49 +530,38 @@
 
             useEffect(() => { fetchData(); const interval = setInterval(fetchData, 30000); return () => clearInterval(interval); }, []);
 
+            // Define sortedGlobal HERE, before scRacerId usage
             const sortedGlobal = useMemo(() => [...racers].sort((a, b) => b.sales - a.sales), [racers]);
             const top3 = sortedGlobal.slice(0, 3);
             
-            const getTop5ByBrand = (brandName) => racers.filter(r => r.brand === brandName).sort((a, b) => b.sales - a.sales).slice(0, 5);
-            const top15Combined = [...getTop5ByBrand("Dermes"), ...getTop5ByBrand("Reenex"), ...getTop5ByBrand("Elyze")].sort((a, b) => b.sales - a.sales);
+            // --- FILTERED DATA FOR ALL SECTIONS ---
+            const filteredRacers = useMemo(() => {
+                if (masterBrandFilter === "ALL") return racers;
+                return racers.filter(r => r.brand === masterBrandFilter);
+            }, [racers, masterBrandFilter]);
             
-            const brands = [...new Set(racers.map(r => r.brand))];
-            
-            const scAvailableRacers = useMemo(() => {
-                return racers.filter(r => {
-                    const matchBrand = scBrand === "ALL" || r.brand === scBrand;
-                    const matchHub = scHub === "ALL" || r.hub === scHub;
-                    const matchFloor = scFloor === "ALL" || r.floor === scFloor;
-                    return matchBrand && matchHub && matchFloor;
-                }).sort((a, b) => a.name.localeCompare(b.name));
-            }, [racers, scBrand, scHub, scFloor]);
+            // Track Data Calculation
+            const trackData = useMemo(() => {
+                if (masterBrandFilter !== "ALL") {
+                    // Show Top 10 for specific brand
+                    return [...filteredRacers].sort((a, b) => b.sales - a.sales).slice(0, 10);
+                } else {
+                    // Show Top 5 from each brand for ALL
+                    const getTop5 = (b) => racers.filter(r => r.brand === b).sort((a, b) => b.sales - a.sales).slice(0, 5);
+                    return [...getTop5("Dermes"), ...getTop5("Reenex"), ...getTop5("Elyze")].sort((a, b) => b.sales - a.sales);
+                }
+            }, [racers, filteredRacers, masterBrandFilter]);
 
-            useEffect(() => {
-                if (scAvailableRacers.length > 0) {
-                    const exists = scAvailableRacers.find(r => r.id.toString() === scRacerId);
-                    if (!exists) setScRacerId(scAvailableRacers[0].id.toString());
-                } else { setScRacerId(""); }
-            }, [scAvailableRacers, scRacerId]);
+            const brands = ["Dermes", "Reenex", "Elyze"]; // Fixed list for UI order
 
-            const formatMiles = (val) => `${val.toFixed(1)} 英里`;
-            const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'HKD', maximumFractionDigits: 0 }).format(val);
-            const getBrandGif = (brand) => BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
-            const getRacerBreakdown = (racer) => {
-                if (!racer) return null;
-                return { pnPaidTrial: racer.trial_qty || 0, pnPackage: racer.package_sales || 0, combo: racer.combo_qty || 0, plla: racer.plla_qty || 0, device: racer.device_qty || 0 };
-            };
-
+            // --- LEADERBOARD STATS ---
             const filterByNJ = (r) => lbNJFilter === 'ALL' || r.nj === lbNJFilter;
 
-            // --- REFACTORED LEADERBOARD STATS ---
-
-            // 1. BRAND STATS (Master filter only applies if specific brand selected to show single bar, else shows all)
+            // 1. BRAND STATS
             const brandStats = useMemo(() => {
                 const map = {};
                 racers.filter(filterByNJ).forEach(r => {
-                    // Apply Master Brand Filter
                     if (masterBrandFilter !== "ALL" && r.brand !== masterBrandFilter) return;
-
                     if (!map[r.brand]) map[r.brand] = { name: r.brand, miles: 0, count: 0, color: BRAND_COLORS[r.brand] };
                     map[r.brand].miles += r.sales;
                     map[r.brand].count += 1;
@@ -549,18 +569,12 @@
                 return Object.values(map).sort((a, b) => b.miles - a.miles);
             }, [racers, lbNJFilter, masterBrandFilter]);
 
-            // 2. HUB STATS (Grouped by Hub Name, but filtered by Master Brand)
+            // 2. HUB STATS
             const hubStats = useMemo(() => {
                 const map = {};
-                racers.filter(filterByNJ).forEach(r => {
-                    // Apply Master Brand Filter
-                    if (masterBrandFilter !== "ALL" && r.brand !== masterBrandFilter) return;
-
+                filteredRacers.filter(filterByNJ).forEach(r => {
                     const hubName = r.hub || "Unknown";
-                    // If showing ALL brands, split Hubs by brand (e.g. Dermes Kln vs Reenex Kln)
-                    // If showing ONE brand, just show Hubs for that brand
-                    const key = masterBrandFilter === "ALL" ? `${r.brand} - ${hubName}` : hubName;
-                    
+                    const key = `${r.brand}_${hubName}`;
                     if (!map[key]) {
                         map[key] = { 
                             name: hubName, 
@@ -574,16 +588,13 @@
                     map[key].count += 1;
                 });
                 return Object.values(map).sort((a, b) => b.miles - a.miles);
-            }, [racers, lbNJFilter, masterBrandFilter]);
+            }, [filteredRacers, lbNJFilter, masterBrandFilter]);
 
             // 3. FLOOR STATS
             const floorStats = useMemo(() => {
                 const map = {};
-                racers.filter(filterByNJ).forEach(r => {
-                    // Apply Master Brand Filter
-                    if (masterBrandFilter !== "ALL" && r.brand !== masterBrandFilter) return;
-
-                    const key = r.floor; // Floor names are usually unique enough (e.g. D 35/F TS (A))
+                filteredRacers.filter(filterByNJ).forEach(r => {
+                    const key = r.floor;
                     if (!map[key]) {
                         map[key] = { 
                             name: r.floor, 
@@ -597,7 +608,7 @@
                     map[key].count += 1;
                 });
                 return Object.values(map).sort((a, b) => b.miles - a.miles);
-            }, [racers, masterBrandFilter, lbNJFilter]);
+            }, [filteredRacers, lbNJFilter]);
 
             const getBrandColorClass = (b) => {
                 if (b === 'Dermes') return 'bg-orange-500';
@@ -607,8 +618,9 @@
             };
 
             const renderLeaderboardCard = (item, idx, type) => {
+                // Dynamic max for bar chart
                 const list = type === 'BRAND' ? brandStats : type === 'HUB' ? hubStats : floorStats;
-                const maxMiles = list[0]?.miles || 1;
+                const maxMiles = Math.max(...list.map(i => i.miles), 1);
                 const percentage = (item.miles / maxMiles) * 100;
                 
                 let badgeColor = 'bg-slate-200 text-slate-500';
@@ -616,10 +628,10 @@
                 if (idx === 1) badgeColor = 'bg-slate-400 text-white';
                 if (idx === 2) badgeColor = 'bg-orange-400 text-white';
                 
-                let barColor = 'bg-purple-400';
-                if (item.brand === 'Dermes' || item.name === 'Dermes') barColor = 'bg-orange-400';
-                if (item.brand === 'Reenex' || item.name === 'Reenex') barColor = 'bg-red-500';
-                if (item.brand === 'Elyze' || item.name === 'Elyze') barColor = 'bg-green-500';
+                let barColor = 'bg-slate-400';
+                if (item.brand === 'Dermes') barColor = 'bg-orange-400';
+                if (item.brand === 'Reenex') barColor = 'bg-red-500';
+                if (item.brand === 'Elyze') barColor = 'bg-green-500';
 
                 return (
                     <F1Card key={`${type}_${item.name}_${item.brand || ''}`} theme={theme} className="p-4 bg-white hover:-translate-y-1 hover:shadow-lg transition-all relative overflow-hidden">
@@ -632,15 +644,15 @@
                                         <h4 className="font-bold text-lg text-slate-800 leading-none flex items-center gap-2">
                                             {item.displayName || item.name}
                                         </h4>
-                                        {/* Display Brand Badge for HUB and FLOOR views */}
-                                        {(type === 'HUB' || type === 'FLOOR') && (
+                                        {/* Display Brand Badge only if showing ALL brands to distinguish */}
+                                        {masterBrandFilter === "ALL" && type !== 'BRAND' && (
                                             <div className="mt-1">
                                                 <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white ${getBrandColorClass(item.brand)}`}>
                                                     {item.brand}
                                                 </span>
-                                                {type === 'FLOOR' && <span className="ml-1 text-[10px] text-slate-400 font-bold uppercase">{item.hub}</span>}
                                             </div>
                                         )}
+                                        {type === 'FLOOR' && <div className="mt-0.5 text-[10px] text-slate-400 font-bold uppercase">{item.hub}</div>}
                                     </div>
                                 </div>
                                 <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">{item.count} 人</div>
@@ -671,6 +683,15 @@
             const reenexPct = (reenexTotal / grandTotal) * 100;
             const elyzePct = (elyzeTotal / grandTotal) * 100;
 
+            const activeRacersCount = filteredRacers.filter(r => r.sales >= 1).length;
+
+            useEffect(() => {
+                if (scAvailableRacers.length > 0) {
+                    const exists = scAvailableRacers.find(r => r.id.toString() === scRacerId);
+                    if (!exists) setScRacerId(scAvailableRacers[0].id.toString());
+                } else { setScRacerId(""); }
+            }, [scAvailableRacers, scRacerId]);
+
             return (
                 <div className={`min-h-screen ${theme.bgClass} font-cute selection:bg-yellow-200 selection:text-orange-900 relative transition-colors duration-1000`}>
                 <section className="relative w-full bg-white shadow-xl z-20 border-b-8 border-green-500">
@@ -688,34 +709,49 @@
                                 <div className="flex justify-between items-start relative z-10 mb-2">
                                     <div>
                                         <h3 className={`${theme.textSub} text-2xl font-bold tracking-wider uppercase mb-1`}>總獲得英里</h3>
-                                        <div className={`text-6xl font-cute font-black ${theme.textMain} leading-none tracking-tight`}>{racers.reduce((a,b)=>a+b.sales,0).toFixed(1)}<span className="text-xl ml-1 font-bold opacity-50">MILES</span></div>
+                                        <div className={`text-6xl font-cute font-black ${theme.textMain} leading-none tracking-tight`}>{filteredRacers.reduce((a,b)=>a+b.sales,0).toFixed(1)}<span className="text-xl ml-1 font-bold opacity-50">MILES</span></div>
                                     </div>
                                     <div className={`p-3 rounded-2xl shadow-sm bg-green-100 text-green-600`}><Award className="animate-bounce-slow" size={28} /></div>
                                 </div>
-                                <div className="w-full h-6 rounded-full overflow-hidden mb-4 border border-slate-200 flex shadow-inner relative">
-                                    <div className="h-full bg-orange-500 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${dermesPct}%` }}>{dermesPct > 10 && `${dermesPct.toFixed(0)}%`}</div>
-                                    <div className="h-full bg-red-600 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${reenexPct}%` }}>{reenexPct > 10 && `${reenexPct.toFixed(0)}%`}</div>
-                                    <div className="h-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${elyzePct}%` }}>{elyzePct > 10 && `${elyzePct.toFixed(0)}%`}</div>
+                                <div className="w-full h-4 rounded-full overflow-hidden mb-4 border border-slate-200 flex shadow-inner relative bg-slate-100">
+                                    <div className={`h-full rounded-full transition-all duration-500 ${
+                                        masterBrandFilter === 'Dermes' ? 'bg-orange-500' :
+                                        masterBrandFilter === 'Reenex' ? 'bg-red-600' :
+                                        masterBrandFilter === 'Elyze' ? 'bg-green-500' : 'bg-slate-400'
+                                    }`} style={{ width: '100%' }}></div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 relative z-10">
-                                    {[{ name: 'Dermes', bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100', val: dermesTotal }, { name: 'Reenex', bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-100', val: reenexTotal }, { name: 'Elyze', bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-100', val: elyzeTotal }].map(brand => (
-                                        <div key={brand.name} className={`${brand.bg} rounded-xl p-2 text-center border ${brand.border} shadow-sm hover:scale-105 transition-transform`}><div className={`text-[10px] ${brand.text} font-bold uppercase tracking-wide opacity-80`}>{brand.name}</div><div className={`font-cute font-bold ${brand.text} text-xl leading-none mt-0.5`}>{brand.val.toFixed(1)}</div></div>
-                                    ))}
-                                </div>
+                                {/* Only show breakdown if ALL is selected */}
+                                {masterBrandFilter === "ALL" && (
+                                    <div className="grid grid-cols-3 gap-2 relative z-10">
+                                        {brands.map(b => {
+                                            const val = racers.filter(r => r.brand === b).reduce((a, sum) => a + sum.sales, 0);
+                                            let colors = { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-100' };
+                                            if (b === 'Dermes') colors = { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100' };
+                                            if (b === 'Reenex') colors = { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-100' };
+                                            if (b === 'Elyze') colors = { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-100' };
+                                            return (
+                                                <div key={b} className={`${colors.bg} rounded-xl p-2 text-center border ${colors.border} shadow-sm hover:scale-105 transition-transform`}>
+                                                    <div className={`text-[10px] ${colors.text} font-bold uppercase tracking-wide opacity-80`}>{b}</div>
+                                                    <div className={`font-cute font-bold ${colors.text} text-xl leading-none mt-0.5`}>{val.toFixed(1)}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                              </F1Card>
                              <F1Card theme={theme} className="p-6 flex flex-col justify-between h-full bg-white">
                                 <div className="flex justify-between items-start">
                                     <h3 className={`${theme.textSub} text-2xl font-bold tracking-wider`}>選手數量</h3>
                                     <div className="bg-blue-100 p-3 rounded-full text-blue-500"><Store className="animate-pulse" size={32} /></div>
                                 </div>
-                                <div className="flex items-end justify-between"><div className={`text-6xl font-cute font-bold ${theme.textMain}`}>{racers.length}</div><div className={`text-sm ${theme.textSub} mb-3 font-bold bg-slate-100 px-3 py-1 rounded-full`}>ON TRACK</div></div>
+                                <div className="flex items-end justify-between"><div className={`text-6xl font-cute font-bold ${theme.textMain}`}>{activeRacersCount} <span className="text-2xl text-slate-400">/ {filteredRacers.length}</span></div><div className={`text-sm ${theme.textSub} mb-3 font-bold bg-slate-100 px-3 py-1 rounded-full`}>ACTIVE / TOTAL</div></div>
                              </F1Card>
                              <F1Card theme={theme} className={`p-6 flex flex-col justify-between h-full bg-gradient-to-br from-yellow-50 to-orange-50 border-none`}>
                                 <div className="flex justify-between items-start">
                                     <h3 className={`text-orange-800 text-xl font-bold tracking-wider`}>目前第一名</h3>
                                     <div className="bg-yellow-300 p-3 rounded-full text-yellow-800 shadow-md"><Trophy className="animate-bounce" size={32} /></div>
                                 </div>
-                                <div><div className={`text-3xl font-bold text-orange-900 truncate mb-1`}>{top3[0]?.name}</div><div className={`text-orange-600 font-cute text-2xl font-bold`}>{top3[0]?.sales.toFixed(1)} MILES</div></div>
+                                <div><div className={`text-3xl font-bold text-orange-900 truncate mb-1`}>{top3[0]?.name || '-'}</div><div className={`text-orange-600 font-cute text-2xl font-bold`}>{top3[0]?.sales.toFixed(1) || 0} MILES</div></div>
                              </F1Card>
                         </div>
                     </section>
@@ -751,7 +787,7 @@
                             {leaderboardView === 'FLOOR' && floorStats.map((item, idx) => renderLeaderboardCard(item, idx, 'FLOOR'))}
                         </div>
                     </section>
-                    <section><ImpactfulStraightTrack data={top15Combined} title="各品牌 Top 5 激戰" theme={theme} height="1500px" /></section>
+                    <section><ImpactfulStraightTrack data={trackData} title="各品牌 Top 5 激戰" theme={theme} height="1500px" /></section>
                     <section className="grid grid-cols-1 gap-6">
                         <div className="relative">
                              <div className="text-center mb-6"><h3 className={`text-2xl md:text-3xl font-cute ${theme.textMain} font-bold flex items-center justify-center gap-3`}><span className="bg-green-100 p-1.5 rounded-full"><Info className="text-green-600" size={20} /></span> 加速攻略</h3><p className={`${theme.textSub} font-cute text-base mt-1`}>掌握以下五大法則，助力肥牛飛速衝刺！🚀</p></div>
