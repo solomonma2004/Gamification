@@ -132,6 +132,9 @@
         const Gift = (props) => <IconBase {...props}><polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><line x1="12" y1="22" x2="12" y2="7" /><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" /></IconBase>;
         const Calendar = (props) => <IconBase {...props}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></IconBase>;
         const Building = (props) => <IconBase {...props}><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><line x1="9" y1="22" x2="9" y2="22.01" /><line x1="15" y1="22" x2="15" y2="22.01" /><line x1="12" y1="22" x2="12" y2="22.01" /><line x1="12" y1="2" x2="12" y2="4" /><line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="10" x2="20" y2="10" /><line x1="4" y1="14" x2="20" y2="14" /><line x1="4" y1="18" x2="20" y2="18" /></IconBase>;
+        const User = (props) => <IconBase {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
+        const MapPin = (props) => <IconBase {...props}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></IconBase>;
+        const Tag = (props) => <IconBase {...props}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></IconBase>;
 
         // --- CONFIGURATION ---
         
@@ -148,18 +151,18 @@
             "Elyze": "#4ade80"   // Green
         };
 
-        // Fallback Sample Data
+        // Fallback Sample Data (Updated with Hub, Floor[Shop] and NJ)
         const SAMPLE_RACERS = [
-            { id: 1, name: "Sarah Miller", brand: "Dermes", shop: "TS", trial_qty: 4, package_sales: 20000, combo_qty: 2, plla_qty: 3, polyca_qty: 3, device_qty: 0, sales: 12.5 },
-            { id: 2, name: "Jessica Wilson", brand: "Reenex", shop: "PP", trial_qty: 10, package_sales: 50000, combo_qty: 5, plla_qty: 6, polyca_qty: 0, device_qty: 1, sales: 45.2 },
-            { id: 3, name: "Elena Rodriguez", brand: "Elyze", shop: "TST", trial_qty: 2, package_sales: 10000, combo_qty: 1, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 9.8 },
-            { id: 4, name: "Michelle Chang", brand: "Dermes", shop: "LP", trial_qty: 6, package_sales: 30000, combo_qty: 3, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 26.5 },
-            { id: 5, name: "Anna Patel", brand: "Reenex", shop: "TS", trial_qty: 12, package_sales: 60000, combo_qty: 6, plla_qty: 9, polyca_qty: 6, device_qty: 2, sales: 62.5 },
-            { id: 6, name: "Lisa Wang", brand: "Elyze", shop: "PP", trial_qty: 8, package_sales: 40000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 31.0 },
-            { id: 7, name: "Tiffany Baker", brand: "Dermes", shop: "TST", trial_qty: 2, package_sales: 5000, combo_qty: 1, plla_qty: 0, polyca_qty: 0, device_qty: 0, sales: 8.2 },
-            { id: 8, name: "Kelly Sato", brand: "Reenex", shop: "LP", trial_qty: 4, package_sales: 25000, combo_qty: 2, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 19.5 },
-            { id: 9, name: "Amanda Lewis", brand: "Elyze", shop: "TS", trial_qty: 3, package_sales: 15000, combo_qty: 0, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 11.0 },
-            { id: 10, name: "Jenny T.", brand: "Dermes", shop: "PP", trial_qty: 5, package_sales: 22000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 22.0 }
+            { id: 1, name: "Sarah Miller", brand: "Dermes", hub: "Kln", floor: "D 35/F TS (A)", nj: "Y", trial_qty: 4, package_sales: 20000, combo_qty: 2, plla_qty: 3, polyca_qty: 3, device_qty: 0, sales: 12.5 },
+            { id: 2, name: "Jessica Wilson", brand: "Reenex", hub: "HK", floor: "R 18/F PP", nj: "N", trial_qty: 10, package_sales: 50000, combo_qty: 5, plla_qty: 6, polyca_qty: 0, device_qty: 1, sales: 45.2 },
+            { id: 3, name: "Elena Rodriguez", brand: "Elyze", hub: "Kln", floor: "E TST", nj: "N", trial_qty: 2, package_sales: 10000, combo_qty: 1, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 9.8 },
+            { id: 4, name: "Michelle Chang", brand: "Dermes", hub: "Kln", floor: "D LP", nj: "Y", trial_qty: 6, package_sales: 30000, combo_qty: 3, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 26.5 },
+            { id: 5, name: "Anna Patel", brand: "Reenex", hub: "Kln", floor: "R TS", nj: "N", trial_qty: 12, package_sales: 60000, combo_qty: 6, plla_qty: 9, polyca_qty: 6, device_qty: 2, sales: 62.5 },
+            { id: 6, name: "Lisa Wang", brand: "Elyze", hub: "HK", floor: "E PP", nj: "N", trial_qty: 8, package_sales: 40000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 31.0 },
+            { id: 7, name: "Tiffany Baker", brand: "Dermes", hub: "Kln", floor: "D PK", nj: "Y", trial_qty: 2, package_sales: 5000, combo_qty: 1, plla_qty: 0, polyca_qty: 0, device_qty: 0, sales: 8.2 },
+            { id: 8, name: "Kelly Sato", brand: "Reenex", hub: "Kln", floor: "R LP", nj: "N", trial_qty: 4, package_sales: 25000, combo_qty: 2, plla_qty: 0, polyca_qty: 3, device_qty: 0, sales: 19.5 },
+            { id: 9, name: "Amanda Lewis", brand: "Elyze", hub: "Kln", floor: "E TS", nj: "N", trial_qty: 3, package_sales: 15000, combo_qty: 0, plla_qty: 3, polyca_qty: 0, device_qty: 0, sales: 11.0 },
+            { id: 10, name: "Jenny T.", brand: "Dermes", hub: "HK", floor: "D PP", nj: "Y", trial_qty: 5, package_sales: 22000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 1, sales: 22.0 }
         ];
 
         // --- VISUAL COMPONENTS ---
@@ -188,8 +191,6 @@
             const VERTICAL_PADDING = 50;
 
             const computedHeight = Math.max((racerCount * LANE_HEIGHT) + (VERTICAL_PADDING * 2), 300);
-            
-            // Percentage of one lane relative to total height (NOT USED for positioning anymore, using pixels for better control)
             
             return (
                 /* Main Track Container - rounded-3xl for cute look */
@@ -382,178 +383,278 @@
             const [isLoading, setIsLoading] = useState(false);
             const [lastUpdated, setLastUpdated] = useState(null);
             const [fetchError, setFetchError] = useState(false);
-            const [currentTheme, setCurrentTheme] = useState('FARM'); // Default to Farm
             
             // Scorecard State
             const [scBrand, setScBrand] = useState("ALL");
-            const [scShop, setScShop] = useState("ALL");
+            const [scHub, setScHub] = useState("ALL");
+            const [scFloor, setScFloor] = useState("ALL");
             const [scRacerId, setScRacerId] = useState("");
 
-            // Floor Stats State
-            const [floorBrandFilter, setFloorBrandFilter] = useState("ALL");
+            // Leaderboard State
+            const [leaderboardView, setLeaderboardView] = useState("BRAND"); 
+            const [lbNJFilter, setLbNJFilter] = useState("ALL"); 
+            
+            // MASTER BRAND FILTER (Applies to all stats below)
+            const [masterBrandFilter, setMasterBrandFilter] = useState("ALL");
+            
+            const theme = THEME; 
 
-            const theme = THEME; // Use the single theme
+            // Derived Lists
+            const uniqueHubs = useMemo(() => {
+                let filtered = racers;
+                if (scBrand !== "ALL") filtered = filtered.filter(r => r.brand === scBrand);
+                return [...new Set(filtered.map(r => r.hub))].sort();
+            }, [racers, scBrand]);
+            
+            const uniqueFloors = useMemo(() => {
+                let filtered = racers;
+                if (scBrand !== "ALL") filtered = filtered.filter(r => r.brand === scBrand);
+                if (scHub !== "ALL") filtered = filtered.filter(r => r.hub === scHub);
+                return [...new Set(filtered.map(r => r.floor))].sort();
+            }, [racers, scBrand, scHub]);
 
-            // --- DATA FETCHING ---
             const fetchData = () => {
                 if (!GOOGLE_SCRIPT_URL) return;
-                
                 setIsLoading(true);
                 setFetchError(false);
-                
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'GET',
-                    redirect: 'follow',
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                fetch(GOOGLE_SCRIPT_URL, { method: 'GET', redirect: 'follow' })
+                .then(response => { if (!response.ok) throw new Error(`HTTP error!`); return response.json(); })
                 .then(data => {
-                    console.log("Fetched Data:", data);
                     if (data && data.length > 0) {
                         const normalizeKeys = (obj) => {
                             const newObj = {};
-                            Object.keys(obj).forEach(key => {
-                                const newKey = key.toLowerCase().replace(/[\s_]/g, '');
-                                newObj[newKey] = obj[key];
-                            });
+                            Object.keys(obj).forEach(key => { newObj[key.toLowerCase().replace(/[\s_]/g, '')] = obj[key]; });
                             return newObj;
                         };
-
                         const parseNum = (val) => {
                             if (typeof val === 'number') return val;
                             if (typeof val === 'string') return parseFloat(val.replace(/[$,]/g, '')) || 0;
                             return 0;
                         };
-
-                        const newRacers = data
-                            .map((row) => normalizeKeys(row))
-                            .filter(row => row.name)
-                            .map((row, index) => {
-                                const trialQty = parseNum(row.trialqty);
-                                const packageSales = parseNum(row.packagesales);
-                                const comboQty = parseNum(row.comboqty);
-                                const pllaQty = parseNum(row.pllaqty);
-                                const polycaQty = parseNum(row.polycaqty);
-                                const deviceQty = parseNum(row.deviceqty);
-
-                                const milesTrial = trialQty * 2; 
-                                const milesPackage = Math.floor(packageSales / 10000) * 2; 
-                                const milesCombo = comboQty * 4; 
-                                const milesPlla = Math.floor(pllaQty / 2) * 2; 
-                                const milesDevice = deviceQty * 3; 
-
-                                const totalMiles = milesTrial + milesPackage + milesCombo + milesPlla + milesDevice;
-
-                                return {
-                                    id: index + 1,
-                                    name: row.name,
-                                    brand: row.brand || "Unknown",
-                                    shop: row.shop || "HQ", 
-                                    trial_qty: trialQty,
-                                    package_sales: packageSales,
-                                    combo_qty: comboQty,
-                                    plla_qty: pllaQty,
-                                    device_qty: deviceQty,
-                                    sales: totalMiles,
-                                    color: BRAND_COLORS[row.brand] || "#94a3b8"
-                                };
-                            });
                         
-                        setRacers(newRacers);
-                        setLastUpdated(new Date());
-                        setFetchError(false);
+                        // Robust normalization for Brand
+                        const normalizeBrand = (str) => {
+                            if (!str) return null;
+                            const lower = str.trim().toLowerCase();
+                            if (lower.includes('dermes') || lower.startsWith('d')) return 'Dermes';
+                            if (lower.includes('reenex') || lower.startsWith('r')) return 'Reenex';
+                            if (lower.includes('elyze') || lower.startsWith('e')) return 'Elyze';
+                            return null;
+                        };
+
+                        const deriveBrand = (str) => {
+                            if (!str) return "Unknown";
+                            // Try basic start char check again if normalization failed on raw brand column
+                            const firstChar = str.trim().charAt(0).toUpperCase();
+                            if (firstChar === 'D') return "Dermes";
+                            if (firstChar === 'R') return "Reenex";
+                            if (firstChar === 'E') return "Elyze";
+                            return "Unknown";
+                        }
+                        const deriveHub = (str) => {
+                            if (!str) return "General";
+                            const s = str.toUpperCase();
+                            if (s.includes('TS')) return 'TS';
+                            if (s.includes('LP')) return 'LP';
+                            if (s.includes('PP')) return 'PP';
+                            if (s.includes('TST') || s.includes('PK') || s.includes('RD')) return 'TST';
+                            return "General";
+                        }
+                        const newRacers = data.map((row) => normalizeKeys(row)).filter(row => row.name).map((row, index) => {
+                            const trialQty = parseNum(row.trialqty);
+                            const packageSales = parseNum(row.packagesales);
+                            const comboQty = parseNum(row.comboqty);
+                            const pllaQty = parseNum(row.pllaqty);
+                            const deviceQty = parseNum(row.deviceqty);
+                            const milesTrial = trialQty * 2; 
+                            const milesPackage = Math.floor(packageSales / 10000) * 2; 
+                            const milesCombo = comboQty * 4; 
+                            const milesPlla = Math.floor(pllaQty / 2) * 2; 
+                            const milesDevice = deviceQty * 3; 
+                            const totalMiles = milesTrial + milesPackage + milesCombo + milesPlla + milesDevice;
+                            const njValue = row.nj ? row.nj.toUpperCase() : 'N';
+                            let rawFloorStr = row.floor || row.shop || "HQ";
+                            
+                            // 1. Try to get brand from row.brand first (normalized)
+                            let brand = normalizeBrand(row.brand);
+                            
+                            // 2. If not found, try to derive from floor/shop string
+                            if (!brand) brand = deriveBrand(rawFloorStr);
+                            
+                            let hub = row.hub;
+                            if (!hub) hub = deriveHub(rawFloorStr);
+                            
+                            return {
+                                id: index + 1, name: row.name, brand: brand, hub: hub, floor: rawFloorStr, nj: njValue,
+                                trial_qty: trialQty, package_sales: packageSales, combo_qty: comboQty, plla_qty: pllaQty, device_qty: deviceQty,
+                                sales: totalMiles, color: BRAND_COLORS[brand] || "#94a3b8"
+                            };
+                        });
+                        setRacers(newRacers); setLastUpdated(new Date()); setFetchError(false);
                     }
                     setIsLoading(false);
                 })
-                .catch(err => {
-                    console.warn("Error fetching data (using sample data):", err);
-                    setFetchError(true);
-                    setIsLoading(false);
-                });
+                .catch(err => { setFetchError(true); setIsLoading(false); });
             };
 
-            useEffect(() => {
-                fetchData();
-                const interval = setInterval(fetchData, 30000);
-                return () => clearInterval(interval);
-            }, []);
+            useEffect(() => { fetchData(); const interval = setInterval(fetchData, 30000); return () => clearInterval(interval); }, []);
 
-            const sortedGlobal = [...racers].sort((a, b) => b.sales - a.sales);
+            const sortedGlobal = useMemo(() => [...racers].sort((a, b) => b.sales - a.sales), [racers]);
             const top3 = sortedGlobal.slice(0, 3);
             
-            const getTop5ByBrand = (brandName) => {
-                return racers
-                    .filter(r => r.brand === brandName)
-                    .sort((a, b) => b.sales - a.sales)
-                    .slice(0, 5);
-            };
-
-            const top5Dermes = getTop5ByBrand("Dermes");
-            const top5Reenex = getTop5ByBrand("Reenex");
-            const top5Elyze = getTop5ByBrand("Elyze");
-            const top15Combined = [...top5Dermes, ...top5Reenex, ...top5Elyze]
-                .sort((a, b) => b.sales - a.sales);
+            const getTop5ByBrand = (brandName) => racers.filter(r => r.brand === brandName).sort((a, b) => b.sales - a.sales).slice(0, 5);
+            const top15Combined = [...getTop5ByBrand("Dermes"), ...getTop5ByBrand("Reenex"), ...getTop5ByBrand("Elyze")].sort((a, b) => b.sales - a.sales);
             
             const brands = [...new Set(racers.map(r => r.brand))];
-            const shops = [...new Set(racers.map(r => r.shop))].sort();
-
+            
             const scAvailableRacers = useMemo(() => {
                 return racers.filter(r => {
                     const matchBrand = scBrand === "ALL" || r.brand === scBrand;
-                    const matchShop = scShop === "ALL" || r.shop === scShop;
-                    return matchBrand && matchShop;
+                    const matchHub = scHub === "ALL" || r.hub === scHub;
+                    const matchFloor = scFloor === "ALL" || r.floor === scFloor;
+                    return matchBrand && matchHub && matchFloor;
                 }).sort((a, b) => a.name.localeCompare(b.name));
-            }, [racers, scBrand, scShop]);
+            }, [racers, scBrand, scHub, scFloor]);
 
             useEffect(() => {
                 if (scAvailableRacers.length > 0) {
                     const exists = scAvailableRacers.find(r => r.id.toString() === scRacerId);
-                    if (!exists) {
-                        setScRacerId(scAvailableRacers[0].id.toString());
-                    }
-                } else {
-                    setScRacerId("");
-                }
+                    if (!exists) setScRacerId(scAvailableRacers[0].id.toString());
+                } else { setScRacerId(""); }
             }, [scAvailableRacers, scRacerId]);
 
             const formatMiles = (val) => `${val.toFixed(1)} 英里`;
             const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'HKD', maximumFractionDigits: 0 }).format(val);
-
-            const getBrandGif = (brand) => {
-                return BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
-            };
-
+            const getBrandGif = (brand) => BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
             const getRacerBreakdown = (racer) => {
                 if (!racer) return null;
-                return {
-                    pnPaidTrial: racer.trial_qty || 0,
-                    pnPackage: racer.package_sales || 0, 
-                    combo: racer.combo_qty || 0,
-                    plla: racer.plla_qty || 0,
-                    device: racer.device_qty || 0,
-                };
+                return { pnPaidTrial: racer.trial_qty || 0, pnPackage: racer.package_sales || 0, combo: racer.combo_qty || 0, plla: racer.plla_qty || 0, device: racer.device_qty || 0 };
             };
 
-            // Calculate floor stats
-            const floorStats = useMemo(() => {
+            const filterByNJ = (r) => lbNJFilter === 'ALL' || r.nj === lbNJFilter;
+
+            // --- REFACTORED LEADERBOARD STATS ---
+
+            // 1. BRAND STATS (Master filter only applies if specific brand selected to show single bar, else shows all)
+            const brandStats = useMemo(() => {
                 const map = {};
-                racers.forEach(r => {
-                    if (floorBrandFilter !== "ALL" && r.brand !== floorBrandFilter) return;
-                    if (!map[r.shop]) {
-                        map[r.shop] = { shop: r.shop, miles: 0, count: 0, brands: new Set() };
-                    }
-                    map[r.shop].miles += r.sales;
-                    map[r.shop].count += 1;
-                    map[r.shop].brands.add(r.brand);
+                racers.filter(filterByNJ).forEach(r => {
+                    // Apply Master Brand Filter
+                    if (masterBrandFilter !== "ALL" && r.brand !== masterBrandFilter) return;
+
+                    if (!map[r.brand]) map[r.brand] = { name: r.brand, miles: 0, count: 0, color: BRAND_COLORS[r.brand] };
+                    map[r.brand].miles += r.sales;
+                    map[r.brand].count += 1;
                 });
                 return Object.values(map).sort((a, b) => b.miles - a.miles);
-            }, [racers, floorBrandFilter]);
+            }, [racers, lbNJFilter, masterBrandFilter]);
 
-            // REWARD DATA
+            // 2. HUB STATS (Grouped by Hub Name, but filtered by Master Brand)
+            const hubStats = useMemo(() => {
+                const map = {};
+                racers.filter(filterByNJ).forEach(r => {
+                    // Apply Master Brand Filter
+                    if (masterBrandFilter !== "ALL" && r.brand !== masterBrandFilter) return;
+
+                    const hubName = r.hub || "Unknown";
+                    // If showing ALL brands, split Hubs by brand (e.g. Dermes Kln vs Reenex Kln)
+                    // If showing ONE brand, just show Hubs for that brand
+                    const key = masterBrandFilter === "ALL" ? `${r.brand} - ${hubName}` : hubName;
+                    
+                    if (!map[key]) {
+                        map[key] = { 
+                            name: hubName, 
+                            displayName: masterBrandFilter === "ALL" ? `${r.brand} ${hubName}` : hubName,
+                            miles: 0, 
+                            count: 0, 
+                            brand: r.brand 
+                        };
+                    }
+                    map[key].miles += r.sales;
+                    map[key].count += 1;
+                });
+                return Object.values(map).sort((a, b) => b.miles - a.miles);
+            }, [racers, lbNJFilter, masterBrandFilter]);
+
+            // 3. FLOOR STATS
+            const floorStats = useMemo(() => {
+                const map = {};
+                racers.filter(filterByNJ).forEach(r => {
+                    // Apply Master Brand Filter
+                    if (masterBrandFilter !== "ALL" && r.brand !== masterBrandFilter) return;
+
+                    const key = r.floor; // Floor names are usually unique enough (e.g. D 35/F TS (A))
+                    if (!map[key]) {
+                        map[key] = { 
+                            name: r.floor, 
+                            miles: 0, 
+                            count: 0, 
+                            brand: r.brand,
+                            hub: r.hub 
+                        };
+                    }
+                    map[key].miles += r.sales;
+                    map[key].count += 1;
+                });
+                return Object.values(map).sort((a, b) => b.miles - a.miles);
+            }, [racers, masterBrandFilter, lbNJFilter]);
+
+            const getBrandColorClass = (b) => {
+                if (b === 'Dermes') return 'bg-orange-500';
+                if (b === 'Reenex') return 'bg-red-600';
+                if (b === 'Elyze') return 'bg-green-600';
+                return 'bg-slate-400'; // Default gray for Unknown
+            };
+
+            const renderLeaderboardCard = (item, idx, type) => {
+                const list = type === 'BRAND' ? brandStats : type === 'HUB' ? hubStats : floorStats;
+                const maxMiles = list[0]?.miles || 1;
+                const percentage = (item.miles / maxMiles) * 100;
+                
+                let badgeColor = 'bg-slate-200 text-slate-500';
+                if (idx === 0) badgeColor = 'bg-yellow-400 text-yellow-900';
+                if (idx === 1) badgeColor = 'bg-slate-400 text-white';
+                if (idx === 2) badgeColor = 'bg-orange-400 text-white';
+                
+                let barColor = 'bg-purple-400';
+                if (item.brand === 'Dermes' || item.name === 'Dermes') barColor = 'bg-orange-400';
+                if (item.brand === 'Reenex' || item.name === 'Reenex') barColor = 'bg-red-500';
+                if (item.brand === 'Elyze' || item.name === 'Elyze') barColor = 'bg-green-500';
+
+                return (
+                    <F1Card key={`${type}_${item.name}_${item.brand || ''}`} theme={theme} className="p-4 bg-white hover:-translate-y-1 hover:shadow-lg transition-all relative overflow-hidden">
+                         <div className="absolute top-0 right-0 p-2 opacity-5"><Trophy size={80} className="text-slate-800" /></div>
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0 ${badgeColor}`}>{idx + 1}</div>
+                                    <div>
+                                        <h4 className="font-bold text-lg text-slate-800 leading-none flex items-center gap-2">
+                                            {item.displayName || item.name}
+                                        </h4>
+                                        {/* Display Brand Badge for HUB and FLOOR views */}
+                                        {(type === 'HUB' || type === 'FLOOR') && (
+                                            <div className="mt-1">
+                                                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white ${getBrandColorClass(item.brand)}`}>
+                                                    {item.brand}
+                                                </span>
+                                                {type === 'FLOOR' && <span className="ml-1 text-[10px] text-slate-400 font-bold uppercase">{item.hub}</span>}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">{item.count} 人</div>
+                            </div>
+                            <div className="flex items-end justify-between mb-1">
+                                <div className="text-3xl font-cute font-black text-slate-700">{item.miles.toFixed(1)} <span className="text-sm text-slate-400 font-bold">MILES</span></div>
+                                {type === 'BRAND' && <img src={getBrandGif(item.name)} className="h-8 w-auto object-contain" />}
+                            </div>
+                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div className={`h-full rounded-full ${barColor}`} style={{ width: `${percentage}%` }}></div></div>
+                        </div>
+                    </F1Card>
+                );
+            };
+
             const REWARDS = [
                 { miles: 20, title: "20英里", reward: "Celluion活性膠原喚膚組合 (Mask x 2 + Spray)", icon: "🎁", color: "blue" },
                 { miles: 30, title: "30英里", reward: "Celluion活性膠原喚膚組合 (Mask x 4 + Spray) + NeoStrata 更生活膚啫喱面膜 125ml", icon: "✨", color: "purple" },
@@ -562,415 +663,140 @@
                 { miles: 50, title: "50英里 (Top 3)", reward: "跑得最遠頭三名額外$1,000現金獎!", icon: "🏆", color: "yellow" }
             ];
 
-            // Brand Breakdown Calculations
             const dermesTotal = racers.filter(r => r.brand === 'Dermes').reduce((a, b) => a + b.sales, 0);
             const reenexTotal = racers.filter(r => r.brand === 'Reenex').reduce((a, b) => a + b.sales, 0);
             const elyzeTotal = racers.filter(r => r.brand === 'Elyze').reduce((a, b) => a + b.sales, 0);
-            const grandTotal = dermesTotal + reenexTotal + elyzeTotal || 1; // avoid division by zero
-
+            const grandTotal = dermesTotal + reenexTotal + elyzeTotal || 1; 
             const dermesPct = (dermesTotal / grandTotal) * 100;
             const reenexPct = (reenexTotal / grandTotal) * 100;
             const elyzePct = (elyzeTotal / grandTotal) * 100;
 
             return (
                 <div className={`min-h-screen ${theme.bgClass} font-cute selection:bg-yellow-200 selection:text-orange-900 relative transition-colors duration-1000`}>
-                
-                {/* --- SECTION 1: GAME POSTER --- */}
                 <section className="relative w-full bg-white shadow-xl z-20 border-b-8 border-green-500">
-                    <div className="w-full">
-                        <img 
-                        src="https://i.postimg.cc/90qwfFYV/jimeng-2026-01-17-3723-ji-zhi-pang-pang-de-niu-zai-zhuan-ye-sai-dao-shang-gun-dong-zhe-fa-guang-de-qiu-ti-jin-xing-bi-sai-qiu-ti-dai-biao-jiao-yuan-dan-bai-zeng-qiang-qiu-yi-ban-xian.png" 
-                        alt="Main Event Poster" 
-                        className="w-full h-auto object-cover block"
-                        />
-                    </div>
+                    <div className="w-full"><img src="https://i.postimg.cc/90qwfFYV/jimeng-2026-01-17-3723-ji-zhi-pang-pang-de-niu-zai-zhuan-ye-sai-dao-shang-gun-dong-zhe-fa-guang-de-qiu-ti-jin-xing-bi-sai-qiu-ti-dai-biao-jiao-yuan-dan-bai-zeng-qiang-qiu-yi-ban-xian.png" alt="Main Event Poster" className="w-full h-auto object-cover block" /></div>
                 </section>
-
                 <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-16 pb-24">
-
-                    {/* --- SECTION 2: STATS HUD (FUN & CUTE) --- */}
                     <section className="w-full">
                         <div className="text-center mb-8">
-                            <h1 className={`text-4xl md:text-7xl font-cute font-bold text-transparent bg-clip-text bg-gradient-to-br from-green-600 to-yellow-500 drop-shadow-sm mb-4 animate-wiggle`}>
-                            膠原飛輪跑 🐮
-                            </h1>
-                            <div className="inline-block bg-white text-green-600 px-8 py-2 rounded-full border-4 border-green-400 shadow-lg transform rotate-[-2deg] hover:rotate-[2deg] transition-transform">
-                                <span className="block text-xl md:text-2xl font-bold tracking-widest">全民競跑。人人每日二十英里</span>
-                            </div>
+                            <h1 className={`text-4xl md:text-7xl font-cute font-bold text-transparent bg-clip-text bg-gradient-to-br from-green-600 to-yellow-500 drop-shadow-sm mb-4 animate-wiggle`}>膠原飛輪跑 🐮</h1>
+                            <div className="inline-block bg-white text-green-600 px-8 py-2 rounded-full border-4 border-green-400 shadow-lg transform rotate-[-2deg] hover:rotate-[2deg] transition-transform"><span className="block text-xl md:text-2xl font-bold tracking-widest">全民競跑。人人每日二十英里</span></div>
                         </div>
-
-                        {/* TELEMETRY CARDS */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                             {/* Brand Strength Dashboard (Updated Title Size) */}
                              <F1Card theme={theme} className="p-5 flex flex-col justify-between h-full bg-white relative overflow-hidden">
-                                {/* Background Decoration */}
                                 <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full blur-3xl opacity-40 bg-green-300`}></div>
-                                
                                 <div className="flex justify-between items-start relative z-10 mb-2">
                                     <div>
-                                        {/* Increased text size from text-sm to text-2xl */}
                                         <h3 className={`${theme.textSub} text-2xl font-bold tracking-wider uppercase mb-1`}>總獲得英里</h3>
-                                        <div className={`text-6xl font-cute font-black ${theme.textMain} leading-none tracking-tight`}>
-                                            {racers.reduce((a,b)=>a+b.sales,0).toFixed(1)}
-                                            <span className="text-xl ml-1 font-bold opacity-50">MILES</span>
-                                        </div>
+                                        <div className={`text-6xl font-cute font-black ${theme.textMain} leading-none tracking-tight`}>{racers.reduce((a,b)=>a+b.sales,0).toFixed(1)}<span className="text-xl ml-1 font-bold opacity-50">MILES</span></div>
                                     </div>
-                                    <div className={`p-3 rounded-2xl shadow-sm bg-green-100 text-green-600`}>
-                                        <Award className="animate-bounce-slow" size={28} />
-                                    </div>
+                                    <div className={`p-3 rounded-2xl shadow-sm bg-green-100 text-green-600`}><Award className="animate-bounce-slow" size={28} /></div>
                                 </div>
-
-                                {/* Stacked Distribution Bar */}
                                 <div className="w-full h-6 rounded-full overflow-hidden mb-4 border border-slate-200 flex shadow-inner relative">
-                                    <div className="h-full bg-orange-500 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${dermesPct}%` }}>
-                                        {dermesPct > 10 && `${dermesPct.toFixed(0)}%`}
-                                    </div>
-                                    <div className="h-full bg-red-600 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${reenexPct}%` }}>
-                                        {reenexPct > 10 && `${reenexPct.toFixed(0)}%`}
-                                    </div>
-                                    <div className="h-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${elyzePct}%` }}>
-                                        {elyzePct > 10 && `${elyzePct.toFixed(0)}%`}
-                                    </div>
+                                    <div className="h-full bg-orange-500 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${dermesPct}%` }}>{dermesPct > 10 && `${dermesPct.toFixed(0)}%`}</div>
+                                    <div className="h-full bg-red-600 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${reenexPct}%` }}>{reenexPct > 10 && `${reenexPct.toFixed(0)}%`}</div>
+                                    <div className="h-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold transition-all duration-500" style={{ width: `${elyzePct}%` }}>{elyzePct > 10 && `${elyzePct.toFixed(0)}%`}</div>
                                 </div>
-                                
-                                {/* Compact Brand Breakdown */}
                                 <div className="grid grid-cols-3 gap-2 relative z-10">
-                                    {[
-                                        { name: 'Dermes', color: 'orange', bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100', val: dermesTotal },
-                                        { name: 'Reenex', color: 'red', bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-100', val: reenexTotal },
-                                        { name: 'Elyze', color: 'green', bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-100', val: elyzeTotal }
-                                    ].map(brand => (
-                                        <div key={brand.name} className={`${brand.bg} rounded-xl p-2 text-center border ${brand.border} shadow-sm hover:scale-105 transition-transform`}>
-                                            <div className={`text-[10px] ${brand.text} font-bold uppercase tracking-wide opacity-80`}>{brand.name}</div>
-                                            <div className={`font-cute font-bold ${brand.text} text-xl leading-none mt-0.5`}>{brand.val.toFixed(1)}</div>
-                                        </div>
+                                    {[{ name: 'Dermes', bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100', val: dermesTotal }, { name: 'Reenex', bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-100', val: reenexTotal }, { name: 'Elyze', bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-100', val: elyzeTotal }].map(brand => (
+                                        <div key={brand.name} className={`${brand.bg} rounded-xl p-2 text-center border ${brand.border} shadow-sm hover:scale-105 transition-transform`}><div className={`text-[10px] ${brand.text} font-bold uppercase tracking-wide opacity-80`}>{brand.name}</div><div className={`font-cute font-bold ${brand.text} text-xl leading-none mt-0.5`}>{brand.val.toFixed(1)}</div></div>
                                     ))}
                                 </div>
                              </F1Card>
-
-                             {/* Racers HUD (Updated Title Size) */}
                              <F1Card theme={theme} className="p-6 flex flex-col justify-between h-full bg-white">
                                 <div className="flex justify-between items-start">
-                                    {/* Increased text size from text-xl to text-2xl */}
                                     <h3 className={`${theme.textSub} text-2xl font-bold tracking-wider`}>選手數量</h3>
-                                    <div className="bg-blue-100 p-3 rounded-full text-blue-500">
-                                        <Store className="animate-pulse" size={32} />
-                                    </div>
+                                    <div className="bg-blue-100 p-3 rounded-full text-blue-500"><Store className="animate-pulse" size={32} /></div>
                                 </div>
-                                <div className="flex items-end justify-between">
-                                     <div className={`text-6xl font-cute font-bold ${theme.textMain}`}>{racers.length}</div>
-                                     <div className={`text-sm ${theme.textSub} mb-3 font-bold bg-slate-100 px-3 py-1 rounded-full`}>ON TRACK</div>
-                                </div>
+                                <div className="flex items-end justify-between"><div className={`text-6xl font-cute font-bold ${theme.textMain}`}>{racers.length}</div><div className={`text-sm ${theme.textSub} mb-3 font-bold bg-slate-100 px-3 py-1 rounded-full`}>ON TRACK</div></div>
                              </F1Card>
-
-                             {/* Top Leader HUD */}
                              <F1Card theme={theme} className={`p-6 flex flex-col justify-between h-full bg-gradient-to-br from-yellow-50 to-orange-50 border-none`}>
                                 <div className="flex justify-between items-start">
                                     <h3 className={`text-orange-800 text-xl font-bold tracking-wider`}>目前第一名</h3>
-                                    <div className="bg-yellow-300 p-3 rounded-full text-yellow-800 shadow-md">
-                                        <Trophy className="animate-bounce" size={32} />
-                                    </div>
+                                    <div className="bg-yellow-300 p-3 rounded-full text-yellow-800 shadow-md"><Trophy className="animate-bounce" size={32} /></div>
                                 </div>
-                                <div>
-                                    <div className={`text-3xl font-bold text-orange-900 truncate mb-1`}>{top3[0]?.name}</div>
-                                    <div className={`text-orange-600 font-cute text-2xl font-bold`}>{top3[0]?.sales.toFixed(1)} MILES</div>
-                                </div>
+                                <div><div className={`text-3xl font-bold text-orange-900 truncate mb-1`}>{top3[0]?.name}</div><div className={`text-orange-600 font-cute text-2xl font-bold`}>{top3[0]?.sales.toFixed(1)} MILES</div></div>
                              </F1Card>
                         </div>
                     </section>
-
-                    {/* --- NEW SECTION: FLOOR PERFORMANCE LEADERBOARD --- */}
                     <section className="w-full">
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-                            <h3 className={`text-2xl md:text-3xl font-cute ${theme.textMain} font-bold flex items-center gap-3`}>
-                                <span className="bg-purple-100 p-1.5 rounded-full"><Building className="text-purple-600" size={24} /></span> 樓層表現龍虎榜
-                            </h3>
-                            <div className="flex gap-2">
-                                {['ALL', 'Dermes', 'Reenex', 'Elyze'].map(b => (
-                                    <button
-                                        key={b}
-                                        onClick={() => setFloorBrandFilter(b)}
-                                        className={`px-4 py-1.5 rounded-full text-sm font-bold border-2 transition-all ${
-                                            floorBrandFilter === b 
-                                            ? 'bg-purple-500 text-white border-purple-600 shadow-md' 
-                                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                        }`}
-                                    >
-                                        {b === 'ALL' ? '全部' : b}
-                                    </button>
-                                ))}
+                            <div className="flex items-center gap-4">
+                                <h3 className={`text-2xl md:text-3xl font-cute ${theme.textMain} font-bold flex items-center gap-3`}><span className="bg-purple-100 p-1.5 rounded-full"><Trophy className="text-purple-600" size={24} /></span> 各級實力龍虎榜</h3>
+                                <div className="flex bg-slate-100 p-1 rounded-full shadow-inner">
+                                    {[{ id: 'BRAND', label: '品牌榜', icon: <Tag size={14} /> }, { id: 'HUB', label: '區域榜', icon: <MapPin size={14} /> }, { id: 'FLOOR', label: '樓層榜', icon: <Building size={14} /> }].map(tab => (
+                                        <button key={tab.id} onClick={() => setLeaderboardView(tab.id)} className={`flex items-center gap-1 px-4 py-2 rounded-full text-sm font-bold transition-all ${leaderboardView === tab.id ? 'bg-purple-500 text-white shadow-md' : 'text-slate-500 hover:text-purple-500'}`}>{tab.icon} {tab.label}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 items-center">
+                                <div className="flex gap-1 bg-slate-100 p-1 rounded-full shadow-sm">
+                                    {['ALL', 'Dermes', 'Reenex', 'Elyze'].map(b => (
+                                        <button key={b} onClick={() => setMasterBrandFilter(b)} className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${masterBrandFilter === b ? 'bg-purple-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-200'}`}>{b === 'ALL' ? '全部品牌' : b}</button>
+                                    ))}
+                                </div>
+                                <div className="relative">
+                                    <select value={lbNJFilter} onChange={(e) => setLbNJFilter(e.target.value)} className="appearance-none bg-white border-2 border-slate-200 text-slate-700 py-2 pl-4 pr-8 rounded-full text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 hover:border-purple-300 transition-colors cursor-pointer">
+                                        <option value="ALL">所有人員</option>
+                                        <option value="Y">新人 (NJ)</option>
+                                        <option value="N">非新人</option>
+                                    </select>
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {floorStats.map((shop, idx) => (
-                                <F1Card key={shop.shop} theme={theme} className="p-4 bg-white hover:-translate-y-1 hover:shadow-lg transition-all relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 p-2 opacity-10">
-                                        <Trophy size={64} className="text-slate-800" />
-                                    </div>
-                                    <div className="relative z-10">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-sm ${
-                                                    idx === 0 ? 'bg-yellow-400' : 
-                                                    idx === 1 ? 'bg-slate-400' : 
-                                                    idx === 2 ? 'bg-orange-400' : 'bg-slate-200 text-slate-500'
-                                                }`}>
-                                                    {idx + 1}
-                                                </div>
-                                                <h4 className="font-bold text-lg text-slate-800">{shop.shop}</h4>
-                                            </div>
-                                            <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{shop.count} 人</div>
-                                        </div>
-                                        <div className="text-3xl font-cute font-black text-purple-600 mb-1">
-                                            {shop.miles.toFixed(1)} <span className="text-sm text-slate-400 font-bold">MILES</span>
-                                        </div>
-                                        {/* Mini bar chart */}
-                                        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-purple-400 rounded-full" style={{ width: `${Math.min((shop.miles / (floorStats[0]?.miles || 1)) * 100, 100)}%` }}></div>
-                                        </div>
-                                    </div>
-                                </F1Card>
-                            ))}
-                            {floorStats.length === 0 && (
-                                <div className="col-span-full text-center py-8 text-slate-400 font-cute text-xl">
-                                    沒有數據 🐮
-                                </div>
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade-in">
+                            {leaderboardView === 'BRAND' && brandStats.map((item, idx) => renderLeaderboardCard(item, idx, 'BRAND'))}
+                            {leaderboardView === 'HUB' && hubStats.map((item, idx) => renderLeaderboardCard(item, idx, 'HUB'))}
+                            {leaderboardView === 'FLOOR' && floorStats.map((item, idx) => renderLeaderboardCard(item, idx, 'FLOOR'))}
                         </div>
                     </section>
-
-                    {/* --- SECTION 3: THE RACING COURSE --- */}
-                    <section>
-                        <ImpactfulStraightTrack data={top15Combined} title="各品牌 Top 5 激戰" theme={theme} height="1500px" />
-                    </section>
-
-                    {/* --- SECTION 4: GAME RULES (FUN CARDS) --- */}
+                    <section><ImpactfulStraightTrack data={top15Combined} title="各品牌 Top 5 激戰" theme={theme} height="1500px" /></section>
                     <section className="grid grid-cols-1 gap-6">
                         <div className="relative">
-                             <div className="text-center mb-6">
-                                <h3 className={`text-2xl md:text-3xl font-cute ${theme.textMain} font-bold flex items-center justify-center gap-3`}>
-                                    <span className="bg-green-100 p-1.5 rounded-full"><Info className="text-green-600" size={20} /></span> 加速攻略
-                                </h3>
-                                <p className={`${theme.textSub} font-cute text-base mt-1`}>掌握以下五大法則，助力肥牛飛速衝刺！🚀</p>
-                             </div>
-
+                             <div className="text-center mb-6"><h3 className={`text-2xl md:text-3xl font-cute ${theme.textMain} font-bold flex items-center justify-center gap-3`}><span className="bg-green-100 p-1.5 rounded-full"><Info className="text-green-600" size={20} /></span> 加速攻略</h3><p className={`${theme.textSub} font-cute text-base mt-1`}>掌握以下五大法則，助力肥牛飛速衝刺！🚀</p></div>
                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                                {/* Rule 1 */}
-                                <F1Card theme={theme} className="p-3 bg-white hover:rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-8 h-8 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">1</div>
-                                        <h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>PN+ Paid Trial</h4>
-                                    </div>
-                                    <div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center">
-                                        <p className={`text-xs ${theme.textSub}`}>每賣出 <strong className="text-teal-600">1 個</strong></p>
-                                    </div>
-                                    <div className="bg-teal-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-teal-200">
-                                        + 2 英里 🆕
-                                    </div>
-                                </F1Card>
-
-                                {/* Rule 2 */}
-                                <F1Card theme={theme} className="p-3 bg-white hover:-rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-8 h-8 bg-cyan-100 text-cyan-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">2</div>
-                                        <h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>含 PN+ Package</h4>
-                                    </div>
-                                    <div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center">
-                                        <p className={`text-xs ${theme.textSub}`}>每 <strong className="text-cyan-600">$10,000</strong></p>
-                                    </div>
-                                    <div className="bg-cyan-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-cyan-200">
-                                        + 2 英里 ⚡
-                                    </div>
-                                </F1Card>
-
-                                {/* Rule 3 */}
-                                <F1Card theme={theme} className="p-3 bg-white hover:rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">3</div>
-                                        <h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>PN+ Combo</h4>
-                                    </div>
-                                    <div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center">
-                                        <p className={`text-xs ${theme.textSub}`}>PN+ & PLLA5 <strong className="text-blue-600">System</strong></p>
-                                    </div>
-                                    <div className="bg-blue-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-blue-200">
-                                        + 4 英里 🚀
-                                    </div>
-                                </F1Card>
-
-                                {/* Rule 4 */}
-                                <F1Card theme={theme} className="p-3 bg-white hover:-rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">4</div>
-                                        <h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>Plla 5 Product</h4>
-                                    </div>
-                                    <div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center">
-                                        <p className={`text-xs ${theme.textSub}`}>每賣出 <strong className="text-purple-600">2 個</strong> <span className="block scale-90 opacity-75">(折後$592)</span></p>
-                                    </div>
-                                    <div className="bg-purple-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-purple-200">
-                                        + 2 英里 ✨
-                                    </div>
-                                </F1Card>
-                                
-                                {/* Rule 5 */}
-                                <F1Card theme={theme} className="p-3 bg-white hover:rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">5</div>
-                                        <h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>Plla 5 X Ultrajet</h4>
-                                    </div>
-                                    <div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center">
-                                        <p className={`text-xs ${theme.textSub}`}>每賣出 <strong className="text-orange-600">1 套</strong></p>
-                                    </div>
-                                    <div className="bg-orange-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-orange-200">
-                                        + 3 英里 🔥
-                                    </div>
-                                </F1Card>
+                                <F1Card theme={theme} className="p-3 bg-white hover:rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">1</div><h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>PN+ Paid Trial</h4></div><div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center"><p className={`text-xs ${theme.textSub}`}>每賣出 <strong className="text-teal-600">1 個</strong></p></div><div className="bg-teal-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-teal-200">+ 2 英里 🆕</div></F1Card>
+                                <F1Card theme={theme} className="p-3 bg-white hover:-rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-cyan-100 text-cyan-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">2</div><h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>含 PN+ Package</h4></div><div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center"><p className={`text-xs ${theme.textSub}`}>每 <strong className="text-cyan-600">$10,000</strong></p></div><div className="bg-cyan-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-cyan-200">+ 2 英里 ⚡</div></F1Card>
+                                <F1Card theme={theme} className="p-3 bg-white hover:rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">3</div><h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>PN+ Combo</h4></div><div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center"><p className={`text-xs ${theme.textSub}`}>PN+ & PLLA5 <strong className="text-blue-600">System</strong></p></div><div className="bg-blue-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-blue-200">+ 4 英里 🚀</div></F1Card>
+                                <F1Card theme={theme} className="p-3 bg-white hover:-rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">4</div><h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>Plla 5 Product</h4></div><div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center"><p className={`text-xs ${theme.textSub}`}>每賣出 <strong className="text-purple-600">2 個</strong> <span className="block scale-90 opacity-75">(折後$592)</span></p></div><div className="bg-purple-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-purple-200">+ 2 英里 ✨</div></F1Card>
+                                <F1Card theme={theme} className="p-3 bg-white hover:rotate-1 hover:shadow-lg transition-transform h-full flex flex-col justify-between"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0">5</div><h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>Plla 5 X Ultrajet</h4></div><div className="bg-slate-50 p-2 rounded-lg mb-2 text-center border border-slate-100 grow flex items-center justify-center"><p className={`text-xs ${theme.textSub}`}>每賣出 <strong className="text-orange-600">1 套</strong></p></div><div className="bg-orange-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-orange-200">+ 3 英里 🔥</div></F1Card>
                              </div>
                         </div>
                     </section>
-
-                    {/* --- REWARDS SECTION (NEW) --- */}
-                    <section className="grid grid-cols-1 gap-6">
-                        <div className="relative">
-                             <div className="text-center mb-6">
-                                <h3 className={`text-2xl md:text-3xl font-cute ${theme.textMain} font-bold flex items-center justify-center gap-3`}>
-                                    <span className="bg-yellow-100 p-1.5 rounded-full"><Gift className="text-yellow-600" size={24} /></span> 里數獎賞
-                                </h3>
-                                <p className={`${theme.textSub} font-cute text-base mt-1`}>累積里數，換取豐富獎品！</p>
-                             </div>
-
-                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                                {REWARDS.map((reward, idx) => (
-                                    <F1Card key={idx} theme={theme} className={`p-4 bg-white hover:-translate-y-1 hover:shadow-xl transition-all h-full flex flex-col ${reward.miles === 50 && reward.color === 'yellow' ? 'border-yellow-400 border-4 bg-yellow-50' : ''}`}>
-                                        <div className="flex justify-between items-start mb-3">
-                                            <span className={`text-3xl`}>{reward.icon}</span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold bg-${reward.color}-100 text-${reward.color}-600`}>
-                                                {reward.title}
-                                            </span>
-                                        </div>
-                                        <p className={`text-sm font-bold ${theme.textMain} leading-snug`}>
-                                            {reward.reward}
-                                        </p>
-                                    </F1Card>
-                                ))}
-                             </div>
-                        </div>
-                    </section>
-
-                    {/* --- SECTION 5: DRIVER LICENSE (SCORECARD) --- */}
                     <section className="pt-12 border-t-4 border-dashed border-slate-300">
-                         {/* Header & Filters */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                            <div>
-                                <h2 className={`text-3xl md:text-4xl font-cute ${theme.textMain} flex items-center font-bold`}>
-                                    <span className="bg-blue-100 p-2 rounded-full mr-3"><Target className="text-blue-500" /></span> 個人成績單
-                                </h2>
-                                <p className={`${theme.textSub} mt-2 font-cute text-lg ml-2`}>查看個別參賽者的詳細得分與任務達成狀況</p>
-                            </div>
-                            
+                            <div><h2 className={`text-3xl md:text-4xl font-cute ${theme.textMain} flex items-center font-bold`}><span className="bg-blue-100 p-2 rounded-full mr-3"><Target className="text-blue-500" /></span> 個人成績單</h2><p className={`${theme.textSub} mt-2 font-cute text-lg ml-2`}>查看個別參賽者的詳細得分與任務達成狀況</p></div>
                             <div className={`flex flex-col sm:flex-row gap-3 items-stretch sm:items-center ${theme.cardBg} p-3 rounded-2xl shadow-lg w-full md:w-auto bg-white`}>
-                                <div className="relative flex-1">
-                                    <select value={scBrand} onChange={(e) => setScBrand(e.target.value)} className="w-full bg-slate-50 text-slate-700 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-4 focus:ring-green-200 outline-none border-2 border-slate-100 font-bold uppercase cursor-pointer hover:bg-slate-100 transition-colors appearance-none">
-                                        <option value="ALL">所有品牌</option>
-                                        {brands.map(b => <option key={b} value={b}>{b}</option>)}
-                                    </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
-                                </div>
-                                <div className="relative flex-1">
-                                    <select value={scShop} onChange={(e) => setScShop(e.target.value)} className="w-full bg-slate-50 text-slate-700 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-4 focus:ring-green-200 outline-none border-2 border-slate-100 font-bold uppercase cursor-pointer hover:bg-slate-100 transition-colors appearance-none">
-                                        <option value="ALL">所有樓層</option>
-                                        {shops.map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
-                                </div>
-                                <div className="relative flex-1">
-                                    <select value={scRacerId} onChange={(e) => setScRacerId(e.target.value)} className="w-full bg-green-500 text-white text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-4 focus:ring-green-300 outline-none border-none font-bold uppercase min-w-[150px] cursor-pointer hover:bg-green-600 transition-colors appearance-none shadow-md">
-                                        {scAvailableRacers.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                    </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/80">▼</div>
-                                </div>
+                                <div className="relative flex-1"><select value={scBrand} onChange={(e) => { setScBrand(e.target.value); setScHub('ALL'); setScFloor('ALL'); }} className="w-full bg-slate-50 text-slate-700 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-4 focus:ring-green-200 outline-none border-2 border-slate-100 font-bold uppercase cursor-pointer hover:bg-slate-100 transition-colors appearance-none"><option value="ALL">所有品牌</option>{brands.map(b => <option key={b} value={b}>{b}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div></div>
+                                <div className="relative flex-1"><select value={scHub} onChange={(e) => { setScHub(e.target.value); setScFloor('ALL'); }} className="w-full bg-slate-50 text-slate-700 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-4 focus:ring-green-200 outline-none border-2 border-slate-100 font-bold uppercase cursor-pointer hover:bg-slate-100 transition-colors appearance-none"><option value="ALL">所有Hub</option>{uniqueHubs.map(h => <option key={h} value={h}>{h}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div></div>
+                                <div className="relative flex-1"><select value={scFloor} onChange={(e) => setScFloor(e.target.value)} className="w-full bg-slate-50 text-slate-700 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-4 focus:ring-green-200 outline-none border-2 border-slate-100 font-bold uppercase cursor-pointer hover:bg-slate-100 transition-colors appearance-none"><option value="ALL">所有樓層</option>{uniqueFloors.map(s => <option key={s} value={s}>{s}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div></div>
+                                <div className="relative flex-1"><select value={scRacerId} onChange={(e) => setScRacerId(e.target.value)} className="w-full bg-green-500 text-white text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-4 focus:ring-green-300 outline-none border-none font-bold uppercase min-w-[150px] cursor-pointer hover:bg-green-600 transition-colors appearance-none shadow-md">{scAvailableRacers.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/80">▼</div></div>
                             </div>
                         </div>
-
-                        {/* License Card */}
                         {scRacerId && (() => {
                             const racer = racers.find(r => r.id.toString() === scRacerId);
-                            // Note: using scRacerId for lookup
                             const actualRank = sortedGlobal.findIndex(r => r.id.toString() === scRacerId) + 1;
                             const breakdown = getRacerBreakdown(racer);
-
-                            if (!racer) return null; // Guard
-
+                            if (!racer) return null;
                             return (
                                 <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden relative border-8 border-slate-100 text-slate-800 transform hover:scale-[1.01] transition-transform duration-500">
                                     <div className="absolute top-0 right-0 p-40 bg-green-100 rounded-full blur-3xl -mr-10 -mt-10 opacity-50"></div>
-                                    
                                     <div className="grid grid-cols-1 lg:grid-cols-3 relative z-10">
-                                        {/* Left: Profile */}
                                         <div className="p-10 bg-slate-50/80 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r-4 border-slate-100 relative">
-                                            <div className="w-40 h-40 rounded-full bg-white p-2 mb-6 relative shadow-xl">
-                                                <img src={getBrandGif(racer.brand)} className="w-full h-full object-contain rounded-full bg-slate-50" />
-                                                <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 w-12 h-12 flex items-center justify-center font-black rounded-full border-4 border-white text-2xl font-cute shadow-lg">#{actualRank}</div>
-                                            </div>
+                                            <div className="w-40 h-40 rounded-full bg-white p-2 mb-6 relative shadow-xl"><img src={getBrandGif(racer.brand)} className="w-full h-full object-contain rounded-full bg-slate-50" /><div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 w-12 h-12 flex items-center justify-center font-black rounded-full border-4 border-white text-2xl font-cute shadow-lg">#{actualRank}</div></div>
                                             <h2 className="text-4xl font-cute font-bold text-center mb-3 text-slate-800">{racer.name}</h2>
-                                            <div className="flex gap-2 mb-8">
-                                                <span className="px-3 py-1 bg-white border-2 border-slate-200 rounded-full text-xs text-slate-600 font-bold uppercase tracking-wider shadow-sm">{racer.brand}</span>
-                                                <span className="px-3 py-1 bg-white border-2 border-slate-200 rounded-full text-xs text-slate-600 font-bold uppercase tracking-wider shadow-sm">{racer.shop}</span>
-                                            </div>
-                                            
-                                            {/* Big Speedometer Number */}
-                                            <div className="text-center bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-100 w-full">
-                                                <div className="text-xs text-slate-400 uppercase tracking-[0.2em] mb-2 font-bold">總里程 (Total)</div>
-                                                <div className="text-7xl font-cute font-black text-green-500 leading-none">
-                                                    {racer.sales.toFixed(1)}
-                                                </div>
-                                                <div className="text-slate-400 text-sm font-bold mt-1 tracking-widest">MILES</div>
-                                            </div>
+                                            <div className="flex gap-2 mb-8"><span className="px-3 py-1 bg-white border-2 border-slate-200 rounded-full text-xs text-slate-600 font-bold uppercase tracking-wider shadow-sm">{racer.brand}</span><span className="px-3 py-1 bg-white border-2 border-slate-200 rounded-full text-xs text-slate-600 font-bold uppercase tracking-wider shadow-sm">{racer.hub}</span><span className="px-3 py-1 bg-white border-2 border-slate-200 rounded-full text-xs text-slate-600 font-bold uppercase tracking-wider shadow-sm">{racer.floor}</span></div>
+                                            <div className="text-center bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-100 w-full"><div className="text-xs text-slate-400 uppercase tracking-[0.2em] mb-2 font-bold">總里程 (Total)</div><div className="text-7xl font-cute font-black text-green-500 leading-none">{racer.sales.toFixed(1)}</div><div className="text-slate-400 text-sm font-bold mt-1 tracking-widest">MILES</div></div>
                                         </div>
-
-                                        {/* Right: Data */}
                                         <div className="lg:col-span-2 p-10 bg-white">
-                                            <h4 className="text-slate-400 font-cute uppercase text-sm mb-8 flex items-center font-bold tracking-widest border-b-2 border-slate-100 pb-4">
-                                                <Zap size={20} className="mr-2 text-yellow-500" /> 表現詳細分析
-                                            </h4>
-                                            
+                                            <h4 className="text-slate-400 font-cute uppercase text-sm mb-8 flex items-center font-bold tracking-widest border-b-2 border-slate-100 pb-4"><Zap size={20} className="mr-2 text-yellow-500" /> 表現詳細分析</h4>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                                {[
-                                                    { 
-                                                        label: "PN+ Paid Trial", 
-                                                        count: breakdown.pnPaidTrial, 
-                                                        points: breakdown.pnPaidTrial * 2, // 1 unit = 2 miles
-                                                        color: "teal",
-                                                        icon: "🆕"
-                                                    },
-                                                    { 
-                                                        label: "PN+ Package", 
-                                                        count: breakdown.pnPackage, 
-                                                        points: Math.floor(breakdown.pnPackage / 10000) * 2, // 10k = 2 miles
-                                                        color: "cyan",
-                                                        revenue: breakdown.pnPackage,
-                                                        icon: "⚡"
-                                                    },
-                                                    { label: "PN+ Combo Sys", count: breakdown.combo, points: breakdown.combo * 4, color: "blue", icon: "🚀" }, // 1 unit = 4 miles
-                                                    { label: "Plla 5 Product", count: breakdown.plla, points: Math.floor(breakdown.plla / 2) * 2, color: "purple", icon: "✨" }, // 2 units = 2 miles
-                                                    { label: "Plla 5 X Ultrajet", count: breakdown.device, points: breakdown.device * 3, color: "orange", icon: "🔥" }, // 1 unit = 3 miles
-                                                ].map((item, idx) => (
+                                                {[{ label: "PN+ Paid Trial", count: breakdown.pnPaidTrial, points: breakdown.pnPaidTrial * 2, color: "teal", icon: "🆕" }, { label: "PN+ Package", count: breakdown.pnPackage, points: Math.floor(breakdown.pnPackage / 10000) * 2, color: "cyan", revenue: breakdown.pnPackage, icon: "⚡" }, { label: "PN+ Combo Sys", count: breakdown.combo, points: breakdown.combo * 4, color: "blue", icon: "🚀" }, { label: "Plla 5 Product", count: breakdown.plla, points: Math.floor(breakdown.plla / 2) * 2, color: "purple", icon: "✨" }, { label: "Plla 5 X Ultrajet", count: breakdown.device, points: breakdown.device * 3, color: "orange", icon: "🔥" }].map((item, idx) => (
                                                     <div key={idx} className={`bg-${item.color}-50 rounded-2xl p-5 border-2 border-${item.color}-100 hover:shadow-md transition-shadow`}>
-                                                        <div className="flex justify-between items-center mb-3">
-                                                            <span className={`text-${item.color}-700 text-xs font-bold uppercase flex items-center`}>
-                                                                <span className="mr-2 text-lg">{item.icon}</span> {item.label}
-                                                            </span>
-                                                            <span className={`bg-white text-${item.color}-600 font-cute text-lg font-bold px-3 py-1 rounded-full shadow-sm`}>+{item.points} M</span>
-                                                        </div>
-                                                        <div className="w-full bg-white h-3 rounded-full overflow-hidden border border-${item.color}-200">
-                                                            <div className={`h-full bg-${item.color}-400 rounded-full`} style={{ width: `${Math.min((item.revenue ? item.points : item.count) * 10, 100)}%` }}></div>
-                                                        </div>
-                                                        <div className="text-right text-xs text-${item.color}-600 mt-2 font-bold">
-                                                            {item.label === "PN+ Package" 
-                                                                ? `金額: ${formatCurrency(item.revenue)}` 
-                                                                : `數量: ${item.count}`
-                                                            }
-                                                        </div>
+                                                        <div className="flex justify-between items-center mb-3"><span className={`text-${item.color}-700 text-xs font-bold uppercase flex items-center`}><span className="mr-2 text-lg">{item.icon}</span> {item.label}</span><span className={`bg-white text-${item.color}-600 font-cute text-lg font-bold px-3 py-1 rounded-full shadow-sm`}>+{item.points} M</span></div>
+                                                        <div className="w-full bg-white h-3 rounded-full overflow-hidden border border-${item.color}-200"><div className={`h-full bg-${item.color}-400 rounded-full`} style={{ width: `${Math.min((item.revenue ? item.points : item.count) * 10, 100)}%` }}></div></div>
+                                                        <div className="text-right text-xs text-${item.color}-600 mt-2 font-bold">{item.label === "PN+ Package" ? `金額: ${formatCurrency(item.revenue)}` : `數量: ${item.count}`}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -981,25 +807,11 @@
                         })()}
                     </section>
                 </main>
-
-                {/* --- DATA SOURCE STATUS BAR (BOTTOM LEFT) --- */}
                 <div className="fixed bottom-4 left-4 z-50 text-[10px] text-slate-500 bg-white/90 px-3 py-2 rounded-full shadow-lg border border-slate-200 backdrop-blur-sm pointer-events-none flex items-center gap-2">
-                     {lastUpdated && !fetchError ? (
-                        <span className="flex items-center text-green-600 font-bold"><span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>已連接 (Update: {lastUpdated.toLocaleTimeString()})</span>
-                     ) : (
-                        <span className="flex items-center text-orange-500 font-bold"><span className="w-2 h-2 rounded-full bg-orange-500 mr-2"></span>{fetchError ? '連接失敗: 演示模式' : '演示模式'}</span>
-                     )}
+                     {lastUpdated && !fetchError ? (<span className="flex items-center text-green-600 font-bold"><span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>已連接 (Update: {lastUpdated.toLocaleTimeString()})</span>) : (<span className="flex items-center text-orange-500 font-bold"><span className="w-2 h-2 rounded-full bg-orange-500 mr-2"></span>{fetchError ? '連接失敗: 演示模式' : '演示模式'}</span>)}
                 </div>
-
-                {/* --- ADMIN FLOATING BUTTON (MANUAL REFRESH) --- */}
                 <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
-                    <button 
-                        onClick={fetchData}
-                        className={`p-4 bg-green-500 text-white rounded-full shadow-2xl hover:bg-green-600 hover:scale-110 transition-all group ${isLoading ? 'animate-spin' : ''}`}
-                        title="立即刷新數據"
-                    >
-                        <RefreshCw className="w-6 h-6" />
-                    </button>
+                    <button onClick={fetchData} className={`p-4 bg-green-500 text-white rounded-full shadow-2xl hover:bg-green-600 hover:scale-110 transition-all group ${isLoading ? 'animate-spin' : ''}`} title="立即刷新數據"><RefreshCw className="w-6 h-6" /></button>
                 </div>
             </div>
             );
