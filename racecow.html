@@ -3,1058 +3,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Derby - 膠原飛輪跑</title>
-    
-    <!-- Google Fonts: Fredoka (Cute), Orbitron (Racing), Teko (Numbers) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Teko:wght@300;500;700&display=swap" rel="stylesheet">
-    
-    <!-- PapaParse for CSV Parsing (if needed for CSV fallback) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-    <!-- Tailwind CSS -->
+    <title>新春肥牛飼養大賽 | Intelligence Dashboard</title>
+    <!-- Frameworks -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'cute': ['"Fredoka"', 'sans-serif'],
-                        'racing': ['"Orbitron"', 'sans-serif'],
-                        'numbers': ['"Teko"', 'sans-serif'],
-                    },
-                    colors: {
-                        'f1-blue': '#0ea5e9',
-                        'f1-cyan': '#22d3ee',
-                        'f1-slate': '#0f172a',
-                    },
-                    animation: {
-                        'bounce-slow': 'bounce 2s infinite',
-                        'float': 'float 3s ease-in-out infinite',
-                        'wiggle': 'wiggle 1s ease-in-out infinite',
-                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'shine': 'shine 2s infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        wiggle: {
-                            '0%, 100%': { transform: 'rotate(-3deg)' },
-                            '50%': { transform: 'rotate(3deg)' },
-                        },
-                        shine: {
-                            '0%': { transform: 'translateX(-100%)' },
-                            '100%': { transform: 'translateX(100%)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <style>
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F0F8FF; }
+        .cow-image-container {
+            width: 100%; aspect-ratio: 4 / 3; position: relative; overflow: hidden;
+            border-radius: 0.5rem; background-color: #f3f4f6; border: 2px solid #fff; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .cow-image-container img { width: 100%; height: 100%; object-fit: contain; }
+        .fence-bg {
+            background-color: #81C784;
+            background-image: radial-gradient(#A5D6A7 15%, transparent 16%), radial-gradient(#A5D6A7 15%, transparent 16%);
+            background-size: 20px 20px; background-position: 0 0, 10px 10px;
+        }
+        .rank-badge { display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 50; }
+        .brand-badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 9999px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .brand-Dermes { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .brand-Reenex { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .brand-Elyze { background-color: #fdf4ff; color: #a21caf; border: 1px solid #f5d0fe; }
         
-        /* Cow Bobbing Animation */
-        @keyframes gallop {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(-2deg); }
-            75% { transform: translateY(-2px) rotate(2deg); }
-        }
-        .animate-gallop {
-            animation: gallop 0.8s infinite ease-in-out;
-        }
+        .tab-active-Dermes { background-color: #0369a1 !important; color: white !important; border-color: #0369a1 !important; }
+        .tab-active-Reenex { background-color: #15803d !important; color: white !important; border-color: #15803d !important; }
+        .tab-active-Elyze { background-color: #a21caf !important; color: white !important; border-color: #a21caf !important; }
+        .view-active { background-color: #4b5563 !important; color: white !important; }
 
-        /* --- THEME BACKGROUNDS (MODERN TECH) --- */
-        .bg-tech-pattern {
-            background-color: #0b1121;
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
-        .bg-asphalt-track {
-            background-color: #1e293b;
-            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+        .strength-bar { 
+            position: absolute; left: 0; top: 0; height: 100%; opacity: 0.12; 
+            transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 0; 
         }
         
-        /* Rainbow Text for Unparalleled */
-        .text-rainbow {
-            background: linear-gradient(to right, #00f3ff, #bc13fe, #0aff68);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-            font-weight: 900;
-            filter: drop-shadow(0px 0px 5px rgba(188, 19, 254, 0.5));
-        }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-modal { animation: modalFadeIn 0.2s ease-out forwards; }
     </style>
 </head>
-<body class="font-sans selection:bg-neon-blue selection:text-dark-bg overflow-x-hidden text-white">
-    <div id="root"></div>
+<body class="pb-6 overflow-x-hidden">
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+    <script>
+        // --- 核心全域配置 ---
+        window.GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFLJr6n8QGwaDb-hBjC6xOwd2ANzDyW1b-iInQfQkxZEDDmP1U6F5lJampP6JNWjR6/exec'; 
+        window.currentLang = 'zh';
+        window.currentRankBrand = 'Dermes';
+        window.currentNJFilter = 'all'; 
+        window.currentViewLevel = 'floor'; 
+        window.USERS = [];
 
-        // --- CONSTANTS & CONFIGURATION ---
-        
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxghoGKevzCyi7UvKx0bzdmSCiOqM_MrP_Z1TLiJhxORi4Oz-6gJHb5oX2e-0b584Ze/exec"; 
-
-        const BRAND_GIFS = {
-            "Dermes": "https://i.postimg.cc/DZ0SprZG/DC.gif",
-            "Reenex": "https://i.postimg.cc/PxJCVWxw/RC.gif",
-            "Elyze": "https://i.postimg.cc/W3zdYG3D/EC.gif"
+        window.i18n = {
+            zh: {
+                utilizeAi: "利用 AI 小店", make: "令", cust: "客人", bannerSlogan: "做任務贏取飼料 儲糧養肥牛",
+                leaderboardTitle: "肥牛排行榜", loading: "正在讀取數據...", tierTitle: "等級與獎項",
+                feedGuideTitle: "飼料獲取攻略", startWeightLabel: "起始體重", ratioLabel: "成長換算",
+                searchTitle: "搜尋我的牛牛", allBrands: "所有品牌", allLocations: "所有樓層",
+                cardWeightLabel: "目前體重", cardFeedLabel: "累積飼料", unlockedTitle: "目前可獲獎勵",
+                task1: "新增 5 個小店追蹤者", task2: "新增一個ACB成為店主", task3: "客人由小店搶得利是 (最多25次)", 
+                task4: "成功驅動ACB邀請好友參與活動並獲贈$1,888禮券",
+                tLabel1: "追蹤", tLabel2: "ACB店主", tLabel3: "搶利是", tLabel4: "驅動ACB",
+                goal: "目標", maxLevel: "已達最高級", feedsToUpgrade: "尚欠 {n} 份升級", congrats: "金牛達成！",
+                noMatch: "沒有結果", floorRankTitle: "實力分佈看板", avgWeight: "平均體重",
+                modalTitle: "任務說明", modalClose: "我知道了", btnExplain: "圖標說明", distTitle: "分佈",
+                hcLabel: "HC",
+                njAll: "全部人員", njNew: "新人 (NJ)", njSenior: "舊人 (Non-NJ)",
+                viewBrand: "品牌級", viewHub: "區域級", viewFloor: "樓層級",
+                brandTotal: "品牌總計", hubTotal: "區域總計", floorDetail: "樓層詳情",
+                extraSogo: "加贈 SOGO 現金券",
+                tierRankLabel: "等級內排名",
+                bonusCond: "及體重達 {w}kg 或以上"
+            },
+            en: {
+                utilizeAi: "Utilizing AI Shop", make: "Turning", cust: "Customers", bannerSlogan: "Complete Tasks to Grow",
+                leaderboardTitle: "Fat Cow Leaderboard", loading: "Loading...", tierTitle: "Cow Evolution Tiers",
+                feedGuideTitle: "Feed Acquisition Guide", startWeightLabel: "Start Weight", ratioLabel: "Ratio",
+                searchTitle: "Search My Cow", allBrands: "All Brands", allLocations: "All Floors",
+                cardWeightLabel: "Weight", cardFeedLabel: "Feeds", unlockedTitle: "Unlocked Reward",
+                task1: "Add 5 shop followers", task2: "Add 1 ACB as owner", task3: "Red Packet from shop (Max 25)", 
+                task4: "Drive ACB to refer friends for $1,888",
+                tLabel1: "Follows", tLabel2: "ACB Owner", tLabel3: "Packets", tLabel4: "Drive ACB",
+                goal: "Goal", maxLevel: "Max Level", feedsToUpgrade: "{n} feeds needed", congrats: "Golden Cow Raised!",
+                noMatch: "No matches", floorRankTitle: "Brand Floor Board", avgWeight: "Avg Weight",
+                modalTitle: "Task Legend", modalClose: "Got it", btnExplain: "Legend", distTitle: "Dist",
+                hcLabel: "HC",
+                njAll: "All Staff", njNew: "New Joiner (NJ)", njSenior: "Senior (Non-NJ)",
+                viewBrand: "Brand", viewHub: "Hub", viewFloor: "Floor",
+                brandTotal: "Brand Total", hubTotal: "Hub Total", floorDetail: "Floor Detail",
+                extraSogo: "Bonus SOGO Coupon",
+                tierRankLabel: "Rank in Tier",
+                bonusCond: "and weight reach {w}kg+"
+            }
         };
-        const BRAND_COLORS = {
-            "Dermes": "#f97316", // Orange
-            "Reenex": "#ef4444", // Red
-            "Elyze": "#22c55e"   // Green
-        };
 
-        const BRANDS = ["Dermes", "Reenex", "Elyze"]; // Defined globally
-        const TRACK_TIERS = ["基本", "入門", "先鋒", "天才", "超級", "極限", "傳奇", "舉世無雙"]; // Defined globally
-
-        // REWARD DATA
-        const REWARDS = [
-            { miles: 20, title: "20英里", reward: "Celluion活性膠原喚膚組合 (Mask x 2 + Spray)", icon: "🎁", color: "blue" },
-            { miles: 30, title: "30英里", reward: "Celluion活性膠原喚膚組合 (Mask x 4 + Spray) + NeoStrata 更生活膚啫喱面膜 125ml", icon: "✨", color: "purple" },
-            { miles: 40, title: "40英里", reward: "CelluJet PN+離子膠原再生面部療程 & PLLA 5 套裝 (名額十位)", icon: "💆‍♀️", color: "pink" },
-            { miles: 50, title: "50英里", reward: "三月額外一天假期 (最快十位)", icon: "🏖️", color: "green" },
-            { miles: 50, title: "50英里 (Top 3)", reward: "跑得最遠頭三名額外$1,000現金獎!", icon: "🏆", color: "yellow" }
+        window.MILESTONES = [
+            { min: 300, max: 499, title: {zh: "瘦牛", en: "Lean Cow"}, color: "text-gray-400", barColor: "bg-gray-400", img: "https://i.postimg.cc/pdy5zLJq/Whats-App-Image-2026-01-16-at-15-00-48.jpg", reward: { zh: "繼續努力！加油！", en: "Keep trying!" } }, 
+            { min: 500, max: 599, title: {zh: "信望愛澳洲牛", en: "FHL Australian Beef"}, color: "text-green-700", barColor: "bg-green-500", img: "https://i.postimg.cc/52sFXCLL/Whats-App-Image-2026-01-16-at-15-01-13.jpg", reward: { zh: "Bicelle 3D Mask X5", en: "Bicelle Mask X5" } }, 
+            { min: 600, max: 699, title: {zh: "公義美國穀飼牛", en: "Righteous US Beef"}, color: "text-blue-700", barColor: "bg-blue-500", img: "https://i.postimg.cc/9QLqD7ZP/Whats-App-Image-2026-01-16-at-15-00-50.jpg", reward: { zh: "Exuviance AP25煥膚組合", en: "Exuviance AP25 Kit" } }, 
+            { min: 700, max: 799, title: {zh: "平安日本和牛", en: "Peaceful Japanese Wagyu"}, color: "text-purple-700", barColor: "bg-purple-500", img: "https://i.postimg.cc/Bnm1jKH1/Whats-App-Image-2026-01-16-at-15-00-49.jpg", reward: { zh: "Celluion 活性膠原組合", en: "Celluion Kit" } }, 
+            { 
+                min: 800, max: 1099, title: {zh: "喜樂豐盛金牛", en: "Joyful Abundant Golden Cow"}, 
+                color: "text-yellow-700 font-black", barColor: "bg-yellow-500", 
+                img: "https://i.postimg.cc/2S0B1Zhv/Whats-App-Image-2026-01-16-at-15-00-49-(1).jpg", 
+                reward: { zh: "Celluion 超聲波 PLLA 套裝", en: "Celluion PLLA Set" },
+                bonusThreshold: 1000, bonusRank: 3, bonusValue: 300
+            }, 
+            { 
+                min: 1100, max: 99999, title: {zh: "超級創意彩鑽牛", en: "Super Creative Diamond Cow"}, 
+                color: "text-blue-500 font-black", barColor: "bg-blue-400", 
+                img: "https://i.postimg.cc/fyF4pP8b/Whats-App-Image-2026-02-02-at-11-34-55.jpg", 
+                reward: { zh: "Celluion 超聲波 PLLA 套裝", en: "Celluion PLLA Set" },
+                bonusRank: 3, bonusValue: 500
+            } 
         ];
 
-        const THEME = {
-            id: 'MODERN',
-            name: '🚀 未來競速',
-            bgClass: 'bg-tech-pattern',
-            textMain: 'text-white',
-            textSub: 'text-slate-400',
-            cardBg: 'bg-slate-800 border border-slate-700 shadow-xl backdrop-blur-md', // Modern dark card
-            trackBg: 'bg-asphalt-track',
-            trackBorder: 'border-4 border-slate-600', 
-            trackHeader: 'bg-slate-900 border-b border-slate-700 text-white',
-            laneBorder: 'border-slate-600/50',
-            turboColor: '#00f3ff', // Neon Blue
-            hudIconColor: 'text-neon-blue',
-            milestoneBg: 'bg-slate-700 border-neon-blue'
-        };
-
-        // --- GLOBAL HELPERS ---
-        const getBrandGif = (brand) => {
-            return BRAND_GIFS[brand] || "https://placehold.co/600x338/e2e8f0/64748b?text=Running+Cow";
-        };
-
-        const formatMiles = (val) => `${val.toFixed(1)} 英里`;
-        const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'HKD', maximumFractionDigits: 0 }).format(val);
-
-        const getRacerBreakdown = (racer) => {
-            if (!racer) return null;
-            return {
-                pnPaidTrial: racer.trial_qty || 0,
-                pnPackage: racer.package_sales || 0, 
-                combo: racer.combo_qty || 0,
-                plla: racer.plla_qty || 0,
-                device: racer.device_qty || 0,
-                sub: racer.sub_qty || 0,
-                target: racer.sales_target || 0,
-                actual: racer.actual_sales || 0,
-                achievement_pct: racer.sales_target > 0 ? (racer.actual_sales / racer.sales_target * 100) : 0
-            };
-        };
-
-        // NEW: Determine Track Level based on %
-        const getTrackLevel = (pct) => {
-            if (pct >= 160) return { name: "舉世無雙", color: "text-rainbow", bg: "bg-slate-900/50 border border-purple-500", icon: "👑" };
-            if (pct >= 150) return { name: "傳奇", color: "text-yellow-400", bg: "bg-yellow-900/20 border border-yellow-600", icon: "🦄" };
-            if (pct >= 140) return { name: "極限", color: "text-red-400", bg: "bg-red-900/20 border border-red-600", icon: "🔥" };
-            if (pct >= 130) return { name: "超級", color: "text-orange-400", bg: "bg-orange-900/20 border border-orange-600", icon: "🚀" };
-            if (pct >= 120) return { name: "天才", color: "text-purple-400", bg: "bg-purple-900/20 border border-purple-600", icon: "🧠" };
-            if (pct >= 110) return { name: "先鋒", color: "text-blue-400", bg: "bg-blue-900/20 border border-blue-600", icon: "🛡️" };
-            if (pct >= 100) return { name: "入門", color: "text-green-400", bg: "bg-green-900/20 border border-green-600", icon: "✅" };
-            return { name: "基本", color: "text-slate-500", bg: "bg-slate-800/50 border border-slate-700", icon: "🌱" };
-        };
-
-        // Fallback Sample Data
-        const SAMPLE_RACERS = [
-            { id: 1, name: "Sarah Miller", brand: "Dermes", hub: "Kln", floor: "D 35/F TS (A)", nj: "Y", trial_qty: 4, package_sales: 20000, combo_qty: 2, plla_qty: 3, polyca_qty: 3, device_qty: 0, sub_qty: 1, sales: 14.5, sales_target: 200000, actual_sales: 210000 },
-            { id: 2, name: "Jessica Wilson", brand: "Reenex", hub: "HK", floor: "R 18/F PP", nj: "N", trial_qty: 10, package_sales: 50000, combo_qty: 5, plla_qty: 6, polyca_qty: 0, device_qty: 1, sub_qty: 2, sales: 49.2, sales_target: 300000, actual_sales: 290000 },
-            { id: 3, name: "Elena Rodriguez", brand: "Elyze", hub: "Kln", floor: "E TST", nj: "N", trial_qty: 2, package_sales: 10000, combo_qty: 1, plla_qty: 0, polyca_qty: 3, device_qty: 0, sub_qty: 0, sales: 9.8, sales_target: 150000, actual_sales: 160000 },
-            { id: 4, name: "Michelle Chang", brand: "Dermes", hub: "LP 60", floor: "D LP 60 AB", nj: "Y", trial_qty: 6, package_sales: 30000, combo_qty: 3, plla_qty: 3, polyca_qty: 0, device_qty: 1, sub_qty: 1, sales: 28.5, sales_target: 250000, actual_sales: 280000 },
-            { id: 5, name: "Anna Patel", brand: "Reenex", hub: "Kln", floor: "R TS", nj: "N", trial_qty: 12, package_sales: 60000, combo_qty: 6, plla_qty: 9, polyca_qty: 6, device_qty: 2, sub_qty: 3, sales: 68.5, sales_target: 400000, actual_sales: 500000 },
-            { id: 6, name: "Lisa Wang", brand: "Elyze", hub: "HK", floor: "E PP", nj: "N", trial_qty: 8, package_sales: 40000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 0, sub_qty: 1, sales: 33.0, sales_target: 200000, actual_sales: 180000 },
-            { id: 7, name: "Tiffany Baker", brand: "Dermes", hub: "Kln", floor: "D PK", nj: "Y", trial_qty: 2, package_sales: 5000, combo_qty: 1, plla_qty: 0, polyca_qty: 0, device_qty: 0, sub_qty: 0, sales: 8.2, sales_target: 100000, actual_sales: 90000 },
-            { id: 8, name: "Kelly Sato", brand: "Reenex", hub: "Kln", floor: "R LP", nj: "N", trial_qty: 4, package_sales: 25000, combo_qty: 2, plla_qty: 0, polyca_qty: 3, device_qty: 0, sub_qty: 0, sales: 19.5, sales_target: 180000, actual_sales: 170000 },
-            { id: 9, name: "Amanda Lewis", brand: "Elyze", hub: "Kln", floor: "E TS", nj: "N", trial_qty: 3, package_sales: 15000, combo_qty: 0, plla_qty: 3, polyca_qty: 0, device_qty: 0, sub_qty: 1, sales: 13.0, sales_target: 120000, actual_sales: 130000 },
-            { id: 10, name: "Jenny T.", brand: "Dermes", hub: "LP 32", floor: "D LP 32", nj: "Y", trial_qty: 5, package_sales: 22000, combo_qty: 2, plla_qty: 3, polyca_qty: 0, device_qty: 1, sub_qty: 2, sales: 26.0, sales_target: 220000, actual_sales: 240000 }
-        ];
-
-        // --- ICONS (SVG Components) ---
-        const IconBase = ({ children, className, size = 24, ...props }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
-        );
-        const Trophy = (props) => <IconBase {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconBase>;
-        const Info = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>;
-        const Store = (props) => <IconBase {...props}><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></IconBase>;
-        const Award = (props) => <IconBase {...props}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></IconBase>;
-        const Zap = (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>;
-        const Target = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
-        const RotateCcw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconBase>;
-        const RefreshCw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconBase>;
-        const Gift = (props) => <IconBase {...props}><polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><line x1="12" y1="22" x2="12" y2="7" /><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" /></IconBase>;
-        const Calendar = (props) => <IconBase {...props}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></IconBase>;
-        const Building = (props) => <IconBase {...props}><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><line x1="9" y1="22" x2="9" y2="22.01" /><line x1="15" y1="22" x2="15" y2="22.01" /><line x1="12" y1="22" x2="12" y2="22.01" /><line x1="12" y1="2" x2="12" y2="4" /><line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="10" x2="20" y2="10" /><line x1="4" y1="14" x2="20" y2="14" /><line x1="4" y1="18" x2="20" y2="18" /></IconBase>;
-        const User = (props) => <IconBase {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
-        const MapPin = (props) => <IconBase {...props}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></IconBase>;
-        const Tag = (props) => <IconBase {...props}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></IconBase>;
-        const Repeat = (props) => <IconBase {...props}><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></IconBase>;
-        const Star = (props) => <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></IconBase>;
-
-        // --- VISUAL COMPONENTS ---
-
-        const F1Card = ({ children, className = "", theme }) => (
-            <div className={`${theme.cardBg} rounded-2xl overflow-hidden relative group hover:scale-[1.01] transition-all duration-300 ${className}`}>
-                {children}
-            </div>
-        );
-
-        // --- COMPONENT: IMPACTFUL STRAIGHT TRACK (TOP 15 - 5 per Brand) ---
-        const ImpactfulStraightTrack = ({ data, title, theme, height = "auto" }) => {
-            const maxSales = Math.max(...data.map(r => r.sales), 10); 
-            // Scale ensuring landmarks visible (at least 85 miles now, or leader * 1.35)
-            const trackMax = Math.max(maxSales * 1.35, 85); 
-            
-            const formatMiles = (val) => `${val.toFixed(1)} 英里`;
-            // getBrandGif is global
-
-            const racerCount = data.length || 1;
-            // Compact Mode: Reduce lane height to 65px per racer (approx) - MORE COMPACT
-            // Minimum track height 300px
-            const LANE_HEIGHT = 70;
-            // Space between turf and lanes - COMPACT
-            const VERTICAL_PADDING = 60;
-
-            const computedHeight = Math.max((racerCount * LANE_HEIGHT) + (VERTICAL_PADDING * 2), 300);
-            
-            return (
-                /* Main Track Container - rounded-3xl for cute look */
-                <div className={`rounded-3xl overflow-hidden ${theme.trackBorder} shadow-2xl relative transition-colors duration-500 bg-slate-900`}>
-                    
-                    {/* Header */}
-                    <div className={`${theme.trackHeader} p-6 flex flex-col md:flex-row justify-between items-center relative z-30 shadow-lg`}>
-                        <h2 className="text-2xl md:text-3xl font-cute font-bold flex items-center tracking-wide mb-2 md:mb-0">
-                        <span className="mr-3 text-4xl animate-bounce">🏁</span> {title}
-                        </h2>
-                        <div className="text-lg font-cute font-bold bg-slate-800/50 px-6 py-2 rounded-full backdrop-blur-sm border border-slate-600 shadow-sm text-slate-300">
-                            賽程範圍: 0 - {formatMiles(trackMax)}
-                        </div>
-                    </div>
-                    
-                    {/* Track Area */}
-                    <div className={`relative w-full ${theme.trackBg} transition-colors duration-500`} style={{ height: `${computedHeight}px` }}>
-                        
-                        {/* 1. Track Surface & Racers (CLIPPED) */}
-                        <div className="absolute inset-0 overflow-hidden">
-                             {/* Spectator Stands/Turf Top */}
-                             <div className={`absolute top-0 left-0 right-0 h-16 bg-slate-800 z-10 border-b-4 border-slate-600 shadow-inner`}></div>
-                             
-                             {/* Spectator Stands/Turf Bottom */}
-                             <div className={`absolute bottom-0 left-0 right-0 h-16 bg-slate-800 z-10 border-t-4 border-slate-600 shadow-inner`}></div>
-                             
-                             {/* Lanes */}
-                             {Array.from({length: racerCount}).map((_, i) => (
-                                <div key={i} className={`absolute w-full border-b border-dashed ${theme.laneBorder}`} 
-                                     style={{ top: `${VERTICAL_PADDING + (i * LANE_HEIGHT)}px`, height: `${LANE_HEIGHT}px` }}></div>
-                             ))}
-                             
-                             {/* Fixed Left Ranking Column */}
-                             <div className="absolute left-4 top-0 bottom-0 w-12 z-30 pointer-events-none">
-                                {Array.from({length: racerCount}).map((_, i) => (
-                                    <div 
-                                        key={i} 
-                                        className="absolute left-0 w-full flex items-center justify-center"
-                                        style={{ 
-                                            top: `${VERTICAL_PADDING + (i * LANE_HEIGHT)}px`, 
-                                            height: `${LANE_HEIGHT}px` 
-                                        }}
-                                    >
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg border-2
-                                            ${i === 0 ? 'bg-yellow-500 border-yellow-300 scale-125 z-10' : 
-                                              i === 1 ? 'bg-slate-500 border-slate-300' : 
-                                              i === 2 ? 'bg-orange-700 border-orange-500' : 'bg-slate-700 border-slate-600 opacity-60'}`}>
-                                            {i + 1}
-                                        </div>
-                                    </div>
-                                ))}
-                             </div>
-                             
-                             {/* Start Line Grid */}
-                             <div className="absolute left-16 w-12 z-0 flex flex-col justify-center items-center opacity-40"
-                                  style={{ top: `${VERTICAL_PADDING}px`, bottom: `${VERTICAL_PADDING}px` }}>
-                                <div className="w-full h-full" style={{ backgroundImage: 'linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%), linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%)', backgroundSize: '10px 10px', backgroundPosition: '0 0, 5px 5px' }}></div>
-                                <div className={`absolute transform -rotate-90 text-white font-racing font-bold text-2xl tracking-widest whitespace-nowrap drop-shadow-md`}>START</div>
-                             </div>
-
-                             {/* 3. The Racers */}
-                            <div className="absolute inset-0 pointer-events-none pl-14"> 
-                                {data.map((racer, index) => {
-                                    const progress = Math.min((racer.sales / trackMax) * 100, 95); 
-                                    const leftPos = progress * 0.9;
-                                    
-                                    const isNearEnd = progress > 55;
-                                    const labelClass = isNearEnd 
-                                        ? "right-full mr-6 flex-row-reverse" 
-                                        : "left-full ml-6";
-
-                                    // Achievement % and Level for Badge
-                                    const achPct = racer.sales_target > 0 ? (racer.actual_sales / racer.sales_target * 100) : 0;
-                                    const trackLevel = getTrackLevel(achPct);
-
-                                    let trailColor = "from-transparent to-white";
-                                    if (racer.brand === "Dermes") trailColor = "from-transparent via-orange-500 to-orange-200";
-                                    if (racer.brand === "Reenex") trailColor = "from-transparent via-red-600 to-red-400";
-                                    if (racer.brand === "Elyze") trailColor = "from-transparent via-emerald-500 to-emerald-200";
-
-                                    return (
-                                        <div 
-                                            key={racer.id} 
-                                            className="absolute w-full group z-20 hover:z-50 pointer-events-auto"
-                                            style={{ 
-                                                top: `${VERTICAL_PADDING + (index * LANE_HEIGHT)}px`, 
-                                                height: `${LANE_HEIGHT}px` 
-                                            }}
-                                        >
-                                            <div className="relative w-full h-full flex items-center">
-                                                
-                                                {/* TRACK TIER WATERMARK (ON TRACK - CENTERED) */}
-                                                {/* Adjusted: Centered to prevent going off-screen */}
-                                                <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-black italic tracking-tighter opacity-40 pointer-events-none whitespace-nowrap z-0 ${trackLevel.color} font-racing`} 
-                                                     style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-                                                    {trackLevel.icon} {trackLevel.name}跑道
-                                                </div>
-
-                                                <div 
-                                                    className="absolute transform -translate-y-1/2 transition-all duration-1000 ease-linear flex items-center group-hover:z-[100]"
-                                                    style={{ left: `${leftPos}%`, top: '50%' }}
-                                                >
-                                                    {/* Neon Trail */}
-                                                    <div className={`absolute right-8 top-1/2 -translate-y-1/2 -z-10`}>
-                                                        <div className={`h-1 w-32 bg-gradient-to-r from-transparent to-cyan-500 rounded-full blur-[1px] opacity-80`}></div>
-                                                    </div>
-
-                                                    {/* Cow with Bobbing Animation */}
-                                                    <div className="relative z-30 transform cursor-pointer animate-gallop hover:scale-110 transition-transform">
-                                                        <div className="absolute -inset-4 bg-cyan-500/20 rounded-full blur-lg animate-pulse -z-10"></div>
-                                                        <img 
-                                                            src={getBrandGif(racer.brand)} 
-                                                            alt={racer.name} 
-                                                            className={`h-12 md:h-16 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(0,0,0,0.8)] ${index===0 ? 'scale-110' : ''}`}
-                                                        />
-                                                        
-                                                        {/* Modern Name Tag Bubble */}
-                                                        <div className={`absolute ${labelClass} bg-slate-900/90 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold shadow-lg border border-slate-600 z-[60] backdrop-blur-md transition-all whitespace-nowrap min-w-max group-hover:scale-110 top-1/2 -translate-y-1/2 flex items-center gap-2`}>
-                                                            <span className={isNearEnd ? "ml-1 order-2" : "mr-1"}>{racer.name.split(' ')[0]}</span>
-                                                            <span className={`text-cyan-400 font-numbers text-sm`}>{formatMiles(racer.sales)}</span>
-                                                            
-                                                            {/* Track Level Badge (Small) */}
-                                                            {achPct >= 100 && (
-                                                                <span className={`ml-1 px-1.5 py-0.5 rounded-md bg-slate-800 border ${trackLevel.color.replace('text-', 'border-')} text-[8px] ${trackLevel.color} ${isNearEnd ? "order-first mr-1" : ""}`}>
-                                                                    {trackLevel.icon}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* 2. Milestones (Neon Markers) */}
-                        <div className="absolute inset-0 pointer-events-none pl-14">
-                            {[20, 40, 60].map((mile, idx) => {
-                                const pct = (mile / trackMax) * 100;
-                                if (pct > 95) return null; 
-
-                                const isTop = idx % 2 === 0;
-                                const labelPositionClass = isTop 
-                                    ? "-top-12"
-                                    : "top-full mt-12";
-
-                                return (
-                                    <div key={mile} className="absolute w-1 z-40 pointer-events-none" 
-                                         style={{ 
-                                             left: `${pct * 0.9}%`, 
-                                             top: `${VERTICAL_PADDING}px`,
-                                             bottom: `${VERTICAL_PADDING}px`
-                                         }}>
-                                        
-                                        {/* Neon Line */}
-                                        <div className={`h-full w-px bg-cyan-500/30 shadow-[0_0_10px_#00f3ff]`}></div>
-                                        
-                                        {/* Floating Label - Neon Sign */}
-                                        <div className={`absolute ${labelPositionClass} -left-20 w-40 flex flex-col items-center z-50`}>
-                                            <div className={`relative bg-slate-900/90 border border-cyan-500/50 text-cyan-400 font-racing font-bold py-1 px-4 rounded shadow-[0_0_15px_rgba(0,243,255,0.3)] text-center transform hover:scale-110 transition-transform`}>
-                                                <span className="text-lg">{mile}</span> <span className="text-xs opacity-70">MILES</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- MAIN COMPONENT ---
-
-        function SalesDerbyBlue() {
-            const [racers, setRacers] = useState(SAMPLE_RACERS);
-            const [isLoading, setIsLoading] = useState(false);
-            const [lastUpdated, setLastUpdated] = useState(null);
-            const [fetchError, setFetchError] = useState(false);
-            
-            // Scorecard State
-            const [scBrand, setScBrand] = useState("ALL");
-            const [scHub, setScHub] = useState("ALL");
-            const [scFloor, setScFloor] = useState("ALL");
-            const [scRacerId, setScRacerId] = useState("");
-
-            // Leaderboard State
-            const [leaderboardView, setLeaderboardView] = useState("BRAND"); 
-            const [lbNJFilter, setLbNJFilter] = useState("ALL"); 
-            const [lbTierFilter, setLbTierFilter] = useState("ALL"); // NEW TIER FILTER
-            
-            // MASTER BRAND FILTER (Applies to all stats below)
-            const [masterBrandFilter, setMasterBrandFilter] = useState("ALL");
-            
-            // Filter states for dropdowns
-            const [floorHubFilter, setFloorHubFilter] = useState("ALL");
-            const [floorLevelFilter, setFloorLevelFilter] = useState("ALL");
-            
-            // Track Filter States
-            const [trackFilterBrand, setTrackFilterBrand] = useState("ALL");
-            const [trackFilterHub, setTrackFilterHub] = useState("ALL");
-            const [trackFilterFloor, setTrackFilterFloor] = useState("ALL");
-            const [trackFilterTier, setTrackFilterTier] = useState("ALL");
-
-            const theme = THEME; 
-
-            // Derived Lists
-            const uniqueHubs = useMemo(() => {
-                let filtered = racers;
-                if (scBrand !== "ALL") filtered = filtered.filter(r => r.brand === scBrand);
-                return [...new Set(filtered.map(r => r.hub))].sort();
-            }, [racers, scBrand]);
-            
-            const uniqueFloors = useMemo(() => {
-                let filtered = racers;
-                if (scBrand !== "ALL") filtered = filtered.filter(r => r.brand === scBrand);
-                if (scHub !== "ALL") filtered = filtered.filter(r => r.hub === scHub);
-                return [...new Set(filtered.map(r => r.floor))].sort();
-            }, [racers, scBrand, scHub]);
-
-            const uniqueFloorHubs = useMemo(() => {
-                 let filtered = racers;
-                 if (masterBrandFilter !== "ALL") filtered = filtered.filter(r => r.brand === masterBrandFilter);
-                 return [...new Set(filtered.map(r => r.hub))].sort();
-            }, [racers, masterBrandFilter]);
-
-            const uniqueFloorLevels = useMemo(() => {
-                let filtered = racers;
-                if (masterBrandFilter !== "ALL") filtered = filtered.filter(r => r.brand === masterBrandFilter);
-                if (floorHubFilter !== "ALL") filtered = filtered.filter(r => r.hub === floorHubFilter);
-                return [...new Set(filtered.map(r => r.floor))].sort();
-            }, [racers, masterBrandFilter, floorHubFilter]);
-            
-            // Derived Lists for Track Filters
-            const uniqueTrackHubs = useMemo(() => {
-                let filtered = racers;
-                if (trackFilterBrand !== "ALL") filtered = filtered.filter(r => r.brand === trackFilterBrand);
-                return [...new Set(filtered.map(r => r.hub))].sort();
-            }, [racers, trackFilterBrand]);
-
-            const uniqueTrackFloors = useMemo(() => {
-                let filtered = racers;
-                if (trackFilterBrand !== "ALL") filtered = filtered.filter(r => r.brand === trackFilterBrand);
-                if (trackFilterHub !== "ALL") filtered = filtered.filter(r => r.hub === trackFilterHub);
-                return [...new Set(filtered.map(r => r.floor))].sort();
-            }, [racers, trackFilterBrand, trackFilterHub]);
-            
-            // Define scAvailableRacers
-            const scAvailableRacers = useMemo(() => {
-                return racers.filter(r => {
-                    const matchBrand = scBrand === "ALL" || r.brand === scBrand;
-                    const matchHub = scHub === "ALL" || r.hub === scHub;
-                    const matchFloor = scFloor === "ALL" || r.floor === scFloor;
-                    return matchBrand && matchHub && matchFloor;
-                }).sort((a, b) => a.name.localeCompare(b.name));
-            }, [racers, scBrand, scHub, scFloor]);
-
-            useEffect(() => {
-                if (scAvailableRacers.length > 0) {
-                    const exists = scAvailableRacers.find(r => r.id.toString() === scRacerId);
-                    if (!exists) setScRacerId(scAvailableRacers[0].id.toString());
-                } else { setScRacerId(""); }
-            }, [scAvailableRacers, scRacerId]);
-
-            const fetchData = () => {
-                if (!GOOGLE_SCRIPT_URL) return;
-                setIsLoading(true);
-                setFetchError(false);
-                fetch(GOOGLE_SCRIPT_URL, { method: 'GET', redirect: 'follow' })
-                .then(response => { if (!response.ok) throw new Error(`HTTP error!`); return response.json(); })
-                .then(data => {
-                    if (data && data.length > 0) {
-                        const normalizeKeys = (obj) => {
-                            const newObj = {};
-                            Object.keys(obj).forEach(key => { newObj[key.toLowerCase().replace(/[\s_]/g, '')] = obj[key]; });
-                            return newObj;
-                        };
-                        const parseNum = (val) => {
-                            if (typeof val === 'number') return val;
-                            if (typeof val === 'string') return parseFloat(val.replace(/[$,]/g, '')) || 0;
-                            return 0;
-                        };
-                        const normalizeBrand = (str) => {
-                            if (!str) return null;
-                            const lower = str.trim().toLowerCase();
-                            if (lower.includes('dermes') || lower.startsWith('d')) return 'Dermes';
-                            if (lower.includes('reenex') || lower.startsWith('r')) return 'Reenex';
-                            if (lower.includes('elyze') || lower.startsWith('e')) return 'Elyze';
-                            return null;
-                        };
-                        const deriveBrand = (str) => {
-                            if (!str) return "Unknown";
-                            const firstChar = str.trim().charAt(0).toUpperCase();
-                            if (firstChar === 'D') return 'Dermes';
-                            if (firstChar === 'R') return 'Reenex';
-                            if (firstChar === 'E') return 'Elyze';
-                            return "Unknown";
-                        }
-                        const deriveHub = (str, brand) => {
-                            if (!str) return "General";
-                            const s = str.toUpperCase();
-                            if (brand === 'Dermes' && s.includes('LP')) {
-                                if (s.includes('60')) return 'LP 60';
-                                if (s.includes('32')) return 'LP 32';
-                            }
-                            if (s.includes('TS')) return 'TS';
-                            if (s.includes('LP')) return 'LP';
-                            if (s.includes('PP')) return 'PP';
-                            if (s.includes('TST') || s.includes('PK') || s.includes('RD')) return 'TST';
-                            return "General";
-                        }
-                        const newRacers = data.map((row) => normalizeKeys(row)).filter(row => row.name).map((row, index) => {
-                            const trialQty = parseNum(row.trialqty);
-                            const packageSales = parseNum(row.packagesales);
-                            const comboQty = parseNum(row.comboqty);
-                            const pllaQty = parseNum(row.pllaqty);
-                            const deviceQty = parseNum(row.deviceqty);
-                            const subQty = parseNum(row.sub_qty); 
-                            
-                            // UPDATED: Check multiple possible column names for Target and Actual Sales
-                            const salesTarget = parseNum(row.salestarget) || parseNum(row.target) || parseNum(row.sales_target) || 200000; 
-                            const actualSales = parseNum(row.actualsales) || parseNum(row.actualsale) || parseNum(row.actual_sales) || 0;
-                            
-                            const milesTrial = trialQty * 2; 
-                            const milesPackage = Math.floor(packageSales / 10000) * 2; 
-                            const milesCombo = comboQty * 4; 
-                            const milesPlla = Math.floor(pllaQty / 2) * 2; 
-                            const milesDevice = deviceQty * 3; 
-                            const milesSub = subQty * 2;
-                            
-                            const totalMiles = milesTrial + milesPackage + milesCombo + milesPlla + milesDevice + milesSub;
-                            
-                            const njValue = row.nj ? row.nj.toUpperCase() : 'N';
-                            let rawFloorStr = row.floor || row.shop || "HQ";
-                            
-                            let brand = normalizeBrand(row.brand);
-                            if (!brand) brand = deriveBrand(rawFloorStr);
-                            
-                            let hub = row.hub;
-                            let derivedHub = deriveHub(rawFloorStr, brand);
-                            if (brand === 'Dermes' && (derivedHub === 'LP 60' || derivedHub === 'LP 32')) {
-                                hub = derivedHub;
-                            } else if (!hub) {
-                                hub = derivedHub;
-                            }
-                            return {
-                                id: index + 1, name: row.name, brand: brand, hub: hub, floor: rawFloorStr, nj: njValue,
-                                trial_qty: trialQty, package_sales: packageSales, combo_qty: comboQty, plla_qty: pllaQty, device_qty: deviceQty, sub_qty: subQty,
-                                sales: totalMiles, color: BRAND_COLORS[brand] || "#94a3b8",
-                                sales_target: salesTarget, actual_sales: actualSales
-                            };
-                        });
-                        setRacers(newRacers); setLastUpdated(new Date()); setFetchError(false);
-                    }
-                    setIsLoading(false);
-                })
-                .catch(err => { setFetchError(true); setIsLoading(false); });
-            };
-
-            useEffect(() => { fetchData(); const interval = setInterval(fetchData, 30000); return () => clearInterval(interval); }, []);
-
-            const sortedGlobal = useMemo(() => [...racers].sort((a, b) => b.sales - a.sales), [racers]);
-            const top3 = sortedGlobal.slice(0, 3);
-            
-            // --- FILTERED DATA FOR ALL SECTIONS ---
-            const filteredRacers = useMemo(() => {
-                if (masterBrandFilter === "ALL") return racers;
-                return racers.filter(r => r.brand === masterBrandFilter);
-            }, [racers, masterBrandFilter]);
-            
-            // Track Data Calculation (Using TRACK filters)
-            const trackRacers = useMemo(() => {
-                let filtered = racers.filter(r => {
-                    if (trackFilterBrand !== "ALL" && r.brand !== trackFilterBrand) return false;
-                    if (trackFilterHub !== "ALL" && r.hub !== trackFilterHub) return false;
-                    if (trackFilterFloor !== "ALL" && r.floor !== trackFilterFloor) return false;
-                    
-                    if (trackFilterTier !== "ALL") {
-                        const achPct = r.sales_target > 0 ? (r.actual_sales / r.sales_target * 100) : 0;
-                        const level = getTrackLevel(achPct).name;
-                        if (level !== trackFilterTier) return false;
-                    }
-                    return true;
-                });
-
-                filtered.sort((a, b) => b.sales - a.sales);
-                return filtered.slice(0, 15);
-            }, [racers, trackFilterBrand, trackFilterHub, trackFilterFloor, trackFilterTier]);
-
-            // --- LEADERBOARD STATS ---
-            const filterByNJ = (r) => lbNJFilter === 'ALL' || r.nj === lbNJFilter;
-            
-            // NEW: Filter by Tier helper
-            const filterByTier = (r) => {
-                if (lbTierFilter === 'ALL') return true;
-                const achPct = r.sales_target > 0 ? (r.actual_sales / r.sales_target * 100) : 0;
-                const levelName = getTrackLevel(achPct).name;
-                return levelName === lbTierFilter;
-            };
-
-            const filterRacersForLeaderboard = (r) => {
-                // Must pass NJ, Tier filters AND respect Master Brand
-                if (!filterByNJ(r)) return false;
-                if (!filterByTier(r)) return false;
-                if (masterBrandFilter !== "ALL" && r.brand !== masterBrandFilter) return false;
-                return true;
-            };
-
-            // 1. BRAND STATS
-            const brandStats = useMemo(() => {
-                const map = {};
-                racers.filter(filterRacersForLeaderboard).forEach(r => {
-                    if (!map[r.brand]) map[r.brand] = { name: r.brand, miles: 0, count: 0, color: BRAND_COLORS[r.brand] };
-                    map[r.brand].miles += r.sales;
-                    map[r.brand].count += 1;
-                });
-                return Object.values(map).sort((a, b) => b.miles - a.miles);
-            }, [racers, lbNJFilter, lbTierFilter, masterBrandFilter]); // Added all dependencies
-
-            // 2. HUB STATS
-            const hubStats = useMemo(() => {
-                const map = {};
-                racers.filter(filterRacersForLeaderboard).forEach(r => {
-                    const hubName = r.hub || "Unknown";
-                    // If showing ALL brands, split Hubs by brand (e.g. Dermes Kln vs Reenex Kln)
-                    // If showing ONE brand, just show Hubs for that brand
-                    const key = masterBrandFilter === "ALL" ? `${r.brand} - ${hubName}` : hubName;
-                    
-                    if (!map[key]) {
-                        map[key] = { 
-                            name: hubName, 
-                            displayName: masterBrandFilter === "ALL" ? `${r.brand} ${hubName}` : hubName,
-                            miles: 0, 
-                            count: 0, 
-                            brand: r.brand 
-                        };
-                    }
-                    map[key].miles += r.sales;
-                    map[key].count += 1;
-                });
-                return Object.values(map).sort((a, b) => b.miles - a.miles);
-            }, [racers, lbNJFilter, lbTierFilter, masterBrandFilter]);
-
-            // 3. FLOOR STATS
-            const floorStats = useMemo(() => {
-                const map = {};
-                racers.filter(filterRacersForLeaderboard).forEach(r => {
-                    const key = r.floor; // Floor names are usually unique enough (e.g. D 35/F TS (A))
-                    if (!map[key]) {
-                        map[key] = { 
-                            name: r.floor, 
-                            displayName: r.floor,
-                            miles: 0, 
-                            count: 0, 
-                            brand: r.brand,
-                            hub: r.hub 
-                        };
-                    }
-                    map[key].miles += r.sales;
-                    map[key].count += 1;
-                });
-                return Object.values(map).sort((a, b) => b.miles - a.miles);
-            }, [racers, masterBrandFilter, lbNJFilter, lbTierFilter]);
-
-            const getBrandColorClass = (b) => {
-                if (b === 'Dermes') return 'bg-orange-500';
-                if (b === 'Reenex') return 'bg-red-600';
-                if (b === 'Elyze') return 'bg-green-600';
-                return 'bg-slate-400'; // Default gray for Unknown
-            };
-
-            const renderLeaderboardCard = (item, idx, type) => {
-                // Dynamic max for bar chart
-                const list = type === 'BRAND' ? brandStats : type === 'HUB' ? hubStats : floorStats;
-                const maxMiles = Math.max(...list.map(i => i.miles), 1);
-                const percentage = (item.miles / maxMiles) * 100;
-                
-                let badgeColor = 'bg-slate-200 text-slate-500';
-                if (idx === 0) badgeColor = 'bg-yellow-400 text-yellow-900';
-                if (idx === 1) badgeColor = 'bg-slate-400 text-white';
-                if (idx === 2) badgeColor = 'bg-orange-400 text-white';
-                
-                let barColor = 'bg-slate-400';
-                if (item.brand === 'Dermes') barColor = 'bg-orange-400';
-                if (item.brand === 'Reenex') barColor = 'bg-red-500';
-                if (item.brand === 'Elyze') barColor = 'bg-green-500';
-
-                return (
-                    <F1Card key={`${type}_${item.name}_${item.brand || ''}`} theme={theme} className="p-4 hover:-translate-y-1 hover:shadow-cyan-500/20 transition-all relative overflow-hidden group bg-slate-800 border border-slate-700">
-                         <div className="absolute top-0 right-0 p-2 opacity-5"><Trophy size={80} className="text-white" /></div>
-                        <div className="relative z-10">
-                            <div className="flex justify-between items-start mb-2">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-lg ${badgeColor}`}>{idx + 1}</div>
-                                    <div>
-                                        <h4 className="font-bold text-lg text-white leading-none flex items-center gap-2 font-racing tracking-wide">
-                                            {item.displayName || item.name}
-                                        </h4>
-                                        {/* Display Brand Badge only if showing ALL brands to distinguish */}
-                                        {masterBrandFilter === "ALL" && type !== 'BRAND' && (
-                                            <div className="mt-1">
-                                                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white ${getBrandColorClass(item.brand)}`}>
-                                                    {item.brand}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {type === 'FLOOR' && <div className="mt-0.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.hub}</div>}
-                                    </div>
-                                </div>
-                                <div className="text-xs font-bold text-slate-300 bg-slate-700/50 px-2 py-0.5 rounded-full whitespace-nowrap border border-slate-600">{item.count} 人</div>
-                            </div>
-                            <div className="flex items-end justify-between mb-2">
-                                <div className="text-3xl font-numbers font-bold text-white">{item.miles.toFixed(1)} <span className="text-sm text-slate-400 font-bold font-sans">MILES</span></div>
-                                {type === 'BRAND' && <img src={getBrandGif(item.name)} className="h-8 w-auto object-contain" />}
-                            </div>
-                            <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden border border-slate-600"><div className={`h-full rounded-full ${barColor} shadow-[0_0_10px_currentColor]`} style={{ width: `${percentage}%` }}></div></div>
-                        </div>
-                    </F1Card>
-                );
-            };
-
-            const dermesTotal = racers.filter(r => r.brand === 'Dermes').reduce((a, b) => a + b.sales, 0);
-            const reenexTotal = racers.filter(r => r.brand === 'Reenex').reduce((a, b) => a + b.sales, 0);
-            const elyzeTotal = racers.filter(r => r.brand === 'Elyze').reduce((a, b) => a + b.sales, 0);
-            const grandTotal = dermesTotal + reenexTotal + elyzeTotal || 1; 
-            const dermesPct = (dermesTotal / grandTotal) * 100;
-            const reenexPct = (reenexTotal / grandTotal) * 100;
-            const elyzePct = (elyzeTotal / grandTotal) * 100;
-
-            const activeRacersCount = filteredRacers.filter(r => r.sales > 0).length;
-
-            return (
-                <div className={`min-h-screen ${theme.bgClass} font-sans selection:bg-neon-blue selection:text-dark-bg relative transition-colors duration-1000 text-slate-200`}>
-                <section className="relative w-full bg-slate-900 shadow-xl z-20 border-b border-slate-700">
-                    <div className="w-full"><img src="https://i.postimg.cc/4xWSKVQ8/dreamina-2026-01-30-9978-Transform-the-curved-golden-running-tra-(1).jpg" alt="Main Event Poster" className="w-full h-auto object-cover block opacity-80 hover:opacity-100 transition-opacity" /></div>
-                </section>
-                <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-16 pb-24">
-                    <section className="w-full">
-                        <div className="text-center mb-8">
-                            <h1 className={`text-5xl md:text-7xl font-racing font-bold text-transparent bg-clip-text bg-gradient-to-r from-neon-blue via-white to-neon-purple drop-shadow-[0_0_10px_rgba(0,243,255,0.5)] mb-4 italic`}>膠原飛輪跑 🐮</h1>
-                            <div className="inline-block bg-slate-800/80 text-neon-blue px-8 py-2 rounded-full border border-neon-blue shadow-[0_0_15px_rgba(0,243,255,0.3)] transform -skew-x-12 hover:skew-x-0 transition-transform"><span className="block text-xl md:text-2xl font-bold tracking-widest skew-x-12 hover:skew-x-0">全民競跑。人人每日二十英里</span></div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                             <F1Card theme={theme} className="p-5 flex flex-col justify-between h-full bg-slate-800 relative overflow-hidden">
-                                <div className={`absolute -right-10 -top-10 w-40 h-40 rounded-full blur-[100px] opacity-20 bg-neon-blue`}></div>
-                                <div className="flex justify-between items-start relative z-10 mb-2">
-                                    <div>
-                                        <h3 className={`text-slate-400 text-sm font-bold tracking-widest uppercase mb-1`}>總獲得英里</h3>
-                                        <div className={`text-7xl font-numbers font-bold text-white leading-none tracking-tight drop-shadow-lg`}>{filteredRacers.reduce((a,b)=>a+b.sales,0).toFixed(1)}<span className="text-xl ml-1 font-bold text-slate-500">MILES</span></div>
-                                    </div>
-                                    <div className={`p-3 rounded-2xl shadow-lg bg-slate-700/50 text-neon-blue border border-slate-600`}><Award className="animate-pulse" size={28} /></div>
-                                </div>
-                                <div className="w-full h-2 rounded-full overflow-hidden mb-4 bg-slate-700 flex shadow-inner relative">
-                                    <div className={`h-full rounded-full transition-all duration-500 shadow-[0_0_10px_currentColor] ${
-                                        masterBrandFilter === 'Dermes' ? 'bg-orange-500' :
-                                        masterBrandFilter === 'Reenex' ? 'bg-red-600' :
-                                        masterBrandFilter === 'Elyze' ? 'bg-green-500' : 'bg-slate-500'
-                                    }`} style={{ width: '100%' }}></div>
-                                </div>
-                                {masterBrandFilter === "ALL" && (
-                                    <div className="grid grid-cols-3 gap-2 relative z-10">
-                                        {BRANDS.map(b => {
-                                            const val = racers.filter(r => r.brand === b).reduce((a, sum) => a + sum.sales, 0);
-                                            let colors = { bg: 'bg-slate-700', text: 'text-slate-400', border: 'border-slate-600' };
-                                            if (b === 'Dermes') colors = { bg: 'bg-orange-900/30', text: 'text-orange-400', border: 'border-orange-500/30' };
-                                            if (b === 'Reenex') colors = { bg: 'bg-red-900/30', text: 'text-red-400', border: 'border-red-500/30' };
-                                            if (b === 'Elyze') colors = { bg: 'bg-green-900/30', text: 'text-green-400', border: 'border-green-500/30' };
-                                            return (
-                                                <div key={b} className={`${colors.bg} rounded-xl p-2 text-center border ${colors.border} hover:border-opacity-100 transition-all`}>
-                                                    <div className={`text-[10px] ${colors.text} font-bold uppercase tracking-wide opacity-80`}>{b}</div>
-                                                    <div className={`font-numbers font-bold ${colors.text} text-2xl leading-none mt-0.5`}>{val.toFixed(1)}</div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                             </F1Card>
-                             <F1Card theme={theme} className="p-6 flex flex-col justify-between h-full bg-slate-800">
-                                <div className="flex justify-between items-start">
-                                    <h3 className={`text-slate-400 text-sm font-bold tracking-widest uppercase`}>選手數量</h3>
-                                    <div className="bg-slate-700/50 p-3 rounded-full text-neon-purple border border-slate-600"><Store className="animate-pulse" size={32} /></div>
-                                </div>
-                                <div className="flex items-end justify-between"><div className={`text-7xl font-numbers font-bold text-white`}>{activeRacersCount} <span className="text-3xl text-slate-500">/ {filteredRacers.length}</span></div><div className={`text-xs font-bold text-neon-purple bg-purple-900/30 border border-purple-500/30 px-3 py-1 rounded-full uppercase tracking-wider`}>ACTIVE / TOTAL</div></div>
-                             </F1Card>
-                             <F1Card theme={theme} className={`p-6 flex flex-col justify-between h-full bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 relative overflow-hidden`}>
-                                <div className="absolute top-0 right-0 p-20 bg-neon-blue/10 rounded-full blur-3xl"></div>
-                                <div className="flex justify-between items-start relative z-10">
-                                    <h3 className={`text-neon-blue text-sm font-bold tracking-widest uppercase`}>目前第一名</h3>
-                                    <div className="bg-yellow-500/20 p-3 rounded-full text-yellow-400 border border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.3)]"><Trophy className="animate-bounce" size={32} /></div>
-                                </div>
-                                <div className="relative z-10"><div className={`text-4xl font-bold text-white truncate mb-1`}>{top3[0]?.name || '-'}</div><div className={`text-neon-blue font-numbers text-5xl font-bold`}>{top3[0]?.sales.toFixed(1) || 0} <span className="text-xl text-slate-500">MILES</span></div></div>
-                             </F1Card>
-                        </div>
-                    </section>
-
-                    {/* --- LEADERBOARD SECTION --- */}
-                    <section className="w-full">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-                            <div className="flex items-center gap-4">
-                                <h3 className={`text-3xl font-racing text-white italic tracking-wide flex items-center gap-3`}><span className="text-neon-purple"><Trophy size={32} /></span> 各級實力龍虎榜</h3>
-                                <div className="flex bg-slate-800 p-1 rounded-full border border-slate-700">
-                                    {[{ id: 'BRAND', label: '品牌榜', icon: <Tag size={14} /> }, { id: 'HUB', label: '區域榜', icon: <MapPin size={14} /> }, { id: 'FLOOR', label: '樓層榜', icon: <Building size={14} /> }].map(tab => (
-                                        <button key={tab.id} onClick={() => setLeaderboardView(tab.id)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${leaderboardView === tab.id ? 'bg-neon-purple text-white shadow-[0_0_15px_rgba(188,19,254,0.4)]' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}>{tab.icon} {tab.label}</button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2 items-center">
-                                <div className="flex gap-1 bg-slate-800 p-1 rounded-full border border-slate-700">
-                                    {['ALL', 'Dermes', 'Reenex', 'Elyze'].map(b => (
-                                        <button key={b} onClick={() => setMasterBrandFilter(b)} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${masterBrandFilter === b ? (b === 'Dermes' ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]' : b === 'Reenex' ? 'bg-red-600 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]') + ' text-white' : (b === 'ALL' && masterBrandFilter === 'ALL' ? 'bg-white text-slate-900 shadow-[0_0_10px_rgba(255,255,255,0.4)]' : 'text-slate-400 hover:text-white hover:bg-slate-700')}`}>{b === 'ALL' ? 'ALL' : b}</button>
-                                    ))}
-                                </div>
-                                <div className="relative">
-                                    <select value={lbNJFilter} onChange={(e) => setLbNJFilter(e.target.value)} className="appearance-none bg-slate-800 border border-slate-700 text-slate-300 py-2 pl-4 pr-10 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm focus:outline-none focus:ring-2 focus:ring-neon-purple cursor-pointer hover:border-slate-500">
-                                        <option value="ALL">所有人員</option>
-                                        <option value="Y">新人 (NJ)</option>
-                                        <option value="N">非新人</option>
-                                    </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div>
-                                </div>
-                                {/* NEW TIER FILTER DROPDOWN */}
-                                <div className="relative">
-                                    <select value={lbTierFilter} onChange={(e) => setLbTierFilter(e.target.value)} className="appearance-none bg-slate-800 border border-slate-700 text-slate-300 py-2 pl-4 pr-10 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm focus:outline-none focus:ring-2 focus:ring-neon-purple cursor-pointer hover:border-slate-500">
-                                        <option value="ALL">所有等級</option>
-                                        {TRACK_TIERS.map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade-in">
-                            {leaderboardView === 'BRAND' && brandStats.map((item, idx) => renderLeaderboardCard(item, idx, 'BRAND'))}
-                            {leaderboardView === 'HUB' && hubStats.map((item, idx) => renderLeaderboardCard(item, idx, 'HUB'))}
-                            {leaderboardView === 'FLOOR' && floorStats.map((item, idx) => renderLeaderboardCard(item, idx, 'FLOOR'))}
-                        </div>
-                    </section>
-                    
-                    {/* TRACK SECTION */}
-                    <section>
-                         <div className="bg-slate-800 rounded-2xl shadow-md p-4 mb-4 border border-slate-700">
-                             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                                 <div className="flex items-center gap-2 flex-wrap">
-                                     <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">身份篩選:</span>
-                                     <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700">
-                                        <select value={trackFilterBrand} onChange={(e) => { setTrackFilterBrand(e.target.value); setTrackFilterHub('ALL'); setTrackFilterFloor('ALL'); }} className="bg-transparent text-xs font-bold text-slate-300 outline-none px-2 py-1 cursor-pointer">
-                                            <option value="ALL">全部品牌</option>
-                                            {["Dermes", "Reenex", "Elyze"].map(b => <option key={b} value={b}>{b}</option>)}
-                                        </select>
-                                     </div>
-                                     <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700">
-                                        <select value={trackFilterHub} onChange={(e) => { setTrackFilterHub(e.target.value); setTrackFilterFloor('ALL'); }} className="bg-transparent text-xs font-bold text-slate-300 outline-none px-2 py-1 cursor-pointer">
-                                            <option value="ALL">全部區域</option>
-                                            {uniqueTrackHubs.map(h => <option key={h} value={h}>{h}</option>)}
-                                        </select>
-                                     </div>
-                                     <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700">
-                                        <select value={trackFilterFloor} onChange={(e) => setTrackFilterFloor(e.target.value)} className="bg-transparent text-xs font-bold text-slate-300 outline-none px-2 py-1 cursor-pointer">
-                                            <option value="ALL">全部樓層</option>
-                                            {uniqueTrackFloors.map(f => <option key={f} value={f}>{f}</option>)}
-                                        </select>
-                                     </div>
-                                 </div>
-                                 
-                                 <div className="flex items-center gap-2">
-                                     <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">跑道等級:</span>
-                                     <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700">
-                                        <select value={trackFilterTier} onChange={(e) => setTrackFilterTier(e.target.value)} className="bg-transparent text-xs font-bold text-slate-300 outline-none px-2 py-1 cursor-pointer">
-                                            <option value="ALL">全部等級</option>
-                                            {TRACK_TIERS.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
-                        <ImpactfulStraightTrack data={trackRacers} title="排行榜激戰" theme={theme} height="1500px" />
-                    </section>
-                    
-                    <section className="grid grid-cols-1 gap-6">
-                        <div className="relative">
-                             <div className="text-center mb-6"><h3 className={`text-3xl md:text-5xl font-racing font-bold text-white flex items-center justify-center gap-3 drop-shadow-md`}><span className="text-neon-green"><Info size={32} /></span> 加速攻略</h3><p className={`text-slate-400 mt-2 text-sm uppercase tracking-widest`}>掌握以下五大法則，助力肥牛飛速衝刺！🚀</p></div>
-                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                                <F1Card theme={theme} className="p-3 bg-slate-800/80 border border-slate-700 hover:border-neon-green/50 hover:shadow-[0_0_20px_rgba(10,255,104,0.1)] transition-all flex flex-col justify-between h-full"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-green-900/30 text-neon-green rounded-full flex items-center justify-center font-bold text-sm border border-green-500/30">1</div><h4 className={`text-xs font-bold text-white uppercase tracking-wider`}>PN+ Paid Trial</h4></div><div className="bg-slate-900/50 p-2 rounded-lg mb-2 text-center border border-slate-700 grow flex items-center justify-center"><p className={`text-[10px] text-slate-400`}>每賣出 <strong className="text-neon-green">1 個</strong></p></div><div className="bg-green-900/40 text-neon-green border border-green-500/30 text-center py-1 rounded-full font-bold text-[10px] uppercase tracking-widest">+ 2 英里 🆕</div></F1Card>
-                                <F1Card theme={theme} className="p-3 bg-slate-800/80 border border-slate-700 hover:border-neon-blue/50 hover:shadow-[0_0_20px_rgba(0,243,255,0.1)] transition-all flex flex-col justify-between h-full"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-cyan-900/30 text-neon-blue rounded-full flex items-center justify-center font-bold text-sm border border-cyan-500/30">2</div><h4 className={`text-xs font-bold text-white uppercase tracking-wider`}>含 PN+ Package</h4></div><div className="bg-slate-900/50 p-2 rounded-lg mb-2 text-center border border-slate-700 grow flex items-center justify-center"><p className={`text-[10px] text-slate-400`}>每 <strong className="text-neon-blue">$10,000</strong></p></div><div className="bg-cyan-900/40 text-neon-blue border border-cyan-500/30 text-center py-1 rounded-full font-bold text-[10px] uppercase tracking-widest">+ 2 英里 ⚡</div></F1Card>
-                                <F1Card theme={theme} className="p-3 bg-slate-800/80 border border-slate-700 hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.1)] transition-all flex flex-col justify-between h-full"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-blue-900/30 text-blue-400 rounded-full flex items-center justify-center font-bold text-sm border border-blue-500/30">3</div><h4 className={`text-xs font-bold text-white uppercase tracking-wider`}>PN+ Combo</h4></div><div className="bg-slate-900/50 p-2 rounded-lg mb-2 text-center border border-slate-700 grow flex items-center justify-center"><p className={`text-[10px] text-slate-400`}>PN+ & PLLA5 <strong className="text-blue-400">Sys</strong></p></div><div className="bg-blue-900/40 text-blue-400 border border-blue-500/30 text-center py-1 rounded-full font-bold text-[10px] uppercase tracking-widest">+ 4 英里 🚀</div></F1Card>
-                                <F1Card theme={theme} className="p-3 bg-slate-800/80 border border-slate-700 hover:border-neon-purple/50 hover:shadow-[0_0_20px_rgba(188,19,254,0.1)] transition-all flex flex-col justify-between h-full"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-purple-900/30 text-neon-purple rounded-full flex items-center justify-center font-bold text-sm border border-purple-500/30">4</div><h4 className={`text-xs font-bold text-white uppercase tracking-wider`}>Plla 5 Product</h4></div><div className="bg-slate-900/50 p-2 rounded-lg mb-2 text-center border border-slate-700 grow flex items-center justify-center"><p className={`text-[10px] text-slate-400`}>每賣出 <strong className="text-neon-purple">2 個</strong> <span className="block scale-75 opacity-50">(折後$592)</span></p></div><div className="bg-purple-900/40 text-neon-purple border border-purple-500/30 text-center py-1 rounded-full font-bold text-[10px] uppercase tracking-widest">+ 2 英里 ✨</div></F1Card>
-                                <F1Card theme={theme} className="p-3 bg-slate-800/80 border border-slate-700 hover:border-orange-500/50 hover:shadow-[0_0_20px_rgba(249,115,22,0.1)] transition-all flex flex-col justify-between h-full"><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-orange-900/30 text-orange-400 rounded-full flex items-center justify-center font-bold text-sm border border-orange-500/30">5</div><h4 className={`text-xs font-bold text-white uppercase tracking-wider`}>Plla 5 X Ultrajet</h4></div><div className="bg-slate-900/50 p-2 rounded-lg mb-2 text-center border border-slate-700 grow flex items-center justify-center"><p className={`text-[10px] text-slate-400`}>每賣出 <strong className="text-orange-400">1 套</strong></p></div><div className="bg-orange-900/40 text-orange-400 border border-orange-500/30 text-center py-1 rounded-full font-bold text-[10px] uppercase tracking-widest">+ 3 英里 🔥</div></F1Card>
-                                <F1Card theme={theme} className="p-3 bg-slate-800/80 border border-slate-700 hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all flex flex-col justify-between border-2 border-red-200 relative overflow-hidden"><div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg z-10">FEB NEW</div><div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center font-bold text-sm border border-red-500/30"><RefreshCw size={14}/></div><h4 className={`text-sm font-bold ${theme.textMain} leading-tight`}>產品訂閱</h4></div><div className="bg-slate-900/50 p-2 rounded-lg mb-2 text-center border border-slate-700 grow flex items-center justify-center"><p className={`text-[10px] text-slate-400`}>每賣出 <strong className="text-red-400">1 個</strong></p></div><div className="bg-red-500 text-white text-center py-1 rounded-full font-bold text-xs shadow-md shadow-red-200">+ 2 英里 ❤️</div></F1Card>
-                             </div>
-
-                             {/* Track Levels Legend */}
-                             <F1Card theme={theme} className="mt-4 p-6 bg-slate-800/80 border border-slate-700 relative overflow-hidden backdrop-blur-sm">
-                                <div className="flex flex-col gap-6 relative z-10">
-                                    <div className="text-center">
-                                        <h4 className={`text-2xl font-racing text-white italic tracking-wider flex items-center justify-center gap-2 mb-2`}>
-                                            <span className="text-3xl text-yellow-400">🏆</span> 創意跑道晉升階梯
-                                        </h4>
-                                        <span className={`text-xs font-bold bg-slate-700/50 px-4 py-1.5 rounded-full border border-slate-600 text-slate-400 inline-block uppercase tracking-widest`}>按二月個人銷售目標達成率 (%) 解鎖專屬跑道</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 px-2">
-                                        {[
-                                            { pct: "<100%", name: "基本", icon: "🌱", bg: "bg-slate-800", border: "border-slate-600", text: "text-slate-500" },
-                                            { pct: "100%", name: "入門", icon: "✅", bg: "bg-green-900/20", border: "border-green-600", text: "text-green-400" },
-                                            { pct: "110%", name: "先鋒", icon: "🛡️", bg: "bg-blue-900/20", border: "border-blue-600", text: "text-blue-400" },
-                                            { pct: "120%", name: "天才", icon: "🧠", bg: "bg-purple-900/20", border: "border-purple-600", text: "text-purple-400" },
-                                            { pct: "130%", name: "超級", icon: "🚀", bg: "bg-orange-900/20", border: "border-orange-600", text: "text-orange-400" },
-                                            { pct: "140%", name: "極限", icon: "🔥", bg: "bg-red-900/20", border: "border-red-600", text: "text-red-400" },
-                                            { pct: "150%", name: "傳奇", icon: "🦄", bg: "bg-yellow-900/20", border: "border-yellow-600", text: "text-yellow-400" },
-                                            { pct: "160%", name: "舉世無雙", icon: "👑", bg: "bg-slate-900", border: "border-white", text: "text-rainbow", special: true },
-                                        ].map((level, idx) => (
-                                            <div key={level.name} className={`relative group ${level.bg} p-3 rounded-xl text-center border-b-2 ${level.border} hover:border-b-4 hover:-translate-y-1 transition-all duration-300 cursor-default flex flex-col items-center justify-between h-full`}>
-                                                <div className={`absolute -top-3 -right-2 w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center text-[9px] font-black border-2 border-white shadow-md z-20`}>{idx + 1}</div>
-                                                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{level.icon}</div>
-                                                <div className={`font-bold text-xs mb-2 ${level.text}`}>{level.name}</div>
-                                                <div className={`text-[9px] font-bold bg-slate-900/50 text-slate-400 rounded-full py-1 px-2 border border-slate-700 w-full`}>{level.pct}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                             </F1Card>
-                        </div>
-                    </section>
-
-                    {/* --- REWARDS SECTION (NEW) --- */}
-                    <section className="grid grid-cols-1 gap-6">
-                        <div className="relative">
-                             <div className="text-center mb-6"><h3 className={`text-2xl md:text-3xl font-cute ${theme.textMain} font-bold flex items-center justify-center gap-3`}><span className="bg-yellow-500/20 p-1.5 rounded-full text-yellow-400 border border-yellow-500/50"><Gift size={24} /></span> 里數獎賞</h3><p className={`${theme.textSub} font-cute text-base mt-1`}>累積里數，換取豐富獎品！</p></div>
-                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                                {REWARDS.map((reward, idx) => (
-                                    <F1Card key={idx} theme={theme} className={`p-4 bg-slate-800/80 border border-slate-700 hover:border-${reward.color}-500/50 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all h-full flex flex-col relative overflow-hidden group`}>
-                                        <div className={`absolute -right-10 -top-10 w-24 h-24 bg-${reward.color}-500/10 rounded-full blur-xl group-hover:bg-${reward.color}-500/20 transition-colors`}></div>
-                                        <div className="flex justify-between items-start mb-3 relative z-10">
-                                            <span className={`text-3xl filter drop-shadow-md`}>{reward.icon}</span>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-${reward.color}-900/30 text-${reward.color}-400 border-${reward.color}-500/30`}>{reward.title}</span>
-                                        </div>
-                                        <p className={`text-sm font-bold text-slate-300 leading-snug relative z-10 group-hover:text-white transition-colors`}>{reward.reward}</p>
-                                    </F1Card>
-                                ))}
-                             </div>
-                        </div>
-                    </section>
-
-                    {/* --- SECTION 5: DRIVER LICENSE (SCORECARD) --- */}
-                    <section className="pt-12 border-t border-dashed border-slate-700">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                            <div><h2 className={`text-3xl md:text-4xl font-racing text-white italic tracking-wide flex items-center gap-3`}><span className="text-neon-blue"><Target size={32} /></span> 個人成績單</h2><p className={`text-slate-400 mt-2 text-sm tracking-widest uppercase`}>查看個別參賽者的詳細得分與任務達成狀況</p></div>
-                            <div className={`flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 shadow-lg w-full md:w-auto`}>
-                                <div className="relative flex-1"><select value={scBrand} onChange={(e) => { setScBrand(e.target.value); setScHub('ALL'); setScFloor('ALL'); }} className="w-full bg-slate-700 text-slate-200 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-2 focus:ring-neon-blue outline-none border border-slate-600 font-bold uppercase cursor-pointer hover:bg-slate-600 transition-colors appearance-none"><option value="ALL">所有品牌</option>{BRANDS.map(b => <option key={b} value={b}>{b}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div></div>
-                                <div className="relative flex-1"><select value={scHub} onChange={(e) => { setScHub(e.target.value); setScFloor('ALL'); }} className="w-full bg-slate-700 text-slate-200 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-2 focus:ring-neon-blue outline-none border border-slate-600 font-bold uppercase cursor-pointer hover:bg-slate-600 transition-colors appearance-none"><option value="ALL">所有Hub</option>{uniqueHubs.map(h => <option key={h} value={h}>{h}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div></div>
-                                <div className="relative flex-1"><select value={scFloor} onChange={(e) => setScFloor(e.target.value)} className="w-full bg-slate-700 text-slate-200 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-2 focus:ring-neon-blue outline-none border border-slate-600 font-bold uppercase cursor-pointer hover:bg-slate-600 transition-colors appearance-none"><option value="ALL">所有樓層</option>{uniqueFloors.map(s => <option key={s} value={s}>{s}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div></div>
-                                <div className="relative flex-1"><select value={scRacerId} onChange={(e) => setScRacerId(e.target.value)} className="w-full bg-neon-blue text-slate-900 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-2 focus:ring-white outline-none border-none font-bold uppercase min-w-[150px] cursor-pointer hover:bg-cyan-400 transition-colors appearance-none shadow-md shadow-cyan-500/20">{scAvailableRacers.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select><div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-800">▼</div></div>
-                            </div>
-                        </div>
-                        {scRacerId && (() => {
-                            const racer = racers.find(r => r.id.toString() === scRacerId);
-                            const actualRank = sortedGlobal.findIndex(r => r.id.toString() === scRacerId) + 1;
-                            const breakdown = getRacerBreakdown(racer);
-                            const trackLevel = getTrackLevel(breakdown.achievement_pct);
-                            if (!racer) return null;
-                            return (
-                                <div className="bg-slate-800 rounded-[2rem] shadow-2xl overflow-hidden relative border border-slate-700 text-slate-200 transform hover:scale-[1.005] transition-transform duration-500">
-                                    <div className="absolute top-0 right-0 p-40 bg-neon-blue/5 rounded-full blur-[100px] pointer-events-none"></div>
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 relative z-10">
-                                        <div className="p-10 bg-slate-900/50 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-700 relative">
-                                            <div className="w-40 h-40 rounded-full bg-slate-800 p-2 mb-6 relative shadow-2xl border-4 border-slate-700 group"><img src={getBrandGif(racer.brand)} className="w-full h-full object-contain rounded-full bg-slate-900" /><div className="absolute -bottom-2 -right-2 bg-yellow-500 text-yellow-900 w-12 h-12 flex items-center justify-center font-black rounded-full border-4 border-slate-800 text-2xl font-racing shadow-lg group-hover:scale-110 transition-transform">#{actualRank}</div></div>
-                                            <h2 className="text-3xl font-bold text-center mb-3 text-white tracking-wide">{racer.name}</h2>
-                                            <div className="flex gap-2 mb-6"><span className="px-3 py-1 bg-slate-800 border border-slate-600 rounded-full text-xs text-slate-400 font-bold uppercase tracking-wider">{racer.brand}</span><span className="px-3 py-1 bg-slate-800 border border-slate-600 rounded-full text-xs text-slate-400 font-bold uppercase tracking-wider">{racer.hub}</span><span className="px-3 py-1 bg-slate-800 border border-slate-600 rounded-full text-xs text-slate-400 font-bold uppercase tracking-wider">{racer.floor}</span></div>
-                                            
-                                            {/* Achievement Bar */}
-                                            <div className="w-full px-6 mb-8">
-                                                <div className="flex justify-between text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider"><span>銷售達成率</span><div className="text-right"><span className="block text-lg text-white font-numbers">{breakdown.achievement_pct.toFixed(0)}%</span><span className="text-[10px] opacity-60">{formatCurrency(breakdown.actual).replace('HK$', '$')} / {formatCurrency(breakdown.target).replace('HK$', '$')}</span></div></div>
-                                                <div className="w-full bg-slate-700 h-3 rounded-full overflow-hidden border border-slate-600"><div className={`h-full ${trackLevel.bg.replace('bg-', 'bg-')}`} style={{ width: `${Math.min(breakdown.achievement_pct, 100)}%`, background: 'linear-gradient(90deg, #00f3ff, #bc13fe)' }}></div></div>
-                                                <div className={`text-center mt-3 font-bold ${trackLevel.color} text-sm uppercase tracking-widest`}>{trackLevel.icon} {trackLevel.name}創意跑道</div>
-                                            </div>
-
-                                            <div className="text-center bg-slate-800 p-6 rounded-2xl border border-slate-700 w-full"><div className="text-xs text-slate-500 uppercase tracking-[0.2em] mb-1 font-bold">總里程 (Total)</div><div className="text-6xl font-numbers font-bold text-neon-blue leading-none text-shadow-neon">{racer.sales.toFixed(1)}</div><div className="text-slate-500 text-xs font-bold mt-1 tracking-widest">MILES</div></div>
-                                        </div>
-                                        <div className="lg:col-span-2 p-10 bg-slate-800">
-                                            <h4 className="text-slate-400 font-bold uppercase text-xs mb-8 flex items-center tracking-[0.2em] border-b border-slate-700 pb-4"><Zap size={16} className="mr-2 text-yellow-500" /> 表現詳細分析</h4>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                                {[{ label: "PN+ Paid Trial", count: breakdown.pnPaidTrial, points: breakdown.pnPaidTrial * 2, color: "teal", icon: "🆕" }, { label: "PN+ Package", count: breakdown.pnPackage, points: Math.floor(breakdown.pnPackage / 10000) * 2, color: "cyan", revenue: breakdown.pnPackage, icon: "⚡" }, { label: "PN+ Combo Sys", count: breakdown.combo, points: breakdown.combo * 4, color: "blue", icon: "🚀" }, { label: "Plla 5 Product", count: breakdown.plla, points: Math.floor(breakdown.plla / 2) * 2, color: "purple", icon: "✨" }, { label: "Plla 5 X Ultrajet", count: breakdown.device, points: breakdown.device * 3, color: "orange", icon: "🔥" }, { label: "產品訂閱 (Feb)", count: breakdown.sub, points: breakdown.sub * 2, color: "red", icon: "❤️" }].map((item, idx) => (
-                                                    <div key={idx} className={`bg-slate-700/50 rounded-xl p-5 border border-slate-600 hover:border-slate-500 transition-colors`}>
-                                                        <div className="flex justify-between items-center mb-3"><span className={`text-slate-300 text-xs font-bold uppercase flex items-center tracking-wide`}><span className="mr-2 text-lg">{item.icon}</span> {item.label}</span><span className={`bg-slate-600 text-white font-numbers text-xl font-bold px-3 py-0.5 rounded shadow-sm border border-slate-500`}>+{item.points} M</span></div>
-                                                        <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700"><div className={`h-full rounded-full bg-${item.color}-500 shadow-[0_0_8px_currentColor]`} style={{ width: `${Math.min((item.revenue ? item.points : item.count) * 10, 100)}%` }}></div></div>
-                                                        <div className="text-right text-xs text-slate-500 mt-2 font-bold uppercase tracking-wider">{item.label === "PN+ Package" ? `AMT: ${formatCurrency(item.revenue)}` : `QTY: ${item.count}`}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })()}
-                    </section>
-                </main>
-                <div className="fixed bottom-4 left-4 z-50 text-[10px] text-slate-500 bg-white/90 px-3 py-2 rounded-full shadow-lg border border-slate-200 backdrop-blur-sm pointer-events-none flex items-center gap-2">
-                     {lastUpdated && !fetchError ? (<span className="flex items-center text-green-600 font-bold"><span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>已連接 (Update: {lastUpdated.toLocaleTimeString()})</span>) : (<span className="flex items-center text-orange-500 font-bold"><span className="w-2 h-2 rounded-full bg-orange-500 mr-2"></span>{fetchError ? '連接失敗: 演示模式' : '演示模式'}</span>)}
-                </div>
-                <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
-                    <button onClick={fetchData} className={`p-4 bg-green-500 text-white rounded-full shadow-2xl hover:bg-green-600 hover:scale-110 transition-all group ${isLoading ? 'animate-spin' : ''}`} title="立即刷新數據"><RefreshCw className="w-6 h-6" /></button>
-                </div>
-            </div>
-            );
+        function getCowStatus(w) { return window.MILESTONES.find(m => w >= m.min && w <= m.max) || window.MILESTONES[0]; }
+        function getNextMilestone(w) { return window.MILESTONES.find(m => m.min > w); }
+        function calculateStats(t1, t2, t3, t4) {
+            const cappedT3 = Math.min(25, t3);
+            const totalFeeds = (t1 * 1) + (t2 * 2) + (cappedT3 * 2) + (t4 * 3);
+            return { totalFeeds, weight: 300 + (totalFeeds * 5) };
         }
-        
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<SalesDerbyBlue />);
+        function getProp(obj, names) { for (let name of names) { if (obj[name] !== undefined) return typeof obj[name] === 'string' ? obj[name].trim() : obj[name]; } return ""; }
+        function toggleMissionModal(show) { const m = document.getElementById('mission-modal'); if(m) show ? m.classList.remove('hidden') : m.classList.add('hidden'); }
+    </script>
+
+    <!-- Language Switcher -->
+    <div class="fixed top-4 right-4 z-[100] flex gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-gray-100">
+        <button onclick="changeLanguage('zh')" id="btn-zh" class="px-4 py-1.5 rounded-full text-sm font-black transition-all bg-red-600 text-white shadow-md">中</button>
+        <button onclick="changeLanguage('en')" id="btn-en" class="px-4 py-1.5 rounded-full text-sm font-black text-gray-500 hover:bg-gray-100">EN</button>
+    </div>
+
+    <!-- Header Area -->
+    <div class="relative w-screen ml-[calc(-50vw+50%)]">
+        <img src="https://i.postimg.cc/dVZ3Wyrh/Whats-App-Image-2026-01-16-at-13-05-41.jpg" alt="Poster" class="w-full h-auto block">
+    </div>
+
+    <div class="relative w-screen ml-[calc(-50vw+50%)] shadow-2xl overflow-hidden bg-red-900 group flex items-center justify-center py-6 border-b-4 border-yellow-500 text-center md:text-left">
+        <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-800 to-red-950 z-0 opacity-80"></div>
+        <div class="relative z-10 w-full max-w-7xl px-4 sm:px-8 md:px-20 text-white flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex-1 flex flex-col justify-center space-y-1">
+                <h2 class="text-4xl sm:text-5xl lg:text-7xl font-black leading-none tracking-tighter">
+                    <span id="txt-make">令</span><span class="text-yellow-400">20,000</span><span id="txt-cust">客人</span>
+                </h2>
+                <div class="mt-2 inline-block bg-white/10 border border-white/20 px-4 py-1.5 rounded-xl">
+                    <p id="txt-banner-slogan" class="text-lg sm:text-xl font-black text-yellow-400">做任務贏取飼料 儲糧養肥牛</p>
+                </div>
+            </div>
+            <div id="txt-event-title" class="text-xs sm:text-sm font-black bg-yellow-500 text-red-900 px-4 py-1.5 mt-2 transform -skew-x-12 inline-block shadow-lg">全民養牛 • 玩出豐盛</div>
+        </div>
+    </div>
+
+    <!-- Top 10 Ranking -->
+    <section class="px-2 pb-12 relative z-0 fence-bg pt-12 shadow-inner text-center">
+        <div class="w-full max-w-[98%] mx-auto relative z-10">
+           <div class="flex flex-col items-center justify-center gap-4 mb-10">
+                <div class="flex items-center gap-4 bg-white/25 backdrop-blur-md px-8 py-4 rounded-full border-2 border-white/60 shadow-2xl">
+                    <i data-lucide="trophy" class="w-12 h-12 text-yellow-300"></i>
+                    <h2 id="txt-leaderboard-title" class="font-black text-white text-3xl md:text-7xl tracking-tighter">肥牛排行榜</h2>
+                </div>
+                <div class="bg-red-600/90 text-white px-8 py-1.5 rounded-full text-lg md:text-3xl font-black animate-pulse shadow-xl">LIVE UPDATE</div>
+           </div>
+           <div id="loading-indicator" class="flex flex-col items-center justify-center py-16">
+               <div class="w-16 h-16 border-8 border-yellow-400 border-t-transparent rounded-full animate-spin mb-6"></div>
+               <p id="txt-loading" class="text-white text-2xl font-black animate-pulse tracking-widest">正在讀取數據...</p>
+           </div>
+           <div id="leaderboard-grid" class="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-10 px-1 lg:px-16"></div>
+        </div>
+    </section>
+
+    <!-- Floor Status Board -->
+    <section class="px-2 py-16 relative z-10 bg-white border-t border-b border-gray-100 shadow-sm overflow-hidden text-center">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-10 px-4">
+                <h3 id="txt-floor-rank-title" class="text-4xl md:text-7xl font-black text-gray-800 flex flex-col items-center justify-center gap-2 leading-tight">實力分佈看板</h3>
+                <button onclick="toggleMissionModal(true)" class="inline-flex items-center gap-2 mt-6 px-6 py-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm text-xs font-black">
+                    <i data-lucide="info" class="w-4 h-4"></i> <span id="txt-btn-explain">圖標說明</span>
+                </button>
+            </div>
+
+            <!-- Filter Layers -->
+            <div class="flex justify-center p-1.5 bg-gray-100 rounded-[2.5rem] mb-6 shadow-inner max-w-sm mx-auto border border-gray-200">
+                <button onclick="switchRankBrand('Dermes')" id="tab-Dermes" class="flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all tab-active-Dermes shadow-md">Dermes</button>
+                <button onclick="switchRankBrand('Reenex')" id="tab-Reenex" class="flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all text-gray-500">Reenex</button>
+                <button onclick="switchRankBrand('Elyze')" id="tab-Elyze" class="flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all text-gray-500">Elyze</button>
+            </div>
+
+            <div class="flex justify-center p-1 bg-gray-200 rounded-xl mb-6 max-w-xs mx-auto border border-gray-300">
+                <button onclick="switchViewLevel('brand')" id="view-brand" class="flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all text-gray-500">品牌級</button>
+                <button onclick="switchViewLevel('hub')" id="view-hub" class="flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all text-gray-500">區域級</button>
+                <button onclick="switchViewLevel('floor')" id="view-floor" class="flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all view-active">樓層級</button>
+            </div>
+
+            <div class="flex justify-center mb-10">
+                <div class="inline-flex items-center bg-gray-50 p-1 px-4 rounded-full border border-gray-200 shadow-sm">
+                    <select id="nj-rank-filter" onchange="switchNJFilter(this.value)" class="bg-transparent text-gray-700 text-[10px] font-black outline-none appearance-none cursor-pointer">
+                        <option value="all" id="txt-njAll">全部人員</option>
+                        <option value="Y" id="txt-njNew">新人 (NJ)</option>
+                        <option value="N" id="txt-njSenior">舊人 (Non-NJ)</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="w-3 h-3 ml-2 text-gray-400 pointer-events-none"></i>
+                </div>
+            </div>
+
+            <div id="combined-floor-content" class="space-y-4 px-1 min-h-[400px]"></div>
+        </div>
+    </section>
+
+    <!-- Legend Modal -->
+    <div id="mission-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" onclick="toggleMissionModal(false)">
+        <div class="bg-white rounded-[3rem] w-full max-sm p-10 shadow-2xl animate-modal border-2 border-blue-50" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6"><h4 id="txt-modal-title" class="text-xl font-black text-gray-800">任務說明</h4><button onclick="toggleMissionModal(false)" class="text-gray-400 hover:text-red-500"><i data-lucide="x-circle" class="w-10 h-10"></i></button></div>
+            <div id="modal-tasks-container" class="space-y-5 text-left"></div>
+            <button onclick="toggleMissionModal(false)" id="txt-modal-close" class="w-full mt-10 py-5 bg-blue-600 text-white rounded-2xl text-xl font-black shadow-xl">我知道了</button>
+        </div>
+    </div>
+
+    <!-- Tiers & Evolution -->
+    <section class="px-3 py-16 relative z-10 bg-[#FFF3E0]">
+        <div class="max-w-lg mx-auto">
+             <div class="mb-10 shadow-xl rounded-3xl overflow-hidden border-4 border-[#8D6E63] bg-white relative">
+                 <h4 class="font-black text-[#5D4037] text-xl p-4 bg-[#FFECB3] border-b-2 border-[#8D6E63] flex items-center justify-center gap-3 uppercase"><i data-lucide="award" class="w-6 h-6 text-yellow-700"></i> 等級與獎項</h4>
+                 <div id="tier-list-container" class="divide-y divide-gray-100 text-left"></div>
+             </div>
+             <div class="bg-white rounded-[2rem] p-8 shadow-xl border-4 border-orange-200">
+                 <h4 class="font-black text-orange-900 text-xl mb-6 flex items-center gap-3 border-b-2 border-orange-100 pb-3 text-left"><i data-lucide="flame" class="w-6 h-6 text-red-500"></i> 飼料獲取攻略</h4>
+                 <div id="tasks-container" class="grid grid-cols-2 gap-3 text-left"></div>
+                 <div class="mt-8 bg-orange-50 rounded-2xl p-4 text-center border border-orange-100 flex justify-around">
+                    <div class="flex flex-col"><span class="text-[10px] text-orange-800 font-bold uppercase">起始體重</span><span class="text-xl font-black text-red-600">300kg</span></div>
+                    <div class="flex flex-col"><span class="text-[10px] text-orange-800 font-bold uppercase">成長換算</span><span class="text-xl font-black text-orange-700">1份 = +5kg</span></div>
+                 </div>
+             </div>
+        </div>
+    </section>
+
+    <!-- Search Tool -->
+    <section class="px-4 py-16 bg-white border-t border-gray-100 text-center">
+         <div class="max-w-md mx-auto">
+             <h2 id="txt-search-title" class="font-black text-gray-800 text-2xl mb-8 flex items-center justify-center gap-3">搜尋我的牛牛</h2>
+             <div class="grid grid-cols-2 gap-3 mb-4">
+                 <select id="brand-filter" class="block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base bg-gray-50 focus:border-red-500 font-black appearance-none"><option value="">所有品牌</option><option value="Dermes">Dermes</option><option value="Reenex">Reenex</option><option value="Elyze">Elyze</option></select>
+                 <select id="location-filter" class="block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base bg-gray-50 focus:border-red-500 font-black appearance-none"><option value="">所有樓層</option></select>
+             </div>
+             <div class="relative mb-8"><select id="user-select" class="block w-full px-5 py-4 border-2 border-red-100 rounded-[1.5rem] bg-white focus:border-red-500 font-black shadow-lg appearance-none"></select></div>
+             <div id="user-card" class="bg-[#FFF8E1] rounded-[2rem] p-5 border-4 border-[#8D6E63] hidden shadow-xl relative animate-modal text-left">
+                <div class="flex items-start gap-4 mb-4 relative z-10 text-left"><div class="w-24 h-18 cow-image-container border-2 border-white shadow-md shrink-0"><img id="card-cow-img" src="" alt="Cow"></div><div class="flex-1 min-w-0"><div class="flex justify-between items-start mb-1"><h3 id="card-name" class="text-2xl font-black text-[#3E2723] truncate">姓名</h3><span id="card-rank" class="bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-lg text-sm font-black shadow-md"># -</span></div><div class="flex gap-1 mb-2"><span id="card-brand" class="brand-badge text-[8px]">BRAND</span><span id="card-location" class="bg-[#8D6E63] text-white px-2 py-0.5 rounded-full text-[8px] font-black uppercase shadow-sm">LOC</span></div><div class="flex items-baseline gap-2"><span id="card-weight" class="text-3xl font-black text-red-600 leading-none">0kg</span><span id="card-level-title" class="text-[10px] font-black text-[#8D6E63] uppercase truncate">等級</span></div></div></div>
+                <div id="unlocked-reward-panel" class="bg-yellow-50 rounded-xl p-2.5 border-2 border-yellow-200 mb-4 flex items-center gap-3 shadow-inner"><div class="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center shrink-0 shadow-sm"><i data-lucide="gift" class="w-4 h-4 text-white"></i></div><div class="flex-1 min-w-0"><div id="card-reward-name" class="text-sm font-black text-gray-800 leading-tight">Reward</div></div></div>
+                <div class="bg-white rounded-xl p-3 border-2 border-[#FFE082] mb-4 shadow-sm relative text-center"><div class="flex justify-between text-[10px] font-black text-[#5D4037] mb-1"><span>PROGRESS</span><span id="card-next-level" class="text-red-500 italic uppercase font-black">GOAL</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden"><div id="card-progress-bar" class="bg-green-500 h-full"></div></div></div>
+                <div class="border-t-2 border-[#D7CCC8] pt-4 border-dashed text-center"><div id="card-tasks-grid" class="grid grid-cols-2 gap-2 text-[10px]"></div></div>
+             </div>
+         </div>
+    </section>
+
+    <footer class="text-center text-gray-400 text-xs py-10 font-bold opacity-60 uppercase tracking-widest">© 2026 Neoderm New Year Event</footer>
+
+    <script>
+        function updateUI() {
+            if (typeof i18n === 'undefined') return;
+            const lang = window.i18n[window.currentLang];
+            
+            document.querySelectorAll("[id^='txt-']").forEach(el => {
+                const key = el.id.replace('txt-', '');
+                if (lang[key]) el.textContent = lang[key];
+            });
+
+            document.getElementById('txt-njAll').textContent = lang.njAll;
+            document.getElementById('txt-njNew').textContent = lang.njNew;
+            document.getElementById('txt-njSenior').textContent = lang.njSenior;
+            document.getElementById('view-brand').textContent = lang.viewBrand;
+            document.getElementById('view-hub').textContent = lang.viewHub;
+            document.getElementById('view-floor').textContent = lang.viewFloor;
+
+            // Modal Legend
+            const modalCont = document.getElementById('modal-tasks-container');
+            if(modalCont) {
+                const taskList = [{ icon: "👀", label: "Task 1", text: lang.task1 }, { icon: "🏪", label: "Task 2", text: lang.task2 }, { icon: "🧧", label: "Task 3", text: lang.task3 }, { icon: "🤝", label: "Task 4", text: lang.task4 }];
+                modalCont.innerHTML = taskList.map(t => `<div class="flex items-start gap-4 p-4 rounded-3xl bg-orange-50/50 border border-orange-100 text-left"><span class="text-3xl">${t.icon}</span><div><div class="text-[10px] text-orange-600 font-black uppercase mb-0.5">${t.label}</div><div class="text-sm font-bold text-gray-700 leading-tight text-left">${t.text}</div></div></div>`).join('');
+            }
+
+            // Condensed Tiers with Updated SOGO logic
+            const tl = document.getElementById('tier-list-container');
+            if(tl) {
+                tl.innerHTML = [...window.MILESTONES].reverse().map(m => {
+                    let bonusTxt = "";
+                    if (m.bonusRank) {
+                        const condition = m.bonusThreshold ? lang.bonusCond.replace('{w}', m.bonusThreshold) : "";
+                        bonusTxt = `<div class="text-[9px] font-black text-red-600 mt-1 flex items-start gap-1"><i data-lucide="sparkles" class="w-2.5 h-2.5 shrink-0 mt-0.5"></i> <span>若進入前 ${m.bonusRank} 名 ${condition}, 加贈 SOGO $${m.bonusValue} 現金券</span></div>`;
+                    }
+                    return `
+                    <div class="bg-white p-3 border-b border-gray-100 last:border-0 flex items-center gap-4 transition-all hover:bg-gray-50">
+                        <div class="w-12 h-10 rounded overflow-hidden shrink-0 bg-gray-50 border border-gray-100 shadow-sm flex items-center justify-center">
+                            <img src="${m.img}" class="w-full h-full object-contain ${m.min < 500 ? 'grayscale opacity-60' : ''}">
+                        </div>
+                        <div class="flex-1 min-w-0 text-left">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-black text-gray-800 truncate">${m.title[window.currentLang]}</span>
+                                <span class="text-[11px] font-black ${m.min >= 800 ? 'text-yellow-600' : 'text-gray-400'}">${m.min}kg+</span>
+                            </div>
+                            <div class="text-[10px] text-gray-600 italic leading-tight">${m.reward[window.currentLang]}</div>
+                            ${bonusTxt}
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            // Task Grid
+            const tc = document.getElementById('tasks-container');
+            if(tc) {
+                const td = [{ icon: "👀", title: lang.task1, reward: "x1" }, { icon: "🏪", title: lang.task2, reward: "x2" }, { icon: "🧧", title: lang.task3, reward: "x2" }, { icon: "🤝", title: lang.task4, reward: "x3" }];
+                tc.innerHTML = td.map(t => `<div class="flex flex-col gap-2 bg-orange-50/40 p-3 rounded-2xl border border-orange-100 shadow-sm text-left"><div class="flex justify-between items-center"><span class="text-xl">${t.icon}</span><span class="bg-orange-600 text-white px-2 py-0.5 rounded-lg font-black text-[10px]">x${t.reward.replace('x','')}</span></div><div class="text-[10px] font-black text-gray-700 leading-tight h-8 line-clamp-2">${t.title}</div></div>`).join('');
+            }
+
+            populateFilterOptions();
+            renderCombinedFloorDashboard();
+            lucide.createIcons();
+            renderLeaderboard();
+            populateUserSelect();
+        }
+
+        function switchRankBrand(b) {
+            window.currentRankBrand = b;
+            ['Dermes', 'Reenex', 'Elyze'].forEach(tab => {
+                const btn = document.getElementById(`tab-${tab}`);
+                if(btn) btn.className = `flex-1 py-3 px-2 rounded-[2rem] text-xs md:text-base font-black transition-all ${tab === b ? `tab-active-${tab} shadow-xl` : 'text-gray-500'}`;
+            });
+            renderCombinedFloorDashboard();
+        }
+
+        function switchNJFilter(val) { window.currentNJFilter = val; renderCombinedFloorDashboard(); }
+
+        function switchViewLevel(level) {
+            window.currentViewLevel = level;
+            ['brand', 'hub', 'floor'].forEach(l => {
+                const btn = document.getElementById(`view-${l}`);
+                if(btn) btn.className = `flex-1 py-2 px-1 rounded-lg text-[10px] font-black transition-all ${l === level ? 'view-active shadow-sm' : 'text-gray-500'}`;
+            });
+            renderCombinedFloorDashboard();
+        }
+
+        function renderCombinedFloorDashboard() {
+            const container = document.getElementById('combined-floor-content');
+            if(!container) return;
+            const lang = i18n[window.currentLang];
+            const brand = window.currentRankBrand;
+            const prefix = brand === 'Dermes' ? 'D' : brand === 'Reenex' ? 'R' : 'E';
+            const njFilter = window.currentNJFilter;
+            const viewLevel = window.currentViewLevel;
+            const hubsList = ['60/F', '32/F', 'TST', 'LP', 'PP', 'TS']; 
+            
+            let displayData = [];
+            const filteredUsers = window.USERS.filter(u => {
+                const bM = u.brand.toLowerCase().includes(brand.toLowerCase());
+                const pM = u.location && u.location.toUpperCase().startsWith(prefix);
+                const njM = (njFilter === 'all') || (u.nj === njFilter);
+                return bM && pM && njM;
+            });
+
+            if (viewLevel === 'brand') {
+                const total = filteredUsers.reduce((acc, u) => {
+                    const s = getCowStatus(u.weight);
+                    const mIdx = window.MILESTONES.findIndex(m => m.min === s.min);
+                    acc.totalWeight += u.weight; acc.t1 += u.task1; acc.t2 += u.task2; acc.t3 += u.task3; acc.t4 += u.task4; acc.count += 1;
+                    if(mIdx !== -1) acc.dist[mIdx]++;
+                    return acc;
+                }, { label: brand.toUpperCase(), totalWeight: 0, count: 0, t1: 0, t2: 0, t3: 0, t4: 0, dist: [0,0,0,0,0,0], isSummary: true, sub: lang.brandTotal });
+                if(total.count > 0) displayData = [total];
+            } 
+            else if (viewLevel === 'hub') {
+                const hubMap = hubsList.reduce((acc, h) => ({ ...acc, [h]: { label: h, totalWeight: 0, count: 0, t1: 0, t2: 0, t3: 0, t4: 0, dist: [0,0,0,0,0,0], isSummary: true, sub: lang.hubTotal }}), {});
+                filteredUsers.forEach(u => {
+                    const locUpper = u.location.toUpperCase();
+                    let hubCode = null;
+                    if (brand === 'Dermes') {
+                        if (locUpper.includes("60")) hubCode = "60/F";
+                        else if (locUpper.includes("32")) hubCode = "32/F";
+                    }
+                    if (!hubCode) {
+                        if (locUpper.includes("PK RD") || locUpper.includes("TST")) hubCode = "TST";
+                        else if (locUpper.includes("LP")) hubCode = "LP";
+                        else if (locUpper.includes("PP")) hubCode = "PP";
+                        else if (locUpper.includes("TS")) hubCode = "TS";
+                    }
+                    if(hubCode) {
+                        const s = getCowStatus(u.weight);
+                        const mIdx = window.MILESTONES.findIndex(m => m.min === s.min);
+                        hubMap[hubCode].totalWeight += u.weight; hubMap[hubCode].count += 1;
+                        hubMap[hubCode].t1 += u.task1; hubMap[hubCode].t2 += u.task2; hubMap[hubCode].t3 += u.task3; hubMap[hubCode].t4 += u.task4;
+                        if(mIdx !== -1) hubMap[hubCode].dist[mIdx]++;
+                    }
+                });
+                displayData = Object.values(hubMap).filter(h => h.count > 0).sort((a,b) => (b.totalWeight/b.count) - (a.totalWeight/a.count));
+            } 
+            else {
+                const floorMap = {};
+                filteredUsers.forEach(u => {
+                    const loc = u.location;
+                    if (!floorMap[loc]) floorMap[loc] = { label: loc, totalWeight: 0, count: 0, t1: 0, t2: 0, t3: 0, t4: 0, dist: [0,0,0,0,0,0], isSummary: false, sub: lang.floorDetail };
+                    const s = getCowStatus(u.weight);
+                    const mIdx = window.MILESTONES.findIndex(m => m.min === s.min);
+                    floorMap[loc].totalWeight += u.weight; floorMap[loc].count += 1;
+                    floorMap[loc].t1 += u.task1; floorMap[loc].t2 += u.task2; floorMap[loc].t3 += u.task3; floorMap[loc].t4 += u.task4;
+                    if(mIdx !== -1) floorMap[loc].dist[mIdx]++;
+                });
+                displayData = Object.values(floorMap).sort((a,b) => (b.totalWeight/b.count) - (a.totalWeight/a.count));
+            }
+
+            const distColors = ['bg-gray-400', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-yellow-500', 'bg-blue-400'];
+            const milestoneShortNames = ['瘦牛', '澳洲', '美國', '和牛', '金牛', '彩鑽'];
+
+            container.innerHTML = displayData.length > 0 ? displayData.map((f, idx) => {
+                const avg = Math.round(f.totalWeight / f.count);
+                const s = getCowStatus(avg);
+                const next = getNextMilestone(avg);
+                let prg = 100; if(next) prg = Math.min(100, Math.max(0, ((avg - s.min) / (next.min - s.min)) * 100));
+
+                return `
+                <div class="relative flex flex-col gap-4 p-5 pb-4 rounded-[2.5rem] bg-white border ${f.isSummary ? 'border-blue-200 shadow-lg' : 'border-gray-100'} shadow-xl overflow-hidden group text-left">
+                    <div class="strength-bar ${s.barColor}" style="width: ${prg}%"></div>
+                    <div class="flex items-center gap-4 z-10 relative">
+                        <div class="flex flex-col items-center min-w-[45px] shrink-0 text-center">
+                            ${f.isSummary ? `<div class="bg-blue-600 text-white p-2 rounded-full shadow-lg"><i data-lucide="${f.label.length > 5 ? 'award' : 'map-pin'}" class="w-4 h-4"></i></div>` : `<span class="w-10 h-10 flex items-center justify-center font-black rounded-full text-lg ${idx === 0 ? 'bg-yellow-400 text-white shadow-lg border-2 border-white' : 'bg-gray-100 text-gray-400'}">${idx + 1}</span>`}
+                            <span class="font-black text-gray-900 text-[11px] mt-1 uppercase tracking-tighter">${f.label}</span>
+                        </div>
+                        <div class="w-18 h-14 rounded-xl border-2 border-white overflow-hidden bg-white shrink-0 shadow-md flex items-center justify-center"><img src="${s.img}" class="w-full h-full object-contain"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[8px] font-black uppercase tracking-widest ${f.isSummary ? 'text-blue-600' : 'text-gray-400'}">${f.sub}</div>
+                            <div class="text-[9px] font-black uppercase tracking-widest ${s.color}">${s.title[window.currentLang]}</div>
+                            <div class="text-4xl font-black ${idx === 0 && !f.isSummary ? 'text-orange-600' : 'text-gray-800'} tracking-tighter leading-none">${avg}<span class="text-xs font-bold text-gray-400 uppercase ml-0.5">kg</span></div>
+                        </div>
+                        <div class="flex flex-col gap-1 items-end min-w-[85px] shrink-0 opacity-60 scale-90 origin-right">
+                            <div class="flex gap-1.5"><span class="text-[9px]">👀${f.t1}</span> <span class="text-[9px]">🏪${f.t2}</span></div>
+                            <div class="flex gap-1.5"><span class="text-[9px]">🧧${f.t3}</span> <span class="text-[9px]">🤝${f.t4}</span></div>
+                            <div class="text-[8px] font-black text-gray-300 tracking-tighter">HC:${f.count}</div>
+                        </div>
+                    </div>
+                    <div class="z-10 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+                        <div class="w-full h-5 flex rounded-full overflow-hidden bg-gray-200 shadow-inner">
+                            ${f.dist.map((c, i) => c === 0 ? '' : `<div class="${distColors[i]} h-full border-r border-white/20 last:border-0 flex items-center justify-center transition-all duration-1000 overflow-hidden" style="width: ${(c/f.count)*100}%"><span class="text-[7px] font-black text-white px-0.5 truncate">${milestoneShortNames[i]}: ${c} (${Math.round((c/f.count)*100)}%)</span></div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') : `<p class="text-gray-400 text-xs italic text-center py-20">沒有數據。</p>`;
+            lucide.createIcons(); 
+        }
+
+        function populateFilterOptions() {
+            const bS = document.getElementById('brand-filter'), lS = document.getElementById('location-filter');
+            if(!lS || !bS) return;
+            const b = bS.value, prefix = b === 'Dermes' ? 'D' : b === 'Reenex' ? 'R' : b === 'Elyze' ? 'E' : null, cV = lS.value;
+            let locs = [...new Set(window.USERS.map(u => u.location))].filter(l => l).sort();
+            if (prefix) locs = locs.filter(loc => loc.toUpperCase().startsWith(prefix));
+            lS.innerHTML = `<option value="">所有樓層</option>`;
+            locs.forEach(loc => { const opt = document.createElement('option'); opt.value = loc; opt.textContent = loc; lS.appendChild(opt); });
+            if (locs.includes(cV)) lS.value = cV;
+        }
+
+        function populateUserSelect() {
+            const bS = document.getElementById('brand-filter'), lS = document.getElementById('location-filter'), uS = document.getElementById('user-select'), uC = document.getElementById('user-card');
+            if(!bS || !lS || !uS) return;
+            const b = bS.value, l = lS.value, bPM = { 'Dermes': 'D', 'Reenex': 'R', 'Elyze': 'E' }, p = bPM[b];
+            uS.innerHTML = '';
+            const filtered = window.USERS.filter(u => (!b || (u.brand.toLowerCase().includes(b.toLowerCase()) && u.location.toUpperCase().startsWith(p))) && (!l || u.location === l));
+            if (filtered.length === 0) { uS.innerHTML = `<option disabled selected>沒有結果</option>`; if(uC) uC.classList.add('hidden'); return; }
+            filtered.forEach(u => { const o = document.createElement('option'); o.value = u.id; o.textContent = `${u.name} (${u.location})`; uS.appendChild(o); });
+            updateUserCard(filtered[0].id);
+        }
+
+        function updateUserCard(userId) {
+            const user = window.USERS.find(u => u.id == userId);
+            if (!user) return;
+            const uCard = document.getElementById('user-card');
+            const status = getCowStatus(user.weight);
+            const usersInSameTier = window.USERS.filter(u => getCowStatus(u.weight).min === status.min).sort((a, b) => b.weight - a.weight);
+            const tierRank = usersInSameTier.findIndex(u => u.id == userId) + 1;
+            const rank = window.USERS.findIndex(u => u.id == userId) + 1;
+            const next = getNextMilestone(user.weight), lang = window.i18n[window.currentLang];
+            
+            document.getElementById('card-name').textContent = user.name;
+            document.getElementById('card-rank').textContent = `# ${rank}`;
+            document.getElementById('card-weight').textContent = `${user.weight}kg`;
+            document.getElementById('card-feeds').textContent = `${user.feeds}${window.currentLang === 'zh' ? '份' : ''}`;
+            document.getElementById('card-level-title').textContent = status.title[window.currentLang];
+            const cBrand = document.getElementById('card-brand'); if(cBrand) { cBrand.textContent = user.brand; cBrand.className = `brand-badge brand-${user.brand} text-[9px]`; }
+            document.getElementById('card-location').textContent = user.location;
+            
+            const cardTasksGrid = document.getElementById('card-tasks-grid'); if(cardTasksGrid) cardTasksGrid.innerHTML = [{ label: lang.tLabel1, count: user.task1 }, { label: lang.tLabel2, count: user.task2 }, { label: lang.tLabel3, count: user.task3 }, { label: lang.tLabel4, count: user.task4 }].map(t => `<div class="bg-white p-2 rounded border border-[#D7CCC8] flex justify-between items-center shadow-sm"><span class="text-[#5D4037] font-black">${t.label}</span><span class="font-black text-white bg-[#8D6E63] px-2 py-0.5 rounded-full">${t.count}</span></div>`).join('');
+            document.getElementById('card-cow-img').src = status.img;
+            
+            const rName = document.getElementById('card-reward-name');
+            if(rName) {
+                let rewardText = status.reward[window.currentLang];
+                let hasBonus = false;
+                if (status.bonusRank === 3 && status.min === 1100 && tierRank <= 3) hasBonus = true;
+                if (status.bonusRank === 3 && status.min === 800 && tierRank <= 3 && user.weight >= 1000) hasBonus = true;
+                if (hasBonus) {
+                    rewardText = `<span class="text-red-600 font-black">★ ${rewardText} + SOGO $${status.bonusValue} 現金券</span> <div class="text-[10px] text-gray-400 mt-1">${lang.tierRankLabel} #${tierRank}</div>`;
+                    rName.innerHTML = rewardText;
+                } else { rName.textContent = rewardText; }
+            }
+
+            const nextEl = document.getElementById('card-next-level'), prgEl = document.getElementById('card-progress-bar'), diffEl = document.getElementById('card-diff-text');
+            if (next) { if(nextEl) nextEl.textContent = `${lang.goal}: ${next.title[window.currentLang]}`; const prg = Math.min(100, Math.max(0, ((user.weight - status.min) / (next.min - status.min)) * 100)); if(prgEl) prgEl.style.width = `${prg}%`; const feedsLeft = Math.round((next.min - user.weight) / 5); if(diffEl) diffEl.innerHTML = lang.feedsToUpgrade.replace('{n}', `<span class="font-black text-red-600">${feedsLeft}</span>`); } else { if(nextEl) nextEl.textContent = lang.maxLevel; if(prgEl) prgEl.style.width = "100%"; if(diffEl) diffEl.textContent = lang.congrats; }
+            uCard.classList.remove('hidden');
+        }
+
+        async function fetchLeaderboardData() {
+            const loading = document.getElementById('loading-indicator');
+            try {
+                const res = await fetch(window.GOOGLE_SCRIPT_URL);
+                const data = await res.json();
+                window.USERS = data.map(item => {
+                    const stats = calculateStats(parseInt(getProp(item, ["task1"]))||0, parseInt(getProp(item, ["task2"]))||0, parseInt(getProp(item, ["task3"]))||0, parseInt(getProp(item, ["task4"]))||0);
+                    return { id: parseInt(getProp(item, ["id"])) || 0, name: getProp(item, ["name"]), brand: getProp(item, ["brand"]), location: getProp(item, ["location"]), task1: parseInt(getProp(item, ["task1"]))||0, task2: parseInt(getProp(item, ["task2"]))||0, task3: parseInt(getProp(item, ["task3"]))||0, task4: parseInt(getProp(item, ["task4"]))||0, feeds: stats.totalFeeds, weight: stats.weight, nj: getProp(item, ["nj"]) };
+                }).filter(u => u.name).sort((a, b) => b.weight - a.weight);
+                updateUI(); 
+            } catch (error) { if(loading) loading.innerHTML = `<p class="text-red-500 font-black">讀取失敗。</p>`; } finally { if (loading) loading.classList.add('hidden'); }
+        }
+
+        function renderLeaderboard() {
+            const grid = document.getElementById('leaderboard-grid');
+            if(!grid) return; grid.innerHTML = ''; 
+            window.USERS.slice(0, 10).forEach((user, index) => {
+                const s = getCowStatus(user.weight), rank = index + 1;
+                let rs = rank === 1 ? "bg-yellow-400 text-white w-10 h-10 text-xl border-4 shadow-lg" : rank <= 3 ? "bg-gray-300 text-white w-8 h-8 border-2 shadow-md" : "bg-white text-gray-600 w-6 h-6 border shadow-sm text-xs";
+                const card = document.createElement('div');
+                card.className = "relative flex flex-col items-center";
+                card.innerHTML = `<div class="cow-image-container mb-2 transition-all relative shadow-2xl"><img src="${s.img}" alt="${s.title[window.currentLang]}"><div class="absolute top-2 left-2 rounded-full flex items-center justify-center font-black rank-badge ${rs}">${rank}</div><div class="absolute bottom-2 right-2 bg-white/95 px-3 py-1 rounded text-sm font-black text-red-600 shadow-md">${user.weight}kg</div></div><div class="bg-white/95 rounded-xl p-3 shadow-xl border-2 text-center w-full"><div class="text-[13px] font-black text-gray-800 truncate">${user.name}</div><div class="flex justify-center gap-1 mt-1"><span class="brand-badge brand-${user.brand} scale-75">${user.brand}</span><span class="bg-gray-100 text-gray-500 text-[9px] px-2 rounded-full font-black flex items-center">${user.location}</span></div><div class="text-[10px] font-black ${s.color}">${s.title[window.currentLang]}</div></div>`;
+                grid.appendChild(card);
+            });
+        }
+
+        const bFlt = document.getElementById('brand-filter'), lFlt = document.getElementById('location-filter'), uSlt = document.getElementById('user-select');
+        if(bFlt) bFlt.addEventListener('change', () => { populateFilterOptions(); populateUserSelect(); });
+        if(lFlt) lFlt.addEventListener('change', populateUserSelect);
+        if(uSlt) uSlt.addEventListener('change', (e) => updateUserCard(e.target.value));
+
+        fetchLeaderboardData();
     </script>
 </body>
 </html>
