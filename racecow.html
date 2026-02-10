@@ -126,6 +126,7 @@
 
         const BRANDS = ["Dermes", "Reenex", "Elyze"]; // Defined globally
         const TRACK_TIERS = ["基本", "入門", "先鋒", "天才", "超級", "極限", "傳奇", "舉世無雙"]; // Defined globally
+        const MILES_RANGES = ["0-20", "20-40", "40-60", "60-80", "80-100", "100+"]; // Defined globally
 
         // REWARD DATA
         const REWARDS = [
@@ -525,8 +526,8 @@
             const [trackFilterHub, setTrackFilterHub] = useState(["ALL"]);
             const [trackFilterFloor, setTrackFilterFloor] = useState(["ALL"]);
             const [trackFilterTier, setTrackFilterTier] = useState(["ALL"]);
-            // Miles Filter (NEW)
-            const [trackFilterMiles, setTrackFilterMiles] = useState("ALL");
+            // Miles Filter (NEW - Multi Select)
+            const [trackFilterMiles, setTrackFilterMiles] = useState(["ALL"]);
 
             const theme = THEME; 
 
@@ -720,14 +721,17 @@
                         if (!trackFilterTier.includes(level)) return false;
                     }
 
-                    // Check Miles Filter (NEW)
-                    if (trackFilterMiles !== "ALL") {
-                         const [min, max] = trackFilterMiles.split('-').map(Number);
-                         if (trackFilterMiles === '100+') {
-                             if (r.sales < 100) return false;
-                         } else {
-                             if (r.sales < min || r.sales > max) return false;
-                         }
+                    // Check Miles Filter (NEW - Multi Select Logic)
+                    if (!trackFilterMiles.includes("ALL")) {
+                         const matchesAnyRange = trackFilterMiles.some(range => {
+                             if (range === '100+') {
+                                 return r.sales >= 100;
+                             } else {
+                                 const [min, max] = range.split('-').map(Number);
+                                 return r.sales >= min && r.sales <= max;
+                             }
+                         });
+                         if (!matchesAnyRange) return false;
                     }
 
                     return true;
@@ -1022,7 +1026,7 @@
                                  </div>
                                  
                                  <div className="flex items-center gap-2">
-                                     <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">等級:</span>
+                                     <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">跑道等級:</span>
                                      <MultiSelectDropdown 
                                         label="等級" 
                                         options={TRACK_TIERS} 
@@ -1033,17 +1037,13 @@
                                  </div>
                                  <div className="flex items-center gap-2">
                                      <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">里數:</span>
-                                     <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700">
-                                        <select value={trackFilterMiles} onChange={(e) => setTrackFilterMiles(e.target.value)} className="bg-transparent text-xs font-bold text-slate-300 outline-none px-2 py-1 cursor-pointer">
-                                            <option value="ALL">全部 (ALL)</option>
-                                            <option value="0-20">0 - 20 Miles</option>
-                                            <option value="20-40">20 - 40 Miles</option>
-                                            <option value="40-60">40 - 60 Miles</option>
-                                            <option value="60-80">60 - 80 Miles</option>
-                                            <option value="80-100">80 - 100 Miles</option>
-                                            <option value="100+">100+ Miles</option>
-                                        </select>
-                                     </div>
+                                     <MultiSelectDropdown 
+                                        label="里數" 
+                                        options={MILES_RANGES} 
+                                        selected={trackFilterMiles} 
+                                        onChange={setTrackFilterMiles} 
+                                        theme={theme}
+                                     />
                                  </div>
                              </div>
                          </div>
