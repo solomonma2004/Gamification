@@ -122,12 +122,12 @@
             const subtotal = Number(item.signs || 0) * Number(item.ticket || 0);
 
             return (
-                <div className="relative group p-5 md:p-6 glass-panel rounded-3xl transition-all duration-300 hover:border-violet-500/30 w-full overflow-hidden">
+                <div className="relative group p-5 md:p-6 glass-panel rounded-3xl transition-all duration-300 hover:border-violet-500/30">
                     <div className="flex items-center gap-3 mb-5">
                         <div className={`p-2.5 rounded-xl bg-gradient-to-br ${colorClass} bg-opacity-10 shadow-lg`}>
                             <Icon name={iconName} size={22} className="text-white" />
                         </div>
-                        <span className="text-base md:text-lg font-bold text-white/90 tracking-wide truncate">{label}</span>
+                        <span className="text-base md:text-lg font-bold text-white/90 tracking-wide">{label}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -154,14 +154,14 @@
                         </div>
                     </div>
                     <div className="mt-5 flex justify-between items-center px-1">
-                        <span className="text-xs text-white/30 font-bold uppercase shrink-0">分支小計</span>
-                        <span className="text-base md:text-xl font-black text-white/80 truncate ml-2">{formatHKD(subtotal)}</span>
+                        <span className="text-xs text-white/30 font-bold uppercase">分支小計</span>
+                        <span className="text-base md:text-xl font-black text-white/80">{formatHKD(subtotal)}</span>
                     </div>
                 </div>
             );
         };
 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjkG4Ts_OEn2-jHlCjrcf4ppvgVT_2r6bKJ1D4zMQnpdo2peUl-bfvzoTuyodUOF--8A/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwP0O0BsCWK0MN03uayShGS8-WWHBgPRZWz9LCTEiF4amChe2PoBVQYKOm_v_cmKqF7XQ/exec";
 
         const App = () => {
             const [db, setDb] = useState([]);
@@ -256,16 +256,11 @@
             const calcSales = (key) => Number(planning[key].signs || 0) * Number(planning[key].ticket || 0);
             const existingSales = calcSales('upsell') + calcSales('birthday');
             const newSales = calcSales('tail') + calcSales('icb');
-            
-            // 預估規劃總增長額
             const totalPlannedGrowth = existingSales + newSales;
             const mtdActual = selectedStaff ? Number(selectedStaff["Actual Sales (MTD)"] || 0) : 0;
-            
-            // 200% 目標邏輯: 原始目標 X 2
+            const projectedMonthEnd = mtdActual + totalPlannedGrowth;
             const originalTarget = selectedStaff ? Number(selectedStaff["Target Sales (Full Month)"] || 0) : 0;
             const superTarget = originalTarget * 2;
-            
-            // 達成判定邏輯 (以預估規劃總增長額是否達標)
             const isTargetAchieved = selectedStaff && superTarget > 0 && totalPlannedGrowth >= superTarget;
             const displayMtdPct = selectedStaff ? (Number(selectedStaff["MTD%"] || 0) * 100).toFixed(1) : "0";
 
@@ -289,7 +284,7 @@
                     tail_ticket: planning.tail.ticket,
                     icb_signs: planning.icb.signs,
                     icb_ticket: planning.icb.ticket,
-                    projected_total: totalPlannedGrowth,
+                    projected_total: projectedMonthEnd,
                     timestamp: new Date().toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
                 };
 
@@ -316,7 +311,7 @@
             };
 
             return (
-                <div className="min-h-screen relative w-full overflow-x-hidden">
+                <div className="min-h-screen relative">
                     {/* Social Network Pattern Background Decor */}
                     <div className="fixed inset-0 pointer-events-none -z-10 bg-network"></div>
                     <div className="fixed inset-0 pointer-events-none -z-10">
@@ -335,18 +330,18 @@
                     <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:px-10 md:py-16">
                         <header className="flex flex-col gap-8 mb-12 md:mb-16">
                             <div className="text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
-                                <div className="max-w-full">
+                                <div>
                                     <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                                        <Icon name="Share2" size={16} className="text-violet-400 shrink-0" />
-                                        <span className="text-xs font-black text-violet-400 uppercase tracking-[0.5em] truncate">v4.2 Robust Layout</span>
+                                        <Icon name="Share2" size={16} className="text-violet-400" />
+                                        <span className="text-xs font-black text-violet-400 uppercase tracking-[0.5em]">v4.0 Social Network Ecosystem</span>
                                     </div>
-                                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter italic leading-tight drop-shadow-lg break-words">
+                                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter italic leading-tight drop-shadow-lg">
                                         Neoderm <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400">200% 銷售計劃</span>
                                     </h1>
                                 </div>
 
                                 {/* Region Toggle Switch */}
-                                <div className="inline-flex bg-white/[0.03] border border-white/10 rounded-full p-1.5 backdrop-blur-xl shrink-0 max-w-full overflow-x-auto">
+                                <div className="inline-flex bg-white/[0.03] border border-white/10 rounded-full p-1.5 backdrop-blur-xl shrink-0">
                                     {availableRegions.map(region => (
                                         <button
                                             key={region}
@@ -387,7 +382,7 @@
                             {error && (
                                 <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-4 text-red-400 text-base animate-in slide-in-from-top-2">
                                     <Icon name="AlertCircle" size={24} className="w-6 h-6 flex-shrink-0 mt-0.5" />
-                                    <pre className="whitespace-pre-wrap font-sans break-words">{error}</pre>
+                                    <pre className="whitespace-pre-wrap font-sans">{error}</pre>
                                 </div>
                             )}
                         </header>
@@ -401,60 +396,60 @@
                                         { label: 'ACB 網絡基數', value: selectedStaff["ACB (Curr. Month End)"], icon: 'Users', color: 'text-violet-400' },
                                         { label: 'ICB 網絡基數', value: selectedStaff["ICB (Curr. Month End)"], icon: 'Network', color: 'text-fuchsia-400' }
                                     ].map((m, i) => (
-                                        <div key={i} className="p-5 md:p-8 glass-panel rounded-3xl md:rounded-[2.5rem] relative overflow-hidden group hover:border-violet-500/30 transition-all">
+                                        <div key={i} className="p-6 md:p-8 glass-panel rounded-3xl md:rounded-[2.5rem] relative overflow-hidden group hover:border-violet-500/30 transition-all">
                                             <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <div className="flex items-center gap-2 md:gap-3 mb-2 relative z-10">
-                                                <Icon name={m.icon} size={18} className="text-white/20 shrink-0" />
-                                                <span className="text-[10px] md:text-sm text-white/40 font-bold uppercase tracking-widest truncate">{m.label}</span>
+                                            <div className="flex items-center gap-3 mb-2 relative z-10">
+                                                <Icon name={m.icon} size={18} className="text-white/20" />
+                                                <span className="text-xs md:text-sm text-white/40 font-bold uppercase tracking-widest">{m.label}</span>
                                             </div>
-                                            <div className={`text-xl md:text-3xl font-black relative z-10 truncate ${m.color}`}>{m.value}</div>
+                                            <div className={`text-xl md:text-3xl font-black relative z-10 ${m.color}`}>{m.value}</div>
                                         </div>
                                     ))}
                                 </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 mb-16 md:mb-24 w-full">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 mb-16 md:mb-24">
                                     {/* 舊客 PILLAR */}
-                                    <section className="space-y-8 w-full">
+                                    <section className="space-y-8">
                                         <div className="flex items-center gap-4 px-2">
                                             <div className="h-6 w-1.5 bg-violet-500 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.8)]"></div>
                                             <h2 className="text-3xl font-black italic tracking-tight flex items-center gap-3">
-                                                內部裂變 <span className="text-sm font-medium text-violet-400 uppercase tracking-widest not-italic truncate">Existing Pillar</span>
+                                                內部轉化 <span className="text-sm font-medium text-violet-400 uppercase tracking-widest not-italic">Existing Pillar</span>
                                             </h2>
                                         </div>
                                         <SignInput id="upsell" label="追加簽單 (UP-SELL)" colorClass="from-violet-500 to-violet-400" iconName="GitMerge" planning={planning} onUpdate={handleUpdate} />
                                         <SignInput id="birthday" label="生日簽單 (BIRTHDAY)" colorClass="from-violet-400 to-violet-300" iconName="Gift" planning={planning} onUpdate={handleUpdate} />
-                                        <div className="px-4 md:px-6 py-2 flex flex-wrap items-end justify-between md:justify-end gap-2 text-right">
-                                            <span className="text-xs text-white/30 font-bold uppercase tracking-widest">內部網絡增長額</span>
-                                            <span className="text-2xl font-black text-violet-400 font-mono break-all">{formatHKD(existingSales)}</span>
+                                        <div className="px-6 py-2 text-right">
+                                            <span className="text-xs text-white/30 font-bold uppercase mr-4 tracking-widest">內部網絡增長額</span>
+                                            <span className="text-2xl font-black text-violet-400 font-mono">{formatHKD(existingSales)}</span>
                                         </div>
                                     </section>
                                     
                                     {/* 新客 PILLAR */}
-                                    <section className="space-y-8 w-full">
+                                    <section className="space-y-8">
                                         <div className="flex items-center gap-4 px-2">
                                             <div className="h-6 w-1.5 bg-fuchsia-500 rounded-full shadow-[0_0_10px_rgba(217,70,239,0.8)]"></div>
                                             <h2 className="text-3xl font-black italic tracking-tight flex items-center gap-3">
-                                                外部擴張 <span className="text-sm font-medium text-fuchsia-400 uppercase tracking-widest not-italic truncate">New Pillar</span>
+                                                外部裂變 <span className="text-sm font-medium text-fuchsia-400 uppercase tracking-widest not-italic">New Pillar</span>
                                             </h2>
                                         </div>
 
                                         {/* 網店數據參考區塊 */}
-                                        <div className="p-5 md:p-6 glass-panel rounded-3xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03]">
+                                        <div className="p-6 glass-panel rounded-3xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03]">
                                             <div className="flex items-center gap-3 mb-5">
-                                                <Icon name="Globe" size={18} className="text-fuchsia-400 shrink-0" />
-                                                <span className="text-xs font-black text-fuchsia-400 uppercase tracking-[0.2em] truncate">全網實時滲透率 (LIVE)</span>
+                                                <Icon name="Globe" size={18} className="text-fuchsia-400" />
+                                                <span className="text-xs font-black text-fuchsia-400 uppercase tracking-[0.2em]">全網實時滲透率 (LIVE MAP)</span>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4 md:gap-8">
+                                            <div className="grid grid-cols-2 gap-8">
                                                 <div>
-                                                    <span className="text-xs text-white/30 font-bold uppercase block mb-2 tracking-widest truncate">ACB 連線</span>
-                                                    <span className="text-xl md:text-2xl font-black text-white">{selectedStaff["ACB Shop Count"] || 0}</span>
+                                                    <span className="text-xs text-white/30 font-bold uppercase block mb-2 tracking-widest">ACB 網店連線數</span>
+                                                    <span className="text-2xl font-black text-white">{selectedStaff["ACB Shop Count"] || 0}</span>
                                                     <div className="text-xs font-mono text-fuchsia-400/60 mt-1">
                                                         滲透率: {Number(selectedStaff["ACB (Curr. Month End)"]) > 0 ? ((Number(selectedStaff["ACB Shop Count"]) / Number(selectedStaff["ACB (Curr. Month End)"])) * 100).toFixed(1) : "0"}%
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <span className="text-xs text-white/30 font-bold uppercase block mb-2 tracking-widest truncate">ICB 連線</span>
-                                                    <span className="text-xl md:text-2xl font-black text-white">{selectedStaff["ICB Shop Count"] || 0}</span>
+                                                    <span className="text-xs text-white/30 font-bold uppercase block mb-2 tracking-widest">ICB 網店連線數</span>
+                                                    <span className="text-2xl font-black text-white">{selectedStaff["ICB Shop Count"] || 0}</span>
                                                     <div className="text-xs font-mono text-fuchsia-400/60 mt-1">
                                                         滲透率: {Number(selectedStaff["ICB (Curr. Month End)"]) > 0 ? ((Number(selectedStaff["ICB Shop Count"]) / Number(selectedStaff["ICB (Curr. Month End)"])) * 100).toFixed(1) : "0"}%
                                                     </div>
@@ -464,74 +459,80 @@
 
                                         <SignInput id="tail" label="龍尾 (TAIL)" colorClass="from-fuchsia-500 to-fuchsia-400" iconName="Activity" planning={planning} onUpdate={handleUpdate} />
                                         <SignInput id="icb" label="ICB 簽單 (ICB SIGN)" colorClass="from-fuchsia-400 to-pink-400" iconName="Zap" planning={planning} onUpdate={handleUpdate} />
-                                        <div className="px-4 md:px-6 py-2 flex flex-wrap items-end justify-between md:justify-end gap-2 text-right">
-                                            <span className="text-xs text-white/30 font-bold uppercase tracking-widest">外部網絡增長額</span>
-                                            <span className="text-2xl font-black text-fuchsia-400 font-mono break-all">{formatHKD(newSales)}</span>
+                                        <div className="px-6 py-2 text-right">
+                                            <span className="text-xs text-white/30 font-bold uppercase mr-4 tracking-widest">外部網絡增長額</span>
+                                            <span className="text-2xl font-black text-fuchsia-400 font-mono">{formatHKD(newSales)}</span>
                                         </div>
                                     </section>
                                 </div>
 
-                                {/* Impact Summary Section - Using Grid instead of Flex to rigidly enforce bounds */}
-                                <div className="relative group rounded-[2rem] md:rounded-[4rem] overflow-hidden mb-16 shadow-[0_10px_40px_rgba(168,85,247,0.1)] w-full">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-fuchsia-500/10 pointer-events-none"></div>
-                                    <div className="glass-panel border-violet-500/20 p-6 md:p-10 lg:p-16 relative">
+                                {/* Impact Summary Section */}
+                                <div className="relative group rounded-[3rem] md:rounded-[4rem] overflow-hidden mb-16 shadow-2xl">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none"></div>
+                                    <div className="glass-panel p-8 md:p-16 relative">
                                         {/* Badge */}
-                                        <div className="absolute top-0 right-6 md:right-16 bg-gradient-to-r from-orange-500 to-red-600 px-4 py-1.5 md:px-6 md:py-2 rounded-b-xl md:rounded-b-2xl flex items-center gap-1.5 md:gap-2 shadow-xl z-20">
-                                            <Icon name="Flame" size={14} className="text-white shrink-0" />
-                                            <span className="text-[10px] md:text-xs font-black uppercase tracking-tighter truncate">200% Super Target</span>
+                                        <div className="absolute top-0 right-8 md:right-16 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2 rounded-b-2xl flex items-center gap-2 shadow-xl">
+                                            <Icon name="Flame" size={16} className="text-white" />
+                                            <span className="text-xs font-black uppercase tracking-tighter">200% Super Target</span>
                                         </div>
 
-                                        {/* Use strictly proportioned grid columns to prevent right-side blowout */}
-                                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 w-full mt-4 md:mt-0">
-                                            {/* Left Column (Takes 7/12 on large screens) */}
-                                            <div className="lg:col-span-7 xl:col-span-8 w-full text-center lg:text-left min-w-0 overflow-hidden flex flex-col justify-center">
-                                                <span className="text-[11px] md:text-xs text-white/30 font-black uppercase tracking-[0.5em] block mb-4 md:mb-6">全網絡規劃總增長額 (P1+P2)</span>
-                                                {/* Scaled text sizes slightly to ensure fit, using truncate to prevent pushing bounds */}
-                                                <div className="text-[3rem] sm:text-6xl md:text-7xl lg:text-[4.5rem] xl:text-[6rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 leading-tight mb-8 md:mb-10 tracking-tighter tabular-nums drop-shadow-2xl truncate">
+                                        <div className="flex flex-col xl:flex-row items-center gap-10 xl:gap-16 mt-4 md:mt-0">
+                                            <div className="flex-1 w-full min-w-0 text-center xl:text-left">
+                                                <span className="text-xs text-white/30 font-black uppercase tracking-[0.5em] block mb-6">預估規劃總增長額 (P1+P2)</span>
+                                                <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[5rem] xl:text-[5.5rem] font-black text-white leading-none mb-10 tracking-tighter tabular-nums drop-shadow-2xl break-words">
                                                     {formatHKD(totalPlannedGrowth)}
+                                                </div>
+                                                
+                                                <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
+                                                    <div className="px-8 py-5 bg-white/5 rounded-2xl border border-white/5 flex-1 max-w-[300px] backdrop-blur-xl">
+                                                        <span className="text-xs text-white/40 block mb-2 font-bold uppercase tracking-widest">月尾預計總額</span>
+                                                        <span className="text-2xl font-black text-white truncate block">{formatHKD(projectedMonthEnd)}</span>
+                                                    </div>
+                                                    <div className="px-8 py-5 bg-orange-500/10 rounded-2xl border border-orange-500/10 flex-1 max-w-[300px] backdrop-blur-xl">
+                                                        <span className="text-xs text-orange-400 block mb-2 font-bold uppercase tracking-widest">200% 目標額</span>
+                                                        <span className="text-2xl font-black text-orange-400 truncate block">{formatHKD(superTarget)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Right Column (Takes 5/12 on large screens) */}
-                                            <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-center items-center lg:items-end w-full min-w-0 z-10 overflow-hidden">
-                                                <div className="text-center lg:text-right w-full overflow-hidden mb-6">
-                                                    <div className="text-5xl md:text-6xl lg:text-7xl xl:text-7xl font-black text-white mb-2 tabular-nums tracking-tighter drop-shadow-lg truncate">
-                                                        {superTarget > 0 ? ((totalPlannedGrowth / superTarget) * 100).toFixed(1) : 0}%
+                                            <div className="flex flex-col gap-8 items-center xl:items-end w-full xl:w-auto xl:min-w-[340px] flex-shrink-0">
+                                                <div className="text-center xl:text-right">
+                                                    <div className="text-7xl md:text-8xl lg:text-[5.5rem] font-black text-white mb-3 tabular-nums tracking-tighter leading-none">
+                                                        {superTarget > 0 ? ((projectedMonthEnd / superTarget) * 100).toFixed(1) : 0}%
                                                     </div>
-                                                    <div className="text-[11px] md:text-xs xl:text-sm text-violet-300 font-black uppercase tracking-[0.2em] truncate">模動節點達成率 (對標 200%)</div>
+                                                    <div className="text-sm text-white/30 font-black uppercase tracking-[0.2em]">模擬達成率 (對標 200%)</div>
                                                 </div>
 
-                                                <div className={`w-full py-5 px-4 md:px-6 rounded-2xl text-center text-sm md:text-base font-black tracking-[0.1em] md:tracking-[0.15em] uppercase border transition-all duration-500 shadow-xl overflow-hidden ${isTargetAchieved ? 'bg-emerald-500 text-black border-emerald-400' : 'bg-white/5 text-white/40 border-white/10'}`}>
+                                                <div className={`w-full py-6 px-10 rounded-3xl text-center text-lg font-black tracking-[0.2em] uppercase border transition-all duration-500 shadow-2xl ${isTargetAchieved ? 'bg-emerald-500 text-black border-emerald-400' : 'bg-white/5 text-white/40 border-white/10'}`}>
                                                     {!selectedStaff ? (
-                                                        <span className="truncate block">請先連結使用者節點</span>
+                                                        "請先選擇人員"
                                                     ) : isTargetAchieved ? (
-                                                        <div className="flex items-center justify-center gap-2">
-                                                            <Icon name="ShieldCheck" size={20} className="shrink-0" /> 
-                                                            <span className="truncate">網絡版圖已解鎖</span>
+                                                        <div className="flex items-center justify-center gap-3">
+                                                            <Icon name="ShieldCheck" size={24} /> 200% 目標已鎖定
                                                         </div>
                                                     ) : (
-                                                        <span className="block truncate">尚欠 {formatHKD(Math.max(0, superTarget - totalPlannedGrowth))}</span>
+                                                        `尚欠 ${formatHKD(Math.max(0, superTarget - projectedMonthEnd))}`
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Progress Bar */}
-                                        <div className="mt-12 md:mt-16 h-3 md:h-4 w-full bg-black/50 rounded-full overflow-hidden p-0.5 md:p-1 border border-violet-500/20 shadow-inner">
+                                        <div className="mt-16 h-4 w-full bg-white/5 rounded-full overflow-hidden p-1 border border-white/5 mb-10">
                                             <div 
-                                                className="h-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 rounded-full transition-all duration-1000 ease-out relative shadow-[0_0_20px_rgba(217,70,239,0.6)]" 
-                                                style={{ width: `${selectedStaff && superTarget > 0 ? Math.min(100, (totalPlannedGrowth / superTarget) * 100) : 0}%` }}
+                                                className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 rounded-full transition-all duration-1000 ease-out relative" 
+                                                style={{ width: `${selectedStaff && superTarget > 0 ? Math.min(100, (projectedMonthEnd / superTarget) * 100) : 0}%` }}
                                             >
-                                                <div className="absolute top-0 right-0 h-full w-8 bg-white/40 blur-md animate-pulse"></div>
+                                                <div className="absolute top-0 right-0 h-full w-8 bg-white/20 blur-md animate-pulse"></div>
                                             </div>
                                         </div>
-                                        
+
                                         {/* 提交至雲端按鈕 */}
-                                        <div className="mt-10 md:mt-12 border-t border-violet-500/20 pt-8 flex justify-center">
+                                        <div className="border-t border-white/10 pt-10 flex justify-center">
                                             <button 
                                                 onClick={handleSubmit} 
                                                 disabled={isSubmitting}
-                                                className={`flex items-center justify-center gap-2 md:gap-3 w-full md:w-auto px-6 md:px-12 py-4 md:py-5 rounded-full font-black text-sm md:text-xl tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 shadow-2xl overflow-hidden ${
+                                                className={`flex items-center justify-center gap-3 w-full md:w-auto px-12 py-5 rounded-full font-black text-xl tracking-[0.2em] uppercase transition-all duration-300 shadow-2xl ${
                                                     submitStatus === 'success' ? 'bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.4)]' :
                                                     submitStatus === 'error' ? 'bg-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.4)]' :
                                                     isSubmitting ? 'bg-white/10 text-white/50 cursor-not-allowed' :
@@ -539,13 +540,13 @@
                                                 }`}
                                             >
                                                 {isSubmitting ? (
-                                                    <><Icon name="RefreshCw" className="animate-spin text-white/50 shrink-0" size={20} /> <span className="truncate">節點同步中...</span></>
+                                                    <><Icon name="RefreshCw" className="animate-spin text-white/50" size={24} /> 節點同步中...</>
                                                 ) : submitStatus === 'success' ? (
-                                                    <><Icon name="CheckCircle2" size={20} className="shrink-0" /> <span className="truncate">網絡同步完成</span></>
+                                                    <><Icon name="CheckCircle2" size={24} /> 網絡同步完成</>
                                                 ) : submitStatus === 'error' ? (
-                                                    <><Icon name="AlertCircle" size={20} className="shrink-0" /> <span className="truncate">連線干擾，請重試</span></>
+                                                    <><Icon name="AlertCircle" size={24} /> 連線干擾，請重試</>
                                                 ) : (
-                                                    <><Icon name="Share2" size={20} className="shrink-0" /> <span className="truncate">廣播專屬規劃 (SYNC)</span></>
+                                                    <><Icon name="Share2" size={24} /> 提交專屬規劃 (SYNC)</>
                                                 )}
                                             </button>
                                         </div>
@@ -553,14 +554,14 @@
                                 </div>
                             </div>
                         ) : (
-                            <div className="glass-panel border-violet-500/20 p-12 md:p-20 rounded-[2rem] md:rounded-[3rem] text-center space-y-4 md:space-y-6 animate-pulse mt-8">
-                                <Icon name="Network" size={56} className="mx-auto text-violet-500/30" />
-                                <p className="text-lg md:text-2xl text-violet-300/50 font-black uppercase tracking-[0.2em] md:tracking-[0.4em]">請先連接地區及治療師節點</p>
+                            <div className="glass-panel border-violet-500/20 p-20 rounded-[3rem] text-center space-y-6 animate-pulse mt-8">
+                                <Icon name="Network" size={64} className="mx-auto text-violet-500/30" />
+                                <p className="text-xl md:text-2xl text-violet-300/50 font-black uppercase tracking-[0.4em]">請先在上方連接地區及治療師節點</p>
                             </div>
                         )}
                         
-                        <footer className="text-center pb-8 md:pb-12 mt-16 md:mt-20">
-                            <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] md:tracking-[0.6em] text-violet-400/30">Neo Derm Social Strategy Hub &copy; 2024</span>
+                        <footer className="text-center pb-12 mt-20">
+                            <span className="text-xs font-black uppercase tracking-[0.6em] text-violet-400/30">Neo Derm Social Strategy Hub &copy; 2024</span>
                         </footer>
                     </div>
                 </div>
