@@ -258,10 +258,9 @@
             const newSales = calcSales('tail') + calcSales('icb');
             const totalPlannedGrowth = existingSales + newSales;
             const mtdActual = selectedStaff ? Number(selectedStaff["Actual Sales (MTD)"] || 0) : 0;
-            const projectedMonthEnd = mtdActual + totalPlannedGrowth;
             const originalTarget = selectedStaff ? Number(selectedStaff["Target Sales (Full Month)"] || 0) : 0;
             const superTarget = originalTarget * 2;
-            const isTargetAchieved = selectedStaff && superTarget > 0 && projectedMonthEnd >= superTarget;
+            const isTargetAchieved = selectedStaff && superTarget > 0 && totalPlannedGrowth >= superTarget;
             const displayMtdPct = selectedStaff ? (Number(selectedStaff["MTD%"] || 0) * 100).toFixed(1) : "0";
 
             // 提交遊戲計畫至 Google Sheet
@@ -284,7 +283,7 @@
                     tail_ticket: planning.tail.ticket,
                     icb_signs: planning.icb.signs,
                     icb_ticket: planning.icb.ticket,
-                    projected_total: projectedMonthEnd,
+                    projected_total: totalPlannedGrowth,
                     timestamp: new Date().toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
                 };
 
@@ -484,10 +483,6 @@
                                                 </div>
                                                 
                                                 <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
-                                                    <div className="px-8 py-5 bg-white/5 rounded-2xl border border-white/5 flex-1 max-w-[300px] backdrop-blur-xl">
-                                                        <span className="text-xs text-white/40 block mb-2 font-bold uppercase tracking-widest">月尾預計總額</span>
-                                                        <span className="text-2xl font-black text-white truncate block">{formatHKD(projectedMonthEnd)}</span>
-                                                    </div>
                                                     <div className="px-8 py-5 bg-orange-500/10 rounded-2xl border border-orange-500/10 flex-1 max-w-[300px] backdrop-blur-xl">
                                                         <span className="text-xs text-orange-400 block mb-2 font-bold uppercase tracking-widest">200% 目標額</span>
                                                         <span className="text-2xl font-black text-orange-400 truncate block">{formatHKD(superTarget)}</span>
@@ -498,7 +493,7 @@
                                             <div className="flex flex-col gap-8 items-center xl:items-end w-full xl:w-auto xl:min-w-[340px] flex-shrink-0">
                                                 <div className="text-center xl:text-right">
                                                     <div className="text-7xl md:text-8xl lg:text-[5.5rem] font-black text-white mb-3 tabular-nums tracking-tighter leading-none">
-                                                        {superTarget > 0 ? ((projectedMonthEnd / superTarget) * 100).toFixed(1) : 0}%
+                                                        {originalTarget > 0 ? ((totalPlannedGrowth / originalTarget) * 100).toFixed(1) : 0}%
                                                     </div>
                                                     <div className="text-sm text-white/30 font-black uppercase tracking-[0.2em]">模擬達成率 (對標 200%)</div>
                                                 </div>
@@ -511,7 +506,7 @@
                                                             <Icon name="ShieldCheck" size={24} /> 200% 目標已鎖定
                                                         </div>
                                                     ) : (
-                                                        `尚欠 ${formatHKD(Math.max(0, superTarget - projectedMonthEnd))}`
+                                                        `尚欠 ${formatHKD(Math.max(0, superTarget - totalPlannedGrowth))}`
                                                     )}
                                                 </div>
                                             </div>
@@ -521,7 +516,7 @@
                                         <div className="mt-16 h-4 w-full bg-white/5 rounded-full overflow-hidden p-1 border border-white/5 mb-10">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 rounded-full transition-all duration-1000 ease-out relative" 
-                                                style={{ width: `${selectedStaff && superTarget > 0 ? Math.min(100, (projectedMonthEnd / superTarget) * 100) : 0}%` }}
+                                                style={{ width: `${selectedStaff && superTarget > 0 ? Math.min(100, (totalPlannedGrowth / superTarget) * 100) : 0}%` }}
                                             >
                                                 <div className="absolute top-0 right-0 h-full w-8 bg-white/20 blur-md animate-pulse"></div>
                                             </div>
