@@ -261,7 +261,7 @@
             const projectedMonthEnd = mtdActual + totalPlannedGrowth;
             const originalTarget = selectedStaff ? Number(selectedStaff["Target Sales (Full Month)"] || 0) : 0;
             const superTarget = originalTarget * 2;
-            const isTargetAchieved = selectedStaff && superTarget > 0 && totalPlannedGrowth >= superTarget;
+            const isTargetAchieved = selectedStaff && superTarget > 0 && projectedMonthEnd >= superTarget;
             const displayMtdPct = selectedStaff ? (Number(selectedStaff["MTD%"] || 0) * 100).toFixed(1) : "0";
 
             // 提交遊戲計畫至 Google Sheet
@@ -434,23 +434,23 @@
                                         </div>
 
                                         {/* 網店數據參考區塊 */}
-                                        <div className="p-6 glass-panel rounded-3xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03]">
-                                            <div className="flex items-center gap-3 mb-5">
-                                                <Icon name="Globe" size={18} className="text-fuchsia-400" />
-                                                <span className="text-xs font-black text-fuchsia-400 uppercase tracking-[0.2em]">全網實時滲透率 (LIVE MAP)</span>
+                                        <div className="p-8 glass-panel rounded-3xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03]">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <Icon name="Globe" size={24} className="text-fuchsia-400" />
+                                                <span className="text-base md:text-lg font-black text-fuchsia-400 uppercase tracking-widest">客人開店滲透率</span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div>
-                                                    <span className="text-xs text-white/30 font-bold uppercase block mb-2 tracking-widest">ACB 網店連線數</span>
-                                                    <span className="text-2xl font-black text-white">{selectedStaff["ACB Shop Count"] || 0}</span>
-                                                    <div className="text-xs font-mono text-fuchsia-400/60 mt-1">
+                                                    <span className="text-sm md:text-base text-white/50 font-bold uppercase block mb-2 tracking-widest">ACB 網店連線數</span>
+                                                    <span className="text-4xl md:text-5xl font-black text-white">{selectedStaff["ACB Shop Count"] || 0}</span>
+                                                    <div className="text-base md:text-lg font-black text-fuchsia-300 mt-2 tracking-wider">
                                                         滲透率: {Number(selectedStaff["ACB (Curr. Month End)"]) > 0 ? ((Number(selectedStaff["ACB Shop Count"]) / Number(selectedStaff["ACB (Curr. Month End)"])) * 100).toFixed(1) : "0"}%
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <span className="text-xs text-white/30 font-bold uppercase block mb-2 tracking-widest">ICB 網店連線數</span>
-                                                    <span className="text-2xl font-black text-white">{selectedStaff["ICB Shop Count"] || 0}</span>
-                                                    <div className="text-xs font-mono text-fuchsia-400/60 mt-1">
+                                                    <span className="text-sm md:text-base text-white/50 font-bold uppercase block mb-2 tracking-widest">ICB 網店連線數</span>
+                                                    <span className="text-4xl md:text-5xl font-black text-white">{selectedStaff["ICB Shop Count"] || 0}</span>
+                                                    <div className="text-base md:text-lg font-black text-fuchsia-300 mt-2 tracking-wider">
                                                         滲透率: {Number(selectedStaff["ICB (Curr. Month End)"]) > 0 ? ((Number(selectedStaff["ICB Shop Count"]) / Number(selectedStaff["ICB (Curr. Month End)"])) * 100).toFixed(1) : "0"}%
                                                     </div>
                                                 </div>
