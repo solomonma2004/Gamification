@@ -1,1 +1,536 @@
-HELLO!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Business Sales Dashboard</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background:#000;
+    color:#fff;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: 55% 45%;
+    grid-template-rows: 55% 45%;
+    height:100vh;
+    padding:10px;
+    box-sizing:border-box;
+    gap:10px;
+  }
+  .channels {
+    display:grid;
+    grid-template-columns: repeat(2,1fr);
+    grid-template-rows: repeat(2,1fr);
+    gap:10px;
+  }
+  .channel-card {
+    border-radius:25px;
+    padding:10px 14px;
+    box-sizing:border-box;
+    position:relative;
+    background:#151515;
+  }
+  .channel-header {
+    font-weight:bold;
+    margin-bottom:4px;
+  }
+  .Therapist { border:2px solid #3c7dff; }
+  .CSE       { border:2px solid #7dff43; }
+  .CallCentre{ border:2px solid #ff8a21; }
+  .AIAgent   { border:2px solid #ff3b6e; }
+
+  .row {
+    display:flex;
+    align-items:center;
+    margin:2px 0;
+    font-size:12px;
+  }
+  .row label {
+    width:140px;
+  }
+  .row input[type="number"]{
+    width:80px;
+    padding:2px 4px;
+    margin-right:4px;
+    border-radius:4px;
+    border:1px solid #555;
+    background:#eee;
+    color:#000;
+  }
+  .row input[type="range"]{
+    flex:1;
+    margin-left:4px;
+  }
+  .section-title{
+    margin-top:3px;
+    font-size:12px;
+    text-decoration:underline;
+  }
+  .bottom-line{
+    position:absolute;
+    bottom:6px;
+    left:14px;
+    right:14px;
+    font-size:12px;
+    display:flex;
+    justify-content:space-between;
+  }
+
+  /* Right top charts */
+  .charts {
+    display:flex;
+    justify-content:space-evenly;
+    align-items:center;
+  }
+  canvas{
+    background:#000;
+  }
+  .chart-title{
+    text-align:center;
+    margin-bottom:4px;
+    font-size:14px;
+  }
+
+  /* Overall performance */
+  .overall {
+    border-radius:25px;
+    background:#151515;
+    padding:16px 20px;
+    box-sizing:border-box;
+  }
+  .overall-title{
+    font-size:16px;
+    font-weight:bold;
+    margin-bottom:8px;
+    text-align:center;
+  }
+  .overall-row{
+    font-size:13px;
+    margin:4px 0;
+  }
+  .overall-value{
+    float:right;
+    font-weight:bold;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- LEFT: 4 channels -->
+  <div class="channels">
+    <!-- Therapist -->
+    <div class="channel-card Therapist" data-channel="Therapist">
+      <div class="channel-header">Therapist</div>
+
+      <div class="row">
+        <label>Audience no.</label>
+        <input type="number" class="audience" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Reach rate (%)</label>
+        <input type="number" class="reach" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node activation % (Self book)</div>
+      <div class="row">
+        <label>Node activation (%)</label>
+        <input type="number" class="nodeAct" min="0" max="100" value="0">
+        <input type="range" class="nodeActSlider" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="selfShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="selfSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node Replication No. (Tail book)</div>
+      <div class="row">
+        <label>Node replication no.</label>
+        <input type="number" class="repNo" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="tailShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="tailSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="bottom-line">
+        <span>Sign no. <span class="signDisplay">0</span></span>
+        <span>Sales <span class="salesDisplay">0</span></span>
+      </div>
+    </div>
+
+    <!-- CSE -->
+    <div class="channel-card CSE" data-channel="CSE">
+      <div class="channel-header">CSE</div>
+
+      <div class="row">
+        <label>Audience no.</label>
+        <input type="number" class="audience" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Reach rate (%)</label>
+        <input type="number" class="reach" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node activation % (Self book)</div>
+      <div class="row">
+        <label>Node activation (%)</label>
+        <input type="number" class="nodeAct" min="0" max="100" value="0">
+        <input type="range" class="nodeActSlider" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="selfShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="selfSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node Replication No. (Tail book)</div>
+      <div class="row">
+        <label>Node replication no.</label>
+        <input type="number" class="repNo" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="tailShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="tailSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="bottom-line">
+        <span>Sign no. <span class="signDisplay">0</span></span>
+        <span>Sales <span class="salesDisplay">0</span></span>
+      </div>
+    </div>
+
+    <!-- Call centre -->
+    <div class="channel-card CallCentre" data-channel="CallCentre">
+      <div class="channel-header">Call centre</div>
+
+      <div class="row">
+        <label>Audience no.</label>
+        <input type="number" class="audience" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Reach rate (%)</label>
+        <input type="number" class="reach" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node activation % (Self book)</div>
+      <div class="row">
+        <label>Node activation (%)</label>
+        <input type="number" class="nodeAct" min="0" max="100" value="0">
+        <input type="range" class="nodeActSlider" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="selfShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="selfSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node Replication No. (Tail book)</div>
+      <div class="row">
+        <label>Node replication no.</label>
+        <input type="number" class="repNo" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="tailShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="tailSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="bottom-line">
+        <span>Sign no. <span class="signDisplay">0</span></span>
+        <span>Sales <span class="salesDisplay">0</span></span>
+      </div>
+    </div>
+
+    <!-- AI Agent -->
+    <div class="channel-card AIAgent" data-channel="AIAgent">
+      <div class="channel-header">AI Agent</div>
+
+      <div class="row">
+        <label>Audience no.</label>
+        <input type="number" class="audience" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Reach rate (%)</label>
+        <input type="number" class="reach" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node activation % (Self book)</div>
+      <div class="row">
+        <label>Node activation (%)</label>
+        <input type="number" class="nodeAct" min="0" max="100" value="0">
+        <input type="range" class="nodeActSlider" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="selfShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="selfSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="section-title">Node Replication No. (Tail book)</div>
+      <div class="row">
+        <label>Node replication no.</label>
+        <input type="number" class="repNo" min="0" value="0">
+      </div>
+      <div class="row">
+        <label>Show rate (%)</label>
+        <input type="number" class="tailShow" min="0" max="100" value="0">
+      </div>
+      <div class="row">
+        <label>Sign rate (%)</label>
+        <input type="number" class="tailSign" min="0" max="100" value="0">
+      </div>
+
+      <div class="bottom-line">
+        <span>Sign no. <span class="signDisplay">0</span></span>
+        <span>Sales <span class="salesDisplay">0</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT TOP: charts -->
+  <div>
+    <div class="charts">
+      <div>
+        <div class="chart-title">Sign no.</div>
+        <canvas id="signChart" width="220" height="220"></canvas>
+      </div>
+      <div>
+        <div class="chart-title">Sales</div>
+        <canvas id="salesChart" width="220" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT BOTTOM: overall performance -->
+  <div></div>
+  <div class="overall">
+    <div class="overall-title">Overall performance</div>
+    <div class="overall-row">
+      Overall Node Activation % (Self book)
+      <span class="overall-value" id="overallNodeAct">0%</span>
+    </div>
+    <div class="overall-row">
+      Overall Node Replication No. (Tail book)
+      <span class="overall-value" id="overallRepNo">0</span>
+    </div>
+    <div class="overall-row">
+      Overall Sign no.
+      <span class="overall-value" id="overallSign">0</span>
+    </div>
+    <div class="overall-row">
+      Overall Sales
+      <span class="overall-value" id="overallSales">0</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const CHANNEL_COLORS = {
+  Therapist:  "#3c7dff",
+  CSE:        "#7dff43",
+  CallCentre: "#ff8a21",
+  AIAgent:    "#ff3b6e"
+};
+
+const channelCards = document.querySelectorAll('.channel-card');
+const signCanvas  = document.getElementById('signChart');
+const salesCanvas = document.getElementById('salesChart');
+const signCtx  = signCanvas.getContext('2d');
+const salesCtx = salesCanvas.getContext('2d');
+
+const overallNodeActEl = document.getElementById('overallNodeAct');
+const overallRepNoEl   = document.getElementById('overallRepNo');
+const overallSignEl    = document.getElementById('overallSign');
+const overallSalesEl   = document.getElementById('overallSales');
+
+channelCards.forEach(card => {
+  const nodeInput  = card.querySelector('.nodeAct');
+  const nodeSlider = card.querySelector('.nodeActSlider');
+
+  nodeSlider.addEventListener('input', () => {
+    nodeInput.value = nodeSlider.value;
+    recalc();
+  });
+  nodeInput.addEventListener('input', () => {
+    let v = Number(nodeInput.value) || 0;
+    if (v < 0) v = 0;
+    if (v > 100) v = 100;
+    nodeInput.value = v;
+    nodeSlider.value = v;
+    recalc();
+  });
+
+  card.querySelectorAll('input[type="number"]').forEach(inp => {
+    if (inp !== nodeInput) {
+      inp.addEventListener('input', recalc);
+    }
+  });
+});
+
+function getChannelData(card){
+  const getNum = (selector) =>
+    Number(card.querySelector(selector).value) || 0;
+
+  const audience = getNum('.audience');
+  const reach    = getNum('.reach')/100;
+  const nodeAct  = getNum('.nodeAct')/100;
+  const selfShow = getNum('.selfShow')/100;
+  const selfSign = getNum('.selfSign')/100;
+  const repNo    = getNum('.repNo');
+  const tailShow = getNum('.tailShow')/100;
+  const tailSign = getNum('.tailSign')/100;
+
+  const signSelf =
+    audience * reach * nodeAct * selfShow * selfSign;
+
+  const signTail =
+    repNo * tailShow * tailSign;
+
+  const signNo = signSelf + signTail;
+  const sales  = signNo * 16000;
+
+  return {
+    name: card.getAttribute('data-channel'),
+    audience,
+    reach,
+    nodeAct,
+    signNo,
+    sales,
+    repNo
+  };
+}
+
+function recalc(){
+  const data = [];
+  channelCards.forEach(card => {
+    const d = getChannelData(card);
+    data.push(d);
+    card.querySelector('.signDisplay').textContent =
+      d.signNo.toFixed(2);
+    card.querySelector('.salesDisplay').textContent =
+      d.sales.toFixed(0);
+  });
+
+  // Overall metrics
+  let totalAudience = 0;
+  let weightedNodeActSum = 0;
+  let totalRepNo = 0;
+  let totalSign  = 0;
+  let totalSales = 0;
+
+  data.forEach(d => {
+    totalAudience += d.audience;
+    weightedNodeActSum += d.audience * d.reach * d.nodeAct;
+    totalRepNo += d.repNo;
+    totalSign  += d.signNo;
+    totalSales += d.sales;
+  });
+
+  const overallNodeAct =
+    totalAudience > 0 ? (weightedNodeActSum / totalAudience)*100 : 0;
+
+  overallNodeActEl.textContent = overallNodeAct.toFixed(2) + '%';
+  overallRepNoEl.textContent   = totalRepNo.toFixed(2);
+  overallSignEl.textContent    = totalSign.toFixed(2);
+  overallSalesEl.textContent   = totalSales.toFixed(0);
+
+  drawRingChart(signCtx,  signCanvas, data.map(d=>d.signNo),
+                data.map(d=>d.name),'Sign');
+  drawRingChart(salesCtx, salesCanvas,data.map(d=>d.sales),
+                data.map(d=>d.name),'Sales');
+}
+
+function drawRingChart(ctx, canvas, values, labels, type){
+  const total = values.reduce((a,b)=>a+b,0);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+  const outerR = 90;
+  const innerR = 55;
+
+  if (total === 0){
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = outerR-innerR;
+    ctx.beginPath();
+    ctx.arc(cx,cy,(outerR+innerR)/2,0,Math.PI*2);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.font='14px Arial';
+    ctx.fillText('0',cx,cy);
+    return;
+  }
+
+  let startAngle = -Math.PI/2;
+  values.forEach((v,i)=>{
+    const frac = v/total;
+    const endAngle = startAngle + frac*Math.PI*2;
+    const name = labels[i];
+    const color = CHANNEL_COLORS[name];
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = outerR-innerR;
+    ctx.arc(cx,cy,(outerR+innerR)/2,startAngle,endAngle);
+    ctx.stroke();
+
+    // label
+    const mid = (startAngle+endAngle)/2;
+    const rText = (outerR+innerR)/2;
+    const tx = cx + Math.cos(mid)*rText;
+    const ty = cy + Math.sin(mid)*rText;
+    ctx.fillStyle='#000';
+    ctx.font='10px Arial';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    const valueText = type==='Sales'
+      ? v.toFixed(0)
+      : v.toFixed(1);
+    ctx.fillText(valueText,tx,ty);
+
+    startAngle = endAngle;
+  });
+
+  // center text
+  ctx.fillStyle='#fff';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.font='13px Arial';
+  const centerText = type==='Sales'
+    ? total.toFixed(0)
+    : total.toFixed(1);
+  ctx.fillText(centerText, cx, cy);
+}
+
+recalc();
+</script>
+</body>
+</html>
