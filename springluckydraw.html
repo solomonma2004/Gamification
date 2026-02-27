@@ -13,7 +13,7 @@
             --neo-sky: #0ea5e9;
             --neo-sky-dark: #0369a1;
             --gold: #fbbf24;
-            --glass-white: rgba(255, 255, 255, 0.85);
+            --glass-white: rgba(255, 255, 255, 0.9);
         }
 
         body {
@@ -46,74 +46,72 @@
             100% { transform: translate(100px, 110vh) rotate(720deg) scale(0.6); }
         }
 
-        /* Streamlined Banner Container */
+        /* Impactful Banner Container */
         .banner-wrapper {
             width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
             position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
-            line-height: 0;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
         }
 
         .banner-img {
             width: 100%;
+            max-width: 1200px; /* Limits width on desktop to prevent excessive height */
             height: auto;
             display: block;
-            object-fit: contain; /* Ensures the whole image is visible */
         }
 
-        /* Impactful Prize Badge */
+        /* Floating Prize Badge */
         .prize-badge {
             position: absolute;
-            bottom: 24px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(3, 105, 161, 0.95);
-            backdrop-filter: blur(12px);
-            padding: 12px 32px;
-            border-radius: 100px;
-            border: 2px solid rgba(255,255,255,0.3);
-            box-shadow: 0 15px 35px rgba(3, 105, 161, 0.4);
+            backdrop-filter: blur(10px);
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(3, 105, 161, 0.3);
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             z-index: 20;
             white-space: nowrap;
         }
 
         .prize-badge-icon {
-            background: #fff;
-            width: 48px;
-            height: 48px;
+            background: white;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 1.2rem;
         }
 
-        .prize-badge-content { color: white; line-height: 1.2; }
-        .prize-badge-label { font-size: 0.75rem; font-weight: 700; opacity: 0.8; letter-spacing: 2px; text-transform: uppercase; }
-        .prize-badge-title { font-size: 1.25rem; font-weight: 800; }
+        .prize-badge-content { color: white; }
+        .prize-badge-title { font-size: 1.1rem; font-weight: 800; }
         .prize-badge-val { color: var(--gold); font-weight: 900; }
 
-        @media (max-width: 768px) {
-            .prize-badge { padding: 8px 20px; bottom: 12px; gap: 10px; }
-            .prize-badge-icon { width: 36px; height: 36px; font-size: 1.1rem; }
-            .prize-badge-title { font-size: 0.9rem; }
-            .prize-badge-label { font-size: 0.6rem; }
+        @media (max-width: 640px) {
+            .prize-badge { padding: 6px 16px; bottom: 10px; gap: 8px; }
+            .prize-badge-icon { width: 30px; height: 30px; font-size: 1rem; }
+            .prize-badge-title { font-size: 0.8rem; }
         }
 
-        /* Glass Panels */
+        /* UI Cards */
         .glass-card {
             background: var(--glass-white);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.7);
+            border: 1px solid white;
             border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
             position: relative;
             z-index: 10;
         }
@@ -125,73 +123,63 @@
             font-weight: 900;
         }
 
-        /* Pool Tabs */
         .pool-tab {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             border: 2px solid transparent;
-            filter: saturate(0.8) opacity(0.7);
+            opacity: 0.75;
         }
 
         .pool-tab.active {
-            filter: saturate(1.2) opacity(1);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
-            border-color: rgba(255,255,255,0.5);
+            opacity: 1;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            border-color: white;
         }
 
         /* Gacha Styles */
-        .gacha-container { position: relative; width: 300px; height: 420px; margin: 0 auto; }
+        .gacha-container { position: relative; width: 280px; height: 400px; margin: 0 auto; }
         .gacha-glass {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 270px; height: 270px;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(186, 230, 253, 0.4) 100%);
-            border: 8px solid #fff; border-radius: 50%; backdrop-filter: blur(2px); overflow: hidden;
-            box-shadow: inset 0 10px 40px rgba(255,255,255,1), 0 20px 40px rgba(0,0,0,0.05);
+            width: 260px; height: 260px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85) 0%, rgba(186, 230, 253, 0.4) 100%);
+            border: 6px solid #fff; border-radius: 50%; backdrop-filter: blur(2px); overflow: hidden;
+            box-shadow: inset 0 10px 30px rgba(255,255,255,1), 0 15px 35px rgba(0,0,0,0.05);
             z-index: 5;
         }
 
         .gacha-base {
             position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 240px; height: 180px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
-            border-radius: 20px 20px 50px 50px; z-index: 4; border: 4px solid #fff;
-            box-shadow: 0 10px 30px rgba(3, 105, 161, 0.3);
+            width: 220px; height: 160px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            border-radius: 20px 20px 40px 40px; z-index: 4; border: 3px solid #fff;
+            box-shadow: 0 10px 25px rgba(3, 105, 161, 0.2);
         }
 
         .gacha-knob { 
-            width: 60px; height: 60px; background: #fbbf24; border-radius: 50%; border: 4px solid #fff;
-            cursor: pointer; transition: 0.5s; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            display: flex; align-items: center; justify-content: center;
+            width: 55px; height: 55px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff;
+            cursor: pointer; transition: 0.4s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
         }
 
         .shaking { animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translate(-50%, 0); } 50% { transform: translate(-50.5%, 1px); } 100% { transform: translate(-49.5%, -1px); } }
+        @keyframes shake { 0%, 100% { transform: translate(-50%, 0); } 25% { transform: translate(-50.5%, 1px); } 75% { transform: translate(-49.5%, -1px); } }
 
         .btn-impact {
             background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
             color: white;
-            padding: 18px 48px;
+            padding: 16px 40px;
             border-radius: 100px;
             font-weight: 800;
-            font-size: 1.25rem;
-            transition: all 0.3s;
-            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
-        }
-
-        .btn-impact:hover:not(:disabled) {
-            transform: scale(1.03);
-            filter: brightness(1.1);
-        }
-
-        .btn-impact:active:not(:disabled) {
-            transform: scale(0.97);
+            font-size: 1.1rem;
+            transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
         }
 
         .hidden-step { display: none; }
         
         .quota-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
-        .quota-table td { padding: 12px; background: #fff; }
-        .quota-table tr:first-child td:first-child { border-top-left-radius: 8px; }
-        .quota-table tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+        .quota-table td { padding: 10px; background: #fff; border-radius: 4px; }
+
+        .status-msg { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
     </style>
 </head>
 <body class="antialiased">
@@ -202,7 +190,6 @@
         <div class="prize-badge">
             <div class="prize-badge-icon">💎</div>
             <div class="prize-badge-content">
-                <p class="prize-badge-label">Grand Prize</p>
                 <p class="prize-badge-title">Ultherapy 療程 <span class="prize-badge-val">$32,888</span></p>
             </div>
         </div>
@@ -211,47 +198,47 @@
 
     <div class="max-w-4xl mx-auto px-4 py-8 relative z-10">
         <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-6xl neo-gradient-text mb-4">春日美肌綻放大抽獎</h1>
-            <p class="text-sky-800 font-bold bg-sky-100/50 inline-block px-4 py-1 rounded-full text-sm">推廣期：即日至 2026年3月31日</p>
+            <h1 class="text-4xl md:text-5xl neo-gradient-text mb-4">春日美肌綻放大抽獎</h1>
+            <p class="text-sky-800 font-bold bg-sky-100/60 inline-block px-4 py-1 rounded-full text-xs">即日至 2026年3月31日</p>
         </header>
 
         <!-- STEP 1: POOL SELECTION -->
         <div id="step-eligibility" class="glass-card p-6 md:p-10 mb-8">
             <div class="text-center mb-8">
-                <h2 class="text-xl font-extrabold text-slate-800">請選擇您的消費彩池</h2>
-                <p class="text-slate-500 text-sm">根據您的發票總額選擇對應組別</p>
+                <h2 class="text-lg font-extrabold text-slate-800">請選擇您的消費彩池</h2>
+                <p class="text-slate-400 text-xs">根據您的發票總額選擇對應組別</p>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-6 rounded-3xl flex flex-col items-center gap-2">
+                <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-5 rounded-2xl flex flex-col items-center gap-2">
                     <span class="text-2xl">✨</span>
-                    <span class="font-black text-lg">春日金池</span>
-                    <span class="text-[10px] font-bold py-1 px-3 bg-white/40 rounded-full">>= $50,000</span>
+                    <span class="font-black text-sm">春日金池</span>
+                    <span class="text-[9px] font-bold py-1 px-3 bg-white/50 rounded-full">>= $50,000</span>
                 </button>
-                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-6 rounded-3xl flex flex-col items-center gap-2">
+                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-5 rounded-2xl flex flex-col items-center gap-2">
                     <span class="text-2xl">🥈</span>
-                    <span class="font-black text-lg">春日銀池</span>
-                    <span class="text-[10px] font-bold py-1 px-3 bg-white/40 rounded-full">$30K - $49K</span>
+                    <span class="font-black text-sm">春日銀池</span>
+                    <span class="text-[9px] font-bold py-1 px-3 bg-white/50 rounded-full">$30K - $49K</span>
                 </button>
-                <button onclick="selectPool('bronze')" id="tab-bronze" class="pool-tab tab-bronze p-6 rounded-3xl flex flex-col items-center gap-2">
+                <button onclick="selectPool('bronze')" id="tab-bronze" class="pool-tab tab-bronze p-5 rounded-2xl flex flex-col items-center gap-2">
                     <span class="text-2xl">🥉</span>
-                    <span class="font-black text-lg">春日銅池</span>
-                    <span class="text-[10px] font-bold py-1 px-3 bg-white/40 rounded-full">$15K - $29K</span>
+                    <span class="font-black text-sm">春日銅池</span>
+                    <span class="text-[9px] font-bold py-1 px-3 bg-white/50 rounded-full">$15K - $29K</span>
                 </button>
             </div>
 
             <div class="flex justify-center mb-10">
-                <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-6 rounded-3xl flex items-center justify-center gap-4">
+                <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-5 rounded-2xl flex items-center justify-center gap-4">
                     <span class="text-3xl">🎂</span>
                     <div class="text-left">
-                        <span class="font-black text-lg block">生日彩池 特別獎勵</span>
-                        <span class="text-[10px] font-bold opacity-80 uppercase tracking-widest">2 / 3 / 4 月生日專享</span>
+                        <span class="font-black text-sm block">生日彩池 特別獎勵</span>
+                        <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest">2 / 3 / 4 月生日專享</span>
                     </div>
                 </button>
             </div>
 
-            <div class="bg-white/40 border border-white p-6 rounded-2xl mb-8 text-center">
-                <p id="pool-description" class="text-slate-700 font-medium italic">載入中...</p>
+            <div class="bg-white/50 border border-white/50 p-4 rounded-xl mb-8 text-center min-h-[60px] flex items-center justify-center">
+                <p id="pool-description" class="text-slate-600 text-xs font-medium italic">載入中...</p>
             </div>
 
             <button onclick="confirmEntry()" class="w-full btn-impact uppercase tracking-widest">進入抽獎</button>
@@ -260,23 +247,25 @@
                 📊 內部配額實時概況
             </button>
             
-            <div id="quota-dashboard" class="hidden mt-6 bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div id="quota-dashboard" class="hidden mt-6 bg-slate-100 rounded-2xl p-6 border border-slate-200 shadow-inner">
                 <div id="quota-auth-section" class="text-center">
-                    <p class="text-[10px] text-slate-400 font-bold mb-4 uppercase">管理權限驗證</p>
+                    <p class="status-msg text-slate-400">管理權限驗證</p>
                     <div class="flex gap-2 max-w-xs mx-auto">
-                        <input type="password" id="quota-password-input" placeholder="密碼" class="flex-1 px-4 py-2 rounded-xl text-sm border-slate-200 focus:ring-2 focus:ring-sky-400 border outline-none">
+                        <input type="password" id="quota-password-input" placeholder="密碼" class="flex-1 px-4 py-2 rounded-xl text-sm border-slate-200 outline-none">
                         <button onclick="verifyQuotaPassword()" class="bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold">登入</button>
                     </div>
                 </div>
                 <div id="quota-data-section" class="hidden">
                     <div class="flex justify-between items-end mb-6">
                         <div>
-                            <h3 class="text-xs font-black text-slate-800 uppercase tracking-tighter">Inventory Status</h3>
+                            <p class="status-msg text-sky-600">Inventory Status</p>
                             <span id="quota-last-updated" class="text-[8px] text-slate-400 font-mono">--</span>
                         </div>
-                        <button onclick="requestResetData()" class="text-[9px] text-rose-500 font-bold bg-rose-50 px-3 py-1 rounded-lg">清空數據</button>
+                        <button onclick="requestResetData()" class="text-[9px] text-rose-500 font-bold bg-rose-50 px-3 py-1 rounded-lg">清空紀錄</button>
                     </div>
-                    <div id="quota-content" class="space-y-4"></div>
+                    <div id="quota-content" class="space-y-4">
+                        <p class="text-center text-[10px] text-slate-400 italic py-10">正在同步雲端資料...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -285,7 +274,7 @@
         <div id="step-draw" class="hidden-step text-center py-10">
             <div class="flex justify-between items-center mb-10">
                 <button id="btn-draw-back" onclick="goBackToSelection()" class="btn-back">⬅ 返回彩池</button>
-                <div id="pool-badge" class="px-6 py-2 rounded-full bg-sky-600 text-white text-[10px] font-black uppercase shadow-lg">組別</div>
+                <div id="pool-badge" class="px-5 py-1.5 rounded-full bg-sky-600 text-white text-[10px] font-black uppercase shadow-lg">組別</div>
             </div>
             
             <div class="gacha-container mb-12" id="gacha-machine">
@@ -294,26 +283,26 @@
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                         <div class="gacha-knob" onclick="spinGacha()">💮</div>
                     </div>
-                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-12 bg-slate-900/40 rounded-lg shadow-inner"></div>
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-20 h-10 bg-black/20 rounded-lg"></div>
                 </div>
                 <div id="dropped-ball" class="dropped-ball"></div>
             </div>
             
-            <button id="spin-btn" onclick="spinGacha()" class="btn-impact animate-bounce">轉動抽獎</button>
+            <button id="spin-btn" onclick="spinGacha()" class="btn-impact animate-pulse">點擊轉動</button>
         </div>
 
         <!-- RESULT MODAL -->
         <div id="result-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 z-50 hidden">
             <div class="glass-card p-8 max-w-md w-full text-center">
-                <div class="text-6xl mb-6">✨</div>
-                <h3 class="text-xs text-sky-600 font-black uppercase mb-2 tracking-widest">🎉 恭喜您獲得</h3>
+                <div class="text-5xl mb-6">🌸</div>
+                <h3 class="status-msg text-sky-600 tracking-widest">🎉 恭喜您獲得</h3>
                 <p class="text-2xl font-black text-slate-800 mb-8" id="prize-text">獎品</p>
                 
-                <div class="space-y-4 mb-8">
-                    <div class="text-[10px] font-mono text-slate-400" id="draw-time-display">--</div>
+                <div class="space-y-4 mb-8 text-left">
+                    <div class="text-[10px] font-mono text-slate-400 text-center" id="draw-time-display">--</div>
                     <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="input-mmc" oninput="checkFormValidity()" placeholder="MMC No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none">
-                        <input type="text" id="input-invoice" oninput="checkFormValidity()" placeholder="Inv No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none">
+                        <input type="text" id="input-mmc" oninput="checkFormValidity()" placeholder="MMC No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none w-full">
+                        <input type="text" id="input-invoice" oninput="checkFormValidity()" placeholder="Inv No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none w-full">
                     </div>
                     <select id="input-cse" onchange="checkFormValidity()" class="w-full px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none">
                         <option value="">負責同事 (CSE)...</option>
@@ -322,19 +311,19 @@
                 </div>
                 
                 <div id="submit-status" class="text-xs mb-4 hidden font-bold text-emerald-600"></div>
-                <button id="submit-record-btn" onclick="submitDrawRecord()" class="w-full btn-impact py-4 rounded-2xl">提交領取</button>
+                <button id="submit-record-btn" onclick="submitDrawRecord()" class="w-full btn-impact py-4 rounded-2xl">提交存檔</button>
             </div>
         </div>
 
         <!-- RESET MODAL -->
         <div id="reset-confirm-modal" class="hidden fixed inset-0 bg-slate-900/90 z-[100] flex items-center justify-center p-6">
             <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-                <h4 class="text-xl font-bold mb-4">重置所有紀錄？</h4>
-                <p class="text-sm text-slate-500 mb-6 italic">請輸入 "RESET" 並按下確認。</p>
+                <h4 class="text-xl font-bold mb-4">確認清空雲端紀錄？</h4>
+                <p class="text-sm text-slate-500 mb-6 italic">此操作不可撤銷。請輸入 "RESET"。</p>
                 <input type="text" id="reset-type-input" oninput="validateDoubleConfirm()" placeholder="RESET" class="w-full px-4 py-3 rounded-xl border-2 text-center font-bold mb-4 outline-none">
                 <div id="reset-error-msg" class="text-rose-500 text-[10px] font-bold mb-4 hidden"></div>
                 <div class="space-y-2">
-                    <button id="final-reset-btn" onclick="executeDataReset()" disabled class="w-full py-4 bg-slate-200 text-slate-400 font-bold rounded-xl cursor-not-allowed">確認重置</button>
+                    <button id="final-reset-btn" onclick="executeDataReset()" disabled class="w-full py-4 bg-slate-200 text-slate-400 font-bold rounded-xl cursor-not-allowed">確認清空</button>
                     <button onclick="closeResetModal()" class="w-full py-2 text-slate-400 font-bold">返回</button>
                 </div>
             </div>
@@ -344,7 +333,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const scriptURL = "https://script.google.com/macros/s/AKfycbzlAeK5KjuT1qoF5N_ngdXVGzmvfTdwtOz0ge1Y0XrHa7Y-vjBdrqoCMWjkB8eULfrs/exec"; 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
@@ -376,14 +365,14 @@
             initAuth();
             onAuthStateChanged(auth, u => { 
                 user = u; 
+                // Auto-start listener if password was already verified
                 if (user && isQuotaUnlocked) startQuotaListener(); 
             });
         }
 
         window.checkFormValidity = () => {
             const valid = document.getElementById('input-mmc').value.trim() && document.getElementById('input-invoice').value.trim() && document.getElementById('input-cse').value;
-            const btn = document.getElementById('submit-record-btn');
-            btn.style.opacity = valid ? "1" : "0.5";
+            document.getElementById('submit-record-btn').style.opacity = valid ? "1" : "0.5";
         };
 
         window.toggleQuotaDashboard = () => {
@@ -395,12 +384,23 @@
                 isQuotaUnlocked = true;
                 document.getElementById('quota-auth-section').classList.add('hidden');
                 document.getElementById('quota-data-section').classList.remove('hidden');
+                // Trigger listener immediately
                 startQuotaListener();
-            } else document.getElementById('quota-password-input').value = "";
+            } else {
+                document.getElementById('quota-password-input').value = "";
+            }
         };
 
         function startQuotaListener() {
-            if (!db || !user) return;
+            if (!db) return;
+            // Display initial state immediately so it doesn't stay as "--"
+            renderQuotaTable({});
+
+            if (!user) {
+                console.log("Waiting for user auth...");
+                return;
+            }
+
             if (quotaUnsubscribe) quotaUnsubscribe(); 
 
             quotaUnsubscribe = onSnapshot(
@@ -411,21 +411,33 @@
                         const p = (d.data().prize || "").trim(); 
                         wins[p] = (wins[p] || 0) + 1; 
                     });
-
-                    let html = "";
-                    for (const pk in pools) {
-                        html += `<div class="mb-6"><h4 class="text-[10px] font-black text-slate-900 mb-2 uppercase tracking-wider">${pools[pk].name}</h4><table class="quota-table"><tbody>`;
-                        pools[pk].prizes.forEach(p => {
-                            const winCount = wins[p.name.trim()] || 0;
-                            const rem = p.count - winCount;
-                            html += `<tr class="text-[10px]"><td class="font-medium">${p.name}</td><td class="text-right font-mono ${rem <= (p.count * 0.1) ? 'text-rose-500 font-bold' : 'text-slate-400'}">${rem} / ${p.count}</td></tr>`;
-                        });
-                        html += `</tbody></table></div>`;
-                    }
-                    document.getElementById('quota-content').innerHTML = html;
-                    document.getElementById('quota-last-updated').innerText = "LIVE: " + new Date().toLocaleTimeString();
+                    renderQuotaTable(wins);
+                },
+                err => {
+                    console.error("Quota Listener Error:", err);
+                    document.getElementById('quota-content').innerHTML = `<p class="text-[9px] text-rose-500 font-bold p-4 bg-white rounded">❌ 無法連線雲端資料庫 (${err.code})</p>`;
                 }
             );
+        }
+
+        function renderQuotaTable(wins) {
+            let html = "";
+            for (const pk in pools) {
+                html += `<div class="mb-4">
+                            <h4 class="text-[9px] font-black text-slate-800 mb-1 uppercase tracking-tight">${pools[pk].name}</h4>
+                            <table class="quota-table"><tbody>`;
+                pools[pk].prizes.forEach(p => {
+                    const winCount = wins[p.name.trim()] || 0;
+                    const rem = p.count - winCount;
+                    html += `<tr class="text-[9px] font-medium">
+                                <td class="text-slate-600">${p.name}</td>
+                                <td class="text-right font-mono ${rem <= (p.count * 0.1) ? 'text-rose-600 font-bold' : 'text-slate-400'}">${rem} / ${p.count}</td>
+                            </tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+            document.getElementById('quota-content').innerHTML = html;
+            document.getElementById('quota-last-updated').innerText = "LIVE SYNC: " + new Date().toLocaleTimeString();
         }
 
         window.requestResetData = () => { 
@@ -441,13 +453,20 @@
 
         window.executeDataReset = async () => {
             if (!db || !user) return;
-            const b = document.getElementById('final-reset-btn'); b.disabled = true; b.innerText = "...";
+            const b = document.getElementById('final-reset-btn'); 
+            b.disabled = true; b.innerText = "清空中...";
             try {
                 const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'));
-                const ps = []; snap.forEach(d => ps.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id))));
-                await Promise.all(ps); closeResetModal();
-                b.innerText = "確認重置";
-            } catch (e) { b.disabled = false; b.innerText = "錯誤"; }
+                const ps = []; 
+                snap.forEach(d => ps.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id))));
+                await Promise.all(ps); 
+                closeResetModal();
+                b.innerText = "確認清空";
+            } catch (e) { 
+                console.error(e);
+                b.disabled = false; 
+                b.innerText = "錯誤，請重試"; 
+            }
         };
 
         window.confirmEntry = () => {
@@ -465,8 +484,8 @@
             const colors = ['#fb7185', '#0ea5e9', '#ffffff', '#fbbf24', '#f472b6', '#7dd3fc'];
             for(let i=0; i<15; i++) {
                 const ball = document.createElement('div'); ball.className = 'gacha-ball';
-                ball.style.left = 15 + Math.random()*200 + 'px';
-                ball.style.top = 50 + Math.random()*150 + 'px';
+                ball.style.left = 15 + Math.random()*180 + 'px';
+                ball.style.top = 40 + Math.random()*150 + 'px';
                 ball.style.background = `radial-gradient(circle at 30% 30%, ${colors[i%colors.length]}, #0001)`;
                 container.appendChild(ball);
             }
@@ -484,7 +503,7 @@
 
             document.getElementById('gacha-machine').classList.add('shaking');
             const j = setInterval(() => {
-                document.querySelectorAll('.gacha-ball').forEach(bl => bl.style.transform = `translate(${(Math.random()-0.5)*30}px, ${(Math.random()-0.5)*30}px)`);
+                document.querySelectorAll('.gacha-ball').forEach(bl => bl.style.transform = `translate(${(Math.random()-0.5)*25}px, ${(Math.random()-0.5)*25}px)`);
             }, 80);
             
             setTimeout(() => {
@@ -495,22 +514,26 @@
                     document.getElementById('draw-time-display').innerText = new Date().toLocaleString('zh-HK');
                     document.getElementById('result-modal').classList.remove('hidden');
                     checkFormValidity(); spinning = false; bb.style.visibility = 'visible';
-                }, 1100);
-            }, 2500);
+                }, 1000);
+            }, 2000);
         };
 
         window.submitDrawRecord = async () => {
             const mmc = document.getElementById('input-mmc').value.trim(), inv = document.getElementById('input-invoice').value.trim(), cse = document.getElementById('input-cse').value;
             if (!mmc || !inv || !cse) return;
-            const sb = document.getElementById('submit-record-btn'); sb.disabled = true; sb.innerText = "Processing...";
+            const sb = document.getElementById('submit-record-btn'); 
+            sb.disabled = true; sb.innerText = "儲存中...";
             const d = { mmc, invoice_no: inv, cse, prize: lastPrize, pool: currentPool.name, date_display: new Date().toLocaleString('zh-HK') };
             try {
                 if (scriptURL) await fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) });
                 if (db && user) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), { ...d, timestamp: serverTimestamp() });
-                document.getElementById('submit-status').innerText = "SUCCESS! RECORD SYNCED."; 
+                document.getElementById('submit-status').innerText = "✅ 提交成功！"; 
                 document.getElementById('submit-status').classList.remove('hidden');
                 setTimeout(resetApp, 1500);
-            } catch (e) { setTimeout(resetApp, 1500); }
+            } catch (e) { 
+                console.error(e);
+                setTimeout(resetApp, 1500); 
+            }
         };
 
         window.resetApp = () => {
@@ -521,13 +544,14 @@
             document.getElementById('submit-status').classList.add('hidden');
             document.getElementById('spin-btn').disabled = false; document.getElementById('spin-btn').style.opacity = '1';
             document.getElementById('dropped-ball').style.display = 'none';
-            document.getElementById('submit-record-btn').innerText = "提交領取";
+            document.getElementById('submit-record-btn').innerText = "提交存檔";
         };
 
+        // Sakura initialization
         const sc = document.getElementById('sakura-container');
-        for (let i = 0; i < 25; i++) {
+        for (let i = 0; i < 20; i++) {
             const p = document.createElement('div'); p.className = 'petal';
-            const sz = Math.random() * 10 + 6 + 'px'; p.style.width = sz; p.style.height = sz;
+            const sz = Math.random() * 8 + 6 + 'px'; p.style.width = sz; p.style.height = sz;
             p.style.left = Math.random() * 100 + 'vw'; p.style.top = '-20px';
             p.style.animationDuration = Math.random() * 5 + 4 + 's'; p.style.animationDelay = Math.random() * 5 + 's';
             sc.appendChild(p);
