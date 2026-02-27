@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Node Momentum Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Momentum Sparklines -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         
@@ -12,7 +14,6 @@
             font-family: 'Inter', sans-serif;
             background-color: #020617;
             color: #f8fafc;
-            font-size: 1.1rem;
         }
 
         .glass-panel {
@@ -38,17 +39,17 @@
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         .kpi-table th {
-            font-size: 12px;
+            font-size: 9px;
             letter-spacing: 0.1em;
-            color: #94a3b8;
+            color: #64748b;
             text-transform: uppercase;
-            padding: 16px 12px;
-            border-bottom: 2px solid #1e293b;
+            padding: 12px 8px;
+            border-bottom: 1px solid #1e293b;
         }
         .kpi-table td {
-            padding: 14px 12px;
+            padding: 12px 8px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
+            font-size: 13px;
         }
 
         #loading-overlay {
@@ -65,69 +66,69 @@
 <body class="p-4 md:p-8">
 
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6">
-        <div id="loading-spinner" class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        <div id="loading-spinner" class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
         <div id="loading-content" class="text-center max-w-md">
-            <p class="text-sky-400 font-mono text-lg animate-pulse mb-4" id="loading-text">CONNECTING TO NETWORK DATA...</p>
-            <div id="error-message" class="hidden error-box p-6 rounded-lg text-base space-y-4">
-                <p class="font-bold text-xl">Fetch Error Detected</p>
-                <p id="error-details" class="text-sm font-mono bg-black/30 p-3 rounded text-rose-300 break-all"></p>
-                <div class="text-sm text-left space-y-3 text-slate-300 bg-slate-900/50 p-4 rounded mt-2">
+            <p class="text-sky-400 font-mono text-sm animate-pulse mb-4" id="loading-text">CONNECTING TO NETWORK DATA...</p>
+            <div id="error-message" class="hidden error-box p-4 rounded-lg text-sm space-y-3">
+                <p class="font-bold">Fetch Error Detected</p>
+                <p id="error-details" class="text-xs font-mono bg-black/30 p-2 rounded text-rose-300 break-all"></p>
+                <div class="text-xs text-left space-y-2 text-slate-300 bg-slate-900/50 p-3 rounded mt-2">
                     <p class="font-bold text-sky-400">Common Fixes:</p>
-                    <ol class="list-decimal list-inside space-y-2">
+                    <ol class="list-decimal list-inside space-y-1">
                         <li>In Apps Script, click <b>Deploy > New Deployment</b></li>
                         <li>Change "Who has access" to <b>"Anyone"</b></li>
                         <li>Copy and paste the <b>new URL</b> into the dashboard code</li>
                     </ol>
                 </div>
-                <button onclick="location.reload()" class="mt-6 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded font-bold text-sm transition-colors w-full uppercase tracking-wider">
+                <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded font-bold text-xs transition-colors w-full uppercase">
                     Retry Connection
                 </button>
             </div>
         </div>
     </div>
 
-    <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
+            <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
                 Distribution Node Momentum
             </h1>
-            <p class="text-slate-400 mt-2 text-lg">Real-time Network Activation & Replication Monitoring</p>
+            <p class="text-slate-400 mt-1">Real-time Network Activation & Replication Monitoring</p>
         </div>
-        <div class="flex gap-4">
-            <button onclick="fetchData()" class="px-6 py-3 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
-                <div id="sync-status" class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                <span id="sync-text" class="text-base font-semibold text-slate-300 uppercase tracking-tight">Live Network Feed</span>
+        <div class="flex gap-3">
+            <button onclick="fetchData()" class="px-4 py-2 glass-panel hover:bg-white/5 transition-colors flex items-center gap-2">
+                <div id="sync-status" class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <span id="sync-text" class="text-sm font-medium text-slate-300 uppercase tracking-tighter">Live Network Feed</span>
             </button>
-            <div class="px-6 py-3 glass-panel">
-                <span class="text-base font-medium text-slate-300" id="current-time"></span>
+            <div class="px-4 py-2 glass-panel">
+                <span class="text-sm font-medium text-slate-300" id="current-time"></span>
             </div>
         </div>
     </header>
 
     <!-- SECTION 1: Overview -->
-    <section class="mb-12">
-        <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Distribution Node Overview</h2>
+    <section class="mb-10">
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-xl font-semibold text-white">Distribution Node Overview</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="overview-container"></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="overview-container"></div>
     </section>
 
     <!-- SECTION 2: Identity Analysis -->
-    <section class="mb-12">
-        <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Identity Analysis</h2>
+    <section class="mb-10">
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-xl font-semibold text-white">Identity Analysis (Replication & Activation)</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
         <div class="glass-panel overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[1000px]">
+                <table class="w-full text-left border-collapse min-w-[900px]">
                     <thead>
-                        <tr class="bg-slate-900/50 border-b-2 border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                            <th class="p-6">Shop Category</th>
-                            <th class="p-6 text-center">No. of Node (Δ P30d)</th>
-                            <th class="p-6 text-center">Activation: Active Traffic (Δ P30d)</th>
-                            <th class="p-6 text-center">Activation: Purchase (Δ P30d)</th>
+                        <tr class="bg-slate-900/50 border-b border-slate-800 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            <th class="p-5">Shop Category</th>
+                            <th class="p-5 text-center">No. of Node (Δ P30d)</th>
+                            <th class="p-5 text-center">Activation: Traffic (Δ P30d)</th>
+                            <th class="p-5 text-center">Activation: Purchase (Δ P30d)</th>
                         </tr>
                     </thead>
                     <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
@@ -137,15 +138,16 @@
     </section>
 
     <!-- SECTION 3: Operations -->
-    <section class="mb-24">
-        <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Operations Activation & Replication Metrics</h2>
+    <section class="mb-20">
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-xl font-semibold text-white">Operations Activation & Replication Metrics</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
-        <div class="flex flex-col gap-14" id="ops-container"></div>
+        <div class="flex flex-col gap-12" id="ops-container"></div>
     </section>
 
     <script>
+        // UPDATED URL: Ensure this is the latest deployment URL from Google Apps Script
         const API_URL = "https://script.google.com/macros/s/AKfycbxq1U8l7Ktl6pTK6_uud0f_AbjplXi0tJ_R_qIf-gZRoxuQ6HbYixxCjZngFrNT-cheow/exec";
 
         const colors = {
@@ -156,8 +158,7 @@
             default: 'slate'
         };
 
-        const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
-
+        // Utility to clean comma-formatted numbers from Sheets
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
             if (!val) return 0;
@@ -169,14 +170,19 @@
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) throw new Error(`Server status: ${response.status}`);
+                
                 const data = await response.json();
+                
+                // Validate data existence
                 if (!data.overview || !data.identities || !data.operations) {
-                    throw new Error("Mismatched Data structure received from source.");
+                    throw new Error("Mismatched Data: Check Sheet Tab Names (Overview, Identities, Operations)");
                 }
+
                 updateDashboard(data);
+                
                 document.getElementById('loading-overlay').style.opacity = '0';
                 setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
-                document.getElementById('sync-status').className = 'w-3 h-3 rounded-full bg-emerald-500';
+                document.getElementById('sync-status').className = 'w-2 h-2 rounded-full bg-emerald-500';
             } catch (error) {
                 console.error("Fetch Error:", error);
                 showFetchError(error);
@@ -192,6 +198,7 @@
             const errorBox = document.getElementById('error-message');
             const details = document.getElementById('error-details');
             const status = document.getElementById('sync-status');
+
             overlay.style.display = 'flex';
             overlay.style.opacity = '1';
             spinner.classList.add('hidden');
@@ -199,7 +206,7 @@
             text.classList.replace('text-sky-400', 'text-rose-500');
             errorBox.classList.remove('hidden');
             details.innerText = err.message;
-            status.className = 'w-3 h-3 rounded-full bg-rose-500';
+            status.className = 'w-2 h-2 rounded-full bg-rose-500';
         }
 
         function setSyncStatus(isSyncing) {
@@ -224,49 +231,46 @@
             const container = document.getElementById('overview-container');
             container.innerHTML = '';
             
-            // Map sheet data by Metric name
-            const nodesItem = overviewData.find(item => item.Metric === "Total Nodes") || overviewData[0];
-            const trafficItem = overviewData.find(item => item.Metric === "Traffic") || overviewData[1];
-            const purchaseItem = overviewData.find(item => item.Metric === "Purchase") || overviewData[2];
-
-            // Specific requested order: Total Nodes -> Active Traffic -> Activated Purchase
-            const reordered = [
-                { item: nodesItem, style: { border: 'border-l-sky-500', text: 'text-sky-400', tag: 'Replication', label: 'Total Nodes' } },
-                { item: trafficItem, style: { border: 'border-l-emerald-500', text: 'text-emerald-400', tag: 'Traffic', label: 'Active Traffic' } },
-                { item: purchaseItem, style: { border: 'border-l-rose-500', text: 'text-rose-400', tag: 'Purchase', label: 'Activated Purchase' } }
+            const cardStyles = [
+                { border: 'border-l-sky-500', text: 'text-sky-400', tag: 'Replication' },
+                { border: 'border-l-emerald-500', text: 'text-emerald-400', tag: 'Traffic' },
+                { border: 'border-l-rose-500', text: 'text-rose-400', tag: 'Purchase' }
             ];
 
-            reordered.forEach((entry) => {
-                const item = entry.item;
-                if (!item) return;
-                const style = entry.style;
+            overviewData.forEach((item, i) => {
+                const style = cardStyles[i] || cardStyles[0];
                 const total = parseSheetNum(item.Total);
                 const change = parseSheetNum(item.Change_P30d);
                 const changeColor = change >= 0 ? 'text-emerald-500' : 'text-rose-500';
 
                 container.innerHTML += `
-                    <div class="glass-panel p-8 stat-card border-l-8 ${style.border}">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-slate-400 text-sm font-bold uppercase tracking-widest ${style.text}/80">${style.label} (P30D Δ)</span>
-                            <span class="px-3 py-1 rounded bg-white/5 text-slate-400 text-xs font-bold uppercase tracking-tighter">${style.tag}</span>
+                    <div class="glass-panel p-6 stat-card border-l-4 ${style.border}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-widest ${style.text}/80">${item.Metric} (P30D Δ)</span>
+                            <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px] font-bold uppercase tracking-tighter">${style.tag}</span>
                         </div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-5xl font-black tracking-tighter">${total.toLocaleString()}</span>
-                            <span class="${changeColor} text-2xl font-bold tracking-tight">(${change >= 0 ? '+' : ''}${change})</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold tracking-tighter">${total.toLocaleString()}</span>
+                            <span class="${changeColor} text-xl font-bold tracking-tight">(${change >= 0 ? '+' : ''}${change})</span>
                         </div>
+                        <div class="mt-6 h-12"><canvas id="chart-${i}"></canvas></div>
                     </div>
                 `;
             });
+            initSparklines();
         }
 
         function renderIdentities(identitiesData) {
             const tbody = document.getElementById('identities-body');
             tbody.innerHTML = '';
+
             const idColors = { 'ACB': 'text-sky-400', 'ICB': 'text-indigo-400', 'Therapist': 'text-emerald-400', 'Others': 'text-slate-300' };
 
             identitiesData.forEach(row => {
+                // Header in image is "Shop Category"
                 const identityName = row['Shop Category'] || row.Identity || 'N/A';
                 const textColor = idColors[identityName] || 'text-slate-100';
+                
                 const n = parseSheetNum(row.Nodes);
                 const nD = parseSheetNum(row.Nodes_Delta);
                 const t = parseSheetNum(row.Traffic);
@@ -276,18 +280,18 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/20 transition-colors">
-                        <td class="p-6 font-bold text-xl ${textColor}">${identityName}</td>
-                        <td class="p-6 text-center font-mono text-xl">
+                        <td class="p-5 font-semibold ${textColor}">${identityName}</td>
+                        <td class="p-5 text-center font-mono text-lg">
                             ${n.toLocaleString()} 
-                            <span class="${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-base">(${nD >= 0 ? '+' : ''}${nD})</span>
+                            <span class="${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-sm">(${nD >= 0 ? '+' : ''}${nD})</span>
                         </td>
-                        <td class="p-6 text-center font-mono text-xl">
+                        <td class="p-5 text-center font-mono text-lg">
                             ${t.toLocaleString()} 
-                            <span class="${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-base">(${tD >= 0 ? '+' : ''}${tD})</span>
+                            <span class="${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-sm">(${tD >= 0 ? '+' : ''}${tD})</span>
                         </td>
-                        <td class="p-6 text-center font-mono text-xl">
+                        <td class="p-5 text-center font-mono text-lg">
                             ${p.toLocaleString()} 
-                            <span class="${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-base">(${pD >= 0 ? '+' : ''}${pD})</span>
+                            <span class="${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-sm">(${pD >= 0 ? '+' : ''}${pD})</span>
                         </td>
                     </tr>
                 `;
@@ -298,15 +302,7 @@
             const container = document.getElementById('ops-container');
             container.innerHTML = '';
 
-            let brands = [...new Set(opsData.map(d => d.Brand))];
-            
-            brands.sort((a, b) => {
-                let indexA = preferredBrandOrder.indexOf(a);
-                let indexB = preferredBrandOrder.indexOf(b);
-                if (indexA === -1) indexA = 99;
-                if (indexB === -1) indexB = 99;
-                return indexA - indexB;
-            });
+            const brands = [...new Set(opsData.map(d => d.Brand))];
 
             brands.forEach(brand => {
                 if (!brand) return;
@@ -314,22 +310,22 @@
                 const filtered = opsData.filter(d => d.Brand === brand);
 
                 let brandHtml = `
-                    <div class="space-y-6">
-                        <div class="flex items-center gap-4 p-5 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-2xl">
-                            <span class="w-2 h-8 bg-${brandColor}-500 rounded-full"></span>
-                            <h3 class="text-xl font-black uppercase tracking-widest text-${brandColor}-400">${brand} Network</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-4 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-xl">
+                            <span class="w-1.5 h-6 bg-${brandColor}-500 rounded-full"></span>
+                            <h3 class="text-lg font-bold uppercase tracking-widest text-${brandColor}-400">${brand} Network</h3>
                         </div>
                         <div class="glass-panel overflow-hidden border border-slate-800/50">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1200px]">
+                                <table class="w-full text-left kpi-table min-w-[1100px]">
                                     <thead>
                                         <tr class="bg-slate-900/40">
-                                            <th class="w-[22%] px-8 text-slate-100">Floor Location</th>
+                                            <th class="w-[20%] px-6 text-slate-100">Floor Location</th>
                                             <th class="text-center">No. of Node (Net Δ)</th>
-                                            <th class="text-center">Activation: Active Traffic (Δ)</th>
+                                            <th class="text-center">Activation: Traffic (Δ)</th>
                                             <th class="text-center">Activation: Purchase (Δ)</th>
-                                            <th class="text-center text-sky-400/80 border-l border-slate-800/50">ACB Ref</th>
-                                            <th class="text-center text-indigo-400/80">ICB Ref</th>
+                                            <th class="text-center text-sky-400/70 border-l border-slate-800/50">No. of ACB (Ref)</th>
+                                            <th class="text-center text-indigo-400/70">No. of ICB (Ref)</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-800/30">
@@ -347,27 +343,59 @@
 
                     brandHtml += `
                         <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="px-8 font-bold text-lg text-slate-200">${d.Floor}</td>
+                            <td class="px-6 font-semibold text-slate-200">${d.Floor}</td>
                             <td class="text-center">
-                                <span class="font-bold text-slate-100 text-lg">${n.toLocaleString()}</span>
-                                <span class="text-sm ${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold ml-1">(${nD >= 0 ? '+' : ''}${nD})</span>
+                                <span class="font-bold text-slate-100">${n.toLocaleString()}</span>
+                                <span class="text-[11px] ${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold">(${nD >= 0 ? '+' : ''}${nD})</span>
                             </td>
                             <td class="text-center">
-                                <span class="font-bold text-slate-100 text-lg">${t.toLocaleString()}</span>
-                                <span class="text-sm ${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold ml-1">(${tD >= 0 ? '+' : ''}${tD})</span>
+                                <span class="font-bold text-slate-100">${t.toLocaleString()}</span>
+                                <span class="text-[11px] ${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold">(${tD >= 0 ? '+' : ''}${tD})</span>
                             </td>
                             <td class="text-center">
-                                <span class="font-bold text-slate-100 text-lg">${p.toLocaleString()}</span>
-                                <span class="text-sm ${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold ml-1">(${pD >= 0 ? '+' : ''}${pD})</span>
+                                <span class="font-bold text-slate-100">${p.toLocaleString()}</span>
+                                <span class="text-[11px] ${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold">(${pD >= 0 ? '+' : ''}${pD})</span>
                             </td>
-                            <td class="text-center text-sky-400/90 font-bold text-lg border-l border-slate-800/50 bg-sky-500/[0.02]">${acb.toLocaleString()}</td>
-                            <td class="text-center text-indigo-400/90 font-bold text-lg bg-indigo-500/[0.02]">${icb.toLocaleString()}</td>
+                            <td class="text-center text-sky-400/90 font-medium border-l border-slate-800/50 bg-sky-500/[0.02]">${acb.toLocaleString()}</td>
+                            <td class="text-center text-indigo-400/90 font-medium bg-indigo-500/[0.02]">${icb.toLocaleString()}</td>
                         </tr>
                     `;
                 });
 
                 brandHtml += `</tbody></table></div></div></div>`;
                 container.innerHTML += brandHtml;
+            });
+        }
+
+        function initSparklines() {
+            const chartColors = ['#38bdf8', '#10b981', '#f43f5e'];
+            chartColors.forEach((color, i) => {
+                const ctx = document.getElementById(`chart-${i}`);
+                if (!ctx) return;
+                const existing = Chart.getChart(`chart-${i}`);
+                if (existing) existing.destroy();
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [1, 2, 3, 4, 5, 6, 7],
+                        datasets: [{
+                            data: Array.from({length: 7}, () => Math.floor(Math.random() * 20 + 10)),
+                            borderColor: color,
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            tension: 0.4,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { display: false }, y: { display: false } }
+                    }
+                });
             });
         }
 
@@ -379,7 +407,7 @@
             fetchData();
             updateTime();
             setInterval(updateTime, 1000);
-            setInterval(fetchData, 300000); 
+            setInterval(fetchData, 300000); // 5 min auto-refresh
         };
     </script>
 </body>
