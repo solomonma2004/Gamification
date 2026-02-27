@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Momentum Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Momentum Sparklines -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+        }
+
+        .stat-card {
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .kpi-table th {
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            text-transform: uppercase;
+            padding: 12px 8px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .kpi-table td {
+            padding: 12px 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        #loading-overlay {
+            transition: opacity 0.5s ease;
+        }
+        
+        .error-box {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            color: #fb7185;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6">
+        <div id="loading-spinner" class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        <div id="loading-content" class="text-center max-w-md">
+            <p class="text-sky-400 font-mono text-sm animate-pulse mb-4" id="loading-text">CONNECTING TO NETWORK DATA...</p>
+            <div id="error-message" class="hidden error-box p-4 rounded-lg text-sm space-y-3">
+                <p class="font-bold">Fetch Error Detected</p>
+                <p id="error-details" class="text-xs font-mono bg-black/30 p-2 rounded text-rose-300 break-all"></p>
+                <div class="text-xs text-left space-y-2 text-slate-300 bg-slate-900/50 p-3 rounded mt-2">
+                    <p class="font-bold text-sky-400">Common Fixes:</p>
+                    <ol class="list-decimal list-inside space-y-1">
+                        <li>In Apps Script, click <b>Deploy > New Deployment</b></li>
+                        <li>Change "Who has access" to <b>"Anyone"</b></li>
+                        <li>Copy and paste the <b>new URL</b> into the dashboard code</li>
+                    </ol>
+                </div>
+                <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded font-bold text-xs transition-colors w-full uppercase">
+                    Retry Connection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
+                Distribution Node Momentum
+            </h1>
+            <p class="text-slate-400 mt-1">Real-time Network Activation & Replication Monitoring</p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="fetchData()" class="px-4 py-2 glass-panel hover:bg-white/5 transition-colors flex items-center gap-2">
+                <div id="sync-status" class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <span id="sync-text" class="text-sm font-medium text-slate-300 uppercase tracking-tighter">Live Network Feed</span>
+            </button>
+            <div class="px-4 py-2 glass-panel">
+                <span class="text-sm font-medium text-slate-300" id="current-time"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECTION 1: Overview -->
+    <section class="mb-10">
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-xl font-semibold text-white">Distribution Node Overview</h2>
+            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="overview-container"></div>
+    </section>
+
+    <!-- SECTION 2: Identity Analysis -->
+    <section class="mb-10">
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-xl font-semibold text-white">Identity Analysis (Replication & Activation)</h2>
+            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+        </div>
+        <div class="glass-panel overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[900px]">
+                    <thead>
+                        <tr class="bg-slate-900/50 border-b border-slate-800 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            <th class="p-5">Shop Category</th>
+                            <th class="p-5 text-center">No. of Node (Δ P30d)</th>
+                            <th class="p-5 text-center">Activation: Traffic (Δ P30d)</th>
+                            <th class="p-5 text-center">Activation: Purchase (Δ P30d)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: Operations -->
+    <section class="mb-20">
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-xl font-semibold text-white">Operations Activation & Replication Metrics</h2>
+            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+        </div>
+        <div class="flex flex-col gap-12" id="ops-container"></div>
+    </section>
+
+    <script>
+        // UPDATED URL: Ensure this is the latest deployment URL from Google Apps Script
+        const API_URL = "https://script.google.com/macros/s/AKfycbxq1U8l7Ktl6pTK6_uud0f_AbjplXi0tJ_R_qIf-gZRoxuQ6HbYixxCjZngFrNT-cheow/exec";
+
+        const colors = {
+            dermes: 'sky',
+            elyze: 'emerald',
+            reenex: 'rose',
+            evvus: 'indigo',
+            default: 'slate'
+        };
+
+        // Utility to clean comma-formatted numbers from Sheets
+        function parseSheetNum(val) {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            return parseFloat(val.toString().replace(/,/g, '')) || 0;
+        }
+
+        async function fetchData() {
+            setSyncStatus(true);
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error(`Server status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                // Validate data existence
+                if (!data.overview || !data.identities || !data.operations) {
+                    throw new Error("Mismatched Data: Check Sheet Tab Names (Overview, Identities, Operations)");
+                }
+
+                updateDashboard(data);
+                
+                document.getElementById('loading-overlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
+                document.getElementById('sync-status').className = 'w-2 h-2 rounded-full bg-emerald-500';
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                showFetchError(error);
+            } finally {
+                setSyncStatus(false);
+            }
+        }
+
+        function showFetchError(err) {
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('loading-spinner');
+            const text = document.getElementById('loading-text');
+            const errorBox = document.getElementById('error-message');
+            const details = document.getElementById('error-details');
+            const status = document.getElementById('sync-status');
+
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '1';
+            spinner.classList.add('hidden');
+            text.innerText = "CONNECTION FAILED";
+            text.classList.replace('text-sky-400', 'text-rose-500');
+            errorBox.classList.remove('hidden');
+            details.innerText = err.message;
+            status.className = 'w-2 h-2 rounded-full bg-rose-500';
+        }
+
+        function setSyncStatus(isSyncing) {
+            const status = document.getElementById('sync-status');
+            const text = document.getElementById('sync-text');
+            if (isSyncing) {
+                status.classList.add('animate-pulse');
+                text.innerText = "Syncing...";
+            } else {
+                status.classList.remove('animate-pulse');
+                if (status.className.includes('bg-emerald')) text.innerText = "Live Network Feed";
+            }
+        }
+
+        function updateDashboard(data) {
+            renderOverview(data.overview);
+            renderIdentities(data.identities);
+            renderOperations(data.operations);
+        }
+
+        function renderOverview(overviewData) {
+            const container = document.getElementById('overview-container');
+            container.innerHTML = '';
+            
+            const cardStyles = [
+                { border: 'border-l-sky-500', text: 'text-sky-400', tag: 'Replication' },
+                { border: 'border-l-emerald-500', text: 'text-emerald-400', tag: 'Traffic' },
+                { border: 'border-l-rose-500', text: 'text-rose-400', tag: 'Purchase' }
+            ];
+
+            overviewData.forEach((item, i) => {
+                const style = cardStyles[i] || cardStyles[0];
+                const total = parseSheetNum(item.Total);
+                const change = parseSheetNum(item.Change_P30d);
+                const changeColor = change >= 0 ? 'text-emerald-500' : 'text-rose-500';
+
+                container.innerHTML += `
+                    <div class="glass-panel p-6 stat-card border-l-4 ${style.border}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-widest ${style.text}/80">${item.Metric} (P30D Δ)</span>
+                            <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px] font-bold uppercase tracking-tighter">${style.tag}</span>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold tracking-tighter">${total.toLocaleString()}</span>
+                            <span class="${changeColor} text-xl font-bold tracking-tight">(${change >= 0 ? '+' : ''}${change})</span>
+                        </div>
+                        <div class="mt-6 h-12"><canvas id="chart-${i}"></canvas></div>
+                    </div>
+                `;
+            });
+            initSparklines();
+        }
+
+        function renderIdentities(identitiesData) {
+            const tbody = document.getElementById('identities-body');
+            tbody.innerHTML = '';
+
+            const idColors = { 'ACB': 'text-sky-400', 'ICB': 'text-indigo-400', 'Therapist': 'text-emerald-400', 'Others': 'text-slate-300' };
+
+            identitiesData.forEach(row => {
+                // Header in image is "Shop Category"
+                const identityName = row['Shop Category'] || row.Identity || 'N/A';
+                const textColor = idColors[identityName] || 'text-slate-100';
+                
+                const n = parseSheetNum(row.Nodes);
+                const nD = parseSheetNum(row.Nodes_Delta);
+                const t = parseSheetNum(row.Traffic);
+                const tD = parseSheetNum(row.Traffic_Delta);
+                const p = parseSheetNum(row.Purchase);
+                const pD = parseSheetNum(row.Purchase_Delta);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/20 transition-colors">
+                        <td class="p-5 font-semibold ${textColor}">${identityName}</td>
+                        <td class="p-5 text-center font-mono text-lg">
+                            ${n.toLocaleString()} 
+                            <span class="${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-sm">(${nD >= 0 ? '+' : ''}${nD})</span>
+                        </td>
+                        <td class="p-5 text-center font-mono text-lg">
+                            ${t.toLocaleString()} 
+                            <span class="${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-sm">(${tD >= 0 ? '+' : ''}${tD})</span>
+                        </td>
+                        <td class="p-5 text-center font-mono text-lg">
+                            ${p.toLocaleString()} 
+                            <span class="${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-sm">(${pD >= 0 ? '+' : ''}${pD})</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderOperations(opsData) {
+            const container = document.getElementById('ops-container');
+            container.innerHTML = '';
+
+            const brands = [...new Set(opsData.map(d => d.Brand))];
+
+            brands.forEach(brand => {
+                if (!brand) return;
+                const brandColor = colors[brand.toLowerCase()] || colors.default;
+                const filtered = opsData.filter(d => d.Brand === brand);
+
+                let brandHtml = `
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-4 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-xl">
+                            <span class="w-1.5 h-6 bg-${brandColor}-500 rounded-full"></span>
+                            <h3 class="text-lg font-bold uppercase tracking-widest text-${brandColor}-400">${brand} Network</h3>
+                        </div>
+                        <div class="glass-panel overflow-hidden border border-slate-800/50">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left kpi-table min-w-[1100px]">
+                                    <thead>
+                                        <tr class="bg-slate-900/40">
+                                            <th class="w-[20%] px-6 text-slate-100">Floor Location</th>
+                                            <th class="text-center">No. of Node (Net Δ)</th>
+                                            <th class="text-center">Activation: Traffic (Δ)</th>
+                                            <th class="text-center">Activation: Purchase (Δ)</th>
+                                            <th class="text-center text-sky-400/70 border-l border-slate-800/50">No. of ACB (Ref)</th>
+                                            <th class="text-center text-indigo-400/70">No. of ICB (Ref)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-800/30">
+                `;
+
+                filtered.forEach(d => {
+                    const n = parseSheetNum(d.Nodes);
+                    const nD = parseSheetNum(d.Nodes_Delta);
+                    const t = parseSheetNum(d.Traffic);
+                    const tD = parseSheetNum(d.Traffic_Delta);
+                    const p = parseSheetNum(d.Purchase);
+                    const pD = parseSheetNum(d.Purchase_Delta);
+                    const acb = parseSheetNum(d.ACB_Ref);
+                    const icb = parseSheetNum(d.ICB_Ref);
+
+                    brandHtml += `
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                            <td class="px-6 font-semibold text-slate-200">${d.Floor}</td>
+                            <td class="text-center">
+                                <span class="font-bold text-slate-100">${n.toLocaleString()}</span>
+                                <span class="text-[11px] ${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold">(${nD >= 0 ? '+' : ''}${nD})</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-bold text-slate-100">${t.toLocaleString()}</span>
+                                <span class="text-[11px] ${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold">(${tD >= 0 ? '+' : ''}${tD})</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-bold text-slate-100">${p.toLocaleString()}</span>
+                                <span class="text-[11px] ${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold">(${pD >= 0 ? '+' : ''}${pD})</span>
+                            </td>
+                            <td class="text-center text-sky-400/90 font-medium border-l border-slate-800/50 bg-sky-500/[0.02]">${acb.toLocaleString()}</td>
+                            <td class="text-center text-indigo-400/90 font-medium bg-indigo-500/[0.02]">${icb.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+
+                brandHtml += `</tbody></table></div></div></div>`;
+                container.innerHTML += brandHtml;
+            });
+        }
+
+        function initSparklines() {
+            const chartColors = ['#38bdf8', '#10b981', '#f43f5e'];
+            chartColors.forEach((color, i) => {
+                const ctx = document.getElementById(`chart-${i}`);
+                if (!ctx) return;
+                const existing = Chart.getChart(`chart-${i}`);
+                if (existing) existing.destroy();
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [1, 2, 3, 4, 5, 6, 7],
+                        datasets: [{
+                            data: Array.from({length: 7}, () => Math.floor(Math.random() * 20 + 10)),
+                            borderColor: color,
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            tension: 0.4,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { display: false }, y: { display: false } }
+                    }
+                });
+            });
+        }
+
+        function updateTime() {
+            document.getElementById('current-time').innerText = new Date().toLocaleString();
+        }
+
+        window.onload = () => {
+            fetchData();
+            updateTime();
+            setInterval(updateTime, 1000);
+            setInterval(fetchData, 300000); // 5 min auto-refresh
+        };
+    </script>
+</body>
+</html>
