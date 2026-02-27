@@ -13,7 +13,7 @@
             --neo-sky: #0ea5e9;
             --neo-sky-dark: #0369a1;
             --gold: #fbbf24;
-            --glass-white: rgba(255, 255, 255, 0.9);
+            --glass-white: rgba(255, 255, 255, 0.92);
         }
 
         body {
@@ -21,540 +21,386 @@
             background: linear-gradient(135deg, #f0f9ff 0%, #fff1f2 100%);
             color: #1e293b;
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
+            margin: 0; padding: 0; overflow-x: hidden;
         }
 
-        /* Sakura Petals Effect */
-        #sakura-container {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 1;
-        }
+        /* 櫻花背景 */
+        #sakura-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .petal { position: absolute; background: linear-gradient(135deg, #ffdbed 0%, #ffb7d5 100%); border-radius: 150% 0 150% 50%; opacity: 0.5; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translate(0, -20px) rotate(0deg) scale(1); } 100% { transform: translate(100px, 110vh) rotate(720deg) scale(0.6); } }
 
-        .petal {
-            position: absolute;
-            background: linear-gradient(135deg, #ffdbed 0%, #ffb7d5 100%);
-            border-radius: 150% 0 150% 50%;
-            opacity: 0.6;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% { transform: translate(0, -20px) rotate(0deg) scale(1); }
-            100% { transform: translate(100px, 110vh) rotate(720deg) scale(0.6); }
-        }
-
-        /* Impactful Banner Container */
-        .banner-wrapper {
+        .banner-container {
             width: 100%;
-            position: relative;
-            background: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             display: flex;
             justify-content: center;
-            align-items: center;
             overflow: hidden;
+            position: relative;
         }
-
         .banner-img {
             width: 100%;
-            max-width: 1200px; /* Limits width on desktop to prevent excessive height */
+            max-width: 1000px;
             height: auto;
             display: block;
+            object-fit: contain;
         }
 
-        /* Floating Prize Badge */
-        .prize-badge {
+        .prize-float-badge {
             position: absolute;
-            bottom: 20px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(3, 105, 161, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 10px 25px;
-            border-radius: 50px;
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 10px 30px rgba(3, 105, 161, 0.3);
+            background: rgba(3, 105, 161, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 8px 24px;
+            border-radius: 40px;
+            border: 2px solid rgba(255,255,255,0.3);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            color: white;
             z-index: 20;
-            white-space: nowrap;
+            box-shadow: 0 10px 25px rgba(3, 105, 161, 0.3);
         }
 
-        .prize-badge-icon {
-            background: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .prize-badge-content { color: white; }
-        .prize-badge-title { font-size: 1.1rem; font-weight: 800; }
-        .prize-badge-val { color: var(--gold); font-weight: 900; }
-
-        @media (max-width: 640px) {
-            .prize-badge { padding: 6px 16px; bottom: 10px; gap: 8px; }
-            .prize-badge-icon { width: 30px; height: 30px; font-size: 1rem; }
-            .prize-badge-title { font-size: 0.8rem; }
-        }
-
-        /* UI Cards */
         .glass-card {
             background: var(--glass-white);
             backdrop-filter: blur(20px);
             border: 1px solid white;
-            border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            border-radius: 28px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05);
             position: relative;
             z-index: 10;
         }
 
         .neo-gradient-text {
-            background: linear-gradient(135deg, #1e293b 0%, #c9184a 100%);
+            background: linear-gradient(135deg, #0369a1 0%, #c9184a 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 900;
         }
 
-        .pool-tab {
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            opacity: 0.75;
-        }
+        .pool-tab { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.65; cursor: pointer; }
+        .pool-tab.active { opacity: 1; transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border: 2px solid white; }
 
-        .pool-tab.active {
-            opacity: 1;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-            border-color: white;
-        }
-
-        /* Gacha Styles */
-        .gacha-container { position: relative; width: 280px; height: 400px; margin: 0 auto; }
+        .gacha-container { position: relative; width: 260px; height: 360px; margin: 0 auto; }
         .gacha-glass {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 260px; height: 260px;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85) 0%, rgba(186, 230, 253, 0.4) 100%);
-            border: 6px solid #fff; border-radius: 50%; backdrop-filter: blur(2px); overflow: hidden;
-            box-shadow: inset 0 10px 30px rgba(255,255,255,1), 0 15px 35px rgba(0,0,0,0.05);
+            width: 240px; height: 240px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(186, 230, 253, 0.4) 100%);
+            border: 6px solid #fff; border-radius: 50%; overflow: hidden;
+            box-shadow: inset 0 10px 30px rgba(255,255,255,1), 0 15px 30px rgba(0,0,0,0.05);
             z-index: 5;
         }
-
         .gacha-base {
             position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 220px; height: 160px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            width: 200px; height: 140px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
             border-radius: 20px 20px 40px 40px; z-index: 4; border: 3px solid #fff;
-            box-shadow: 0 10px 25px rgba(3, 105, 161, 0.2);
         }
-
-        .gacha-knob { 
-            width: 55px; height: 55px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff;
-            cursor: pointer; transition: 0.4s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-        }
-
+        .gacha-knob { width: 50px; height: 50px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; }
         .shaking { animation: shake 0.1s infinite; }
-        @keyframes shake { 0%, 100% { transform: translate(-50%, 0); } 25% { transform: translate(-50.5%, 1px); } 75% { transform: translate(-49.5%, -1px); } }
+        @keyframes shake { 0%, 100% { transform: translate(-50%, 0); } 25% { transform: translate(-51%, 1px); } 75% { transform: translate(-49%, -1px); } }
 
-        .btn-impact {
+        .btn-main {
             background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
-            color: white;
-            padding: 16px 40px;
-            border-radius: 100px;
-            font-weight: 800;
-            font-size: 1.1rem;
-            transition: 0.3s;
-            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+            color: white; padding: 16px 48px; border-radius: 100px; font-weight: 800;
+            transition: 0.3s; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
         }
+        .btn-main:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .st-online { background: #dcfce7; color: #15803d; }
+        .st-online .status-dot { background: #22c55e; }
+        .st-loading { background: #fef9c3; color: #a16207; }
+        .st-loading .status-dot { background: #eab308; animation: pulse 1s infinite; }
+        .st-offline { background: #fee2e2; color: #ef4444; }
+        .st-offline .status-dot { background: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .hidden-step { display: none; }
-        
-        .quota-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
-        .quota-table td { padding: 10px; background: #fff; border-radius: 4px; }
-
-        .status-msg { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
     </style>
 </head>
 <body class="antialiased">
     <div id="sakura-container"></div>
 
-    <!-- Banner Section -->
-    <section class="banner-wrapper">
-        <div class="prize-badge">
-            <div class="prize-badge-icon">💎</div>
-            <div class="prize-badge-content">
-                <p class="prize-badge-title">Ultherapy 療程 <span class="prize-badge-val">$32,888</span></p>
-            </div>
+    <div class="banner-container">
+        <div class="prize-float-badge">
+            <span class="text-xl">💎</span>
+            <div class="text-xs font-bold leading-tight">Ultherapy 療程 <span class="text-amber-400">$32,888</span></div>
         </div>
-        <img src="https://image2url.com/r2/default/images/1772197034322-b5062db0-1c7c-4337-a113-a1e0f9b526ff.jpeg" class="banner-img" alt="NeoDerm Spring Beauty">
-    </section>
+        <img src="https://image2url.com/r2/default/images/1772197034322-b5062db0-1c7c-4337-a113-a1e0f9b526ff.jpeg" class="banner-img" alt="NeoDerm Spring">
+    </div>
 
     <div class="max-w-4xl mx-auto px-4 py-8 relative z-10">
         <header class="text-center mb-10">
             <h1 class="text-4xl md:text-5xl neo-gradient-text mb-4">春日美肌綻放大抽獎</h1>
-            <p class="text-sky-800 font-bold bg-sky-100/60 inline-block px-4 py-1 rounded-full text-xs">即日至 2026年3月31日</p>
+            <p class="text-sky-800 font-bold bg-white/60 inline-block px-4 py-1 rounded-full text-xs">即日至 2026年3月31日</p>
         </header>
 
-        <!-- STEP 1: POOL SELECTION -->
         <div id="step-eligibility" class="glass-card p-6 md:p-10 mb-8">
             <div class="text-center mb-8">
-                <h2 class="text-lg font-extrabold text-slate-800">請選擇您的消費彩池</h2>
-                <p class="text-slate-400 text-xs">根據您的發票總額選擇對應組別</p>
+                <h2 class="text-lg font-black text-slate-800 uppercase tracking-wide">請選擇消費彩池</h2>
+                <p class="text-slate-400 text-[10px]">配額資料正在從您的 Google 試算表載入</p>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-5 rounded-2xl flex flex-col items-center gap-2">
+                <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-6 rounded-3xl bg-amber-50 border border-amber-100 flex flex-col items-center gap-2">
                     <span class="text-2xl">✨</span>
-                    <span class="font-black text-sm">春日金池</span>
-                    <span class="text-[9px] font-bold py-1 px-3 bg-white/50 rounded-full">>= $50,000</span>
+                    <span class="font-black text-sm text-amber-800">春日金池</span>
+                    <span class="text-[9px] font-bold py-1 px-3 bg-white/60 rounded-full">>= $50,000</span>
                 </button>
-                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-5 rounded-2xl flex flex-col items-center gap-2">
+                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-6 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col items-center gap-2">
                     <span class="text-2xl">🥈</span>
-                    <span class="font-black text-sm">春日銀池</span>
-                    <span class="text-[9px] font-bold py-1 px-3 bg-white/50 rounded-full">$30K - $49K</span>
+                    <span class="font-black text-sm text-slate-800">春日銀池</span>
+                    <span class="text-[9px] font-bold py-1 px-3 bg-white/60 rounded-full">$30K - $49K</span>
                 </button>
-                <button onclick="selectPool('bronze')" id="tab-bronze" class="pool-tab tab-bronze p-5 rounded-2xl flex flex-col items-center gap-2">
+                <button onclick="selectPool('bronze')" id="tab-bronze" class="pool-tab tab-bronze p-6 rounded-3xl bg-orange-50 border border-orange-100 flex flex-col items-center gap-2">
                     <span class="text-2xl">🥉</span>
-                    <span class="font-black text-sm">春日銅池</span>
-                    <span class="text-[9px] font-bold py-1 px-3 bg-white/50 rounded-full">$15K - $29K</span>
+                    <span class="font-black text-sm text-orange-800">春日銅池</span>
+                    <span class="text-[9px] font-bold py-1 px-3 bg-white/60 rounded-full">$15K - $29K</span>
                 </button>
             </div>
 
             <div class="flex justify-center mb-10">
-                <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-5 rounded-2xl flex items-center justify-center gap-4">
+                <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-6 rounded-3xl bg-pink-50 border border-pink-100 flex items-center justify-center gap-4">
                     <span class="text-3xl">🎂</span>
                     <div class="text-left">
-                        <span class="font-black text-sm block">生日彩池 特別獎勵</span>
-                        <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest">2 / 3 / 4 月生日專享</span>
+                        <span class="font-black text-sm block text-pink-800">生日彩池 特別獎勵</span>
+                        <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest text-pink-600">2 / 3 / 4 月生日專享</span>
                     </div>
                 </button>
             </div>
 
-            <div class="bg-white/50 border border-white/50 p-4 rounded-xl mb-8 text-center min-h-[60px] flex items-center justify-center">
-                <p id="pool-description" class="text-slate-600 text-xs font-medium italic">載入中...</p>
+            <div id="loading-box" class="bg-white/40 border border-white p-6 rounded-2xl mb-8 text-center min-h-[100px] flex flex-col items-center justify-center transition-all">
+                <p id="pool-desc" class="text-slate-600 text-xs font-medium italic mb-3">連線雲端資料庫中...</p>
+                <div id="conn-badge" class="status-badge st-loading">
+                    <div class="status-dot"></div>
+                    <span id="conn-text">Connecting...</span>
+                </div>
             </div>
 
-            <button onclick="confirmEntry()" class="w-full btn-impact uppercase tracking-widest">進入抽獎</button>
+            <button id="entry-btn" onclick="confirmEntry()" disabled class="w-full btn-main uppercase tracking-widest">請等待連線完成</button>
             
-            <button onclick="toggleQuotaDashboard()" class="w-full mt-10 text-slate-400 text-[10px] font-bold tracking-widest hover:text-sky-500 transition-colors uppercase">
-                📊 內部配額實時概況
+            <button onclick="toggleDashboard()" class="w-full mt-10 text-slate-400 text-[10px] font-bold tracking-widest hover:text-sky-500 uppercase">
+                📊 管理員配額診斷
             </button>
             
-            <div id="quota-dashboard" class="hidden mt-6 bg-slate-100 rounded-2xl p-6 border border-slate-200 shadow-inner">
-                <div id="quota-auth-section" class="text-center">
-                    <p class="status-msg text-slate-400">管理權限驗證</p>
+            <div id="dashboard" class="hidden mt-6 bg-slate-800 rounded-2xl p-6 shadow-2xl">
+                <div id="dash-auth">
                     <div class="flex gap-2 max-w-xs mx-auto">
-                        <input type="password" id="quota-password-input" placeholder="密碼" class="flex-1 px-4 py-2 rounded-xl text-sm border-slate-200 outline-none">
-                        <button onclick="verifyQuotaPassword()" class="bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold">登入</button>
+                        <input type="password" id="dash-pass" placeholder="管理密碼" class="flex-1 px-4 py-2 rounded-xl text-sm border-none outline-none bg-slate-700 text-white">
+                        <button onclick="unlockDash()" class="bg-sky-500 text-white px-5 py-2 rounded-xl text-xs font-bold">解鎖</button>
                     </div>
                 </div>
-                <div id="quota-data-section" class="hidden">
-                    <div class="flex justify-between items-end mb-6">
-                        <div>
-                            <p class="status-msg text-sky-600">Inventory Status</p>
-                            <span id="quota-last-updated" class="text-[8px] text-slate-400 font-mono">--</span>
-                        </div>
-                        <button onclick="requestResetData()" class="text-[9px] text-rose-500 font-bold bg-rose-50 px-3 py-1 rounded-lg">清空紀錄</button>
+                <div id="dash-data" class="hidden text-white">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                        <span class="text-[10px] font-bold text-sky-400">SHEET LIVE INVENTORY</span>
+                        <button onclick="fetchData()" class="text-[9px] bg-slate-700 px-2 py-1 rounded">更新資料庫</button>
                     </div>
-                    <div id="quota-content" class="space-y-4">
-                        <p class="text-center text-[10px] text-slate-400 italic py-10">正在同步雲端資料...</p>
-                    </div>
+                    <div id="quota-list" class="space-y-4 max-h-60 overflow-y-auto"></div>
                 </div>
             </div>
         </div>
 
-        <!-- STEP 2: DRAWING -->
         <div id="step-draw" class="hidden-step text-center py-10">
             <div class="flex justify-between items-center mb-10">
-                <button id="btn-draw-back" onclick="goBackToSelection()" class="btn-back">⬅ 返回彩池</button>
-                <div id="pool-badge" class="px-5 py-1.5 rounded-full bg-sky-600 text-white text-[10px] font-black uppercase shadow-lg">組別</div>
+                <button onclick="location.reload()" class="text-[10px] font-bold text-slate-400 px-4 py-2 bg-white/50 rounded-xl">⬅ 返回重選</button>
+                <div id="pool-name-badge" class="px-5 py-1.5 rounded-full bg-sky-600 text-white text-[10px] font-black uppercase">組別</div>
             </div>
-            
-            <div class="gacha-container mb-12" id="gacha-machine">
-                <div class="gacha-glass"><div class="gacha-balls-container" id="balls-container"></div></div>
-                <div class="gacha-base">
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <div class="gacha-knob" onclick="spinGacha()">💮</div>
-                    </div>
-                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-20 h-10 bg-black/20 rounded-lg"></div>
-                </div>
-                <div id="dropped-ball" class="dropped-ball"></div>
+            <div class="gacha-container mb-12" id="gacha-box">
+                <div class="gacha-glass"><div id="balls-wrap" class="relative w-full h-full"></div></div>
+                <div class="gacha-base"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"><div class="gacha-knob" onclick="startDraw()">💮</div></div></div>
             </div>
-            
-            <button id="spin-btn" onclick="spinGacha()" class="btn-impact animate-pulse">點擊轉動</button>
+            <button id="draw-btn" onclick="startDraw()" class="btn-main animate-bounce">點擊轉動抽獎</button>
         </div>
 
-        <!-- RESULT MODAL -->
-        <div id="result-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 z-50 hidden">
+        <div id="res-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6 z-50 hidden">
             <div class="glass-card p-8 max-w-md w-full text-center">
                 <div class="text-5xl mb-6">🌸</div>
-                <h3 class="status-msg text-sky-600 tracking-widest">🎉 恭喜您獲得</h3>
-                <p class="text-2xl font-black text-slate-800 mb-8" id="prize-text">獎品</p>
-                
-                <div class="space-y-4 mb-8 text-left">
-                    <div class="text-[10px] font-mono text-slate-400 text-center" id="draw-time-display">--</div>
+                <p class="text-xs text-sky-600 font-bold uppercase mb-2">中獎通知</p>
+                <p class="text-2xl font-black text-slate-800 mb-8" id="win-text">獎品</p>
+                <div class="space-y-4 mb-8">
                     <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="input-mmc" oninput="checkFormValidity()" placeholder="MMC No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none w-full">
-                        <input type="text" id="input-invoice" oninput="checkFormValidity()" placeholder="Inv No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none w-full">
+                        <input type="text" id="in-mmc" oninput="validateForm()" placeholder="MMC 編號" class="px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none w-full">
+                        <input type="text" id="in-inv" oninput="validateForm()" placeholder="Inv No." class="px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none w-full">
                     </div>
-                    <select id="input-cse" onchange="checkFormValidity()" class="w-full px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none">
+                    <select id="in-cse" onchange="validateForm()" class="w-full px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none">
                         <option value="">負責同事 (CSE)...</option>
                         <option value="miko.ngan">miko.ngan</option><option value="karykwong">karykwong</option><option value="angel.leungsl">angel.leungsl</option><option value="Helen.hui">Helen.hui</option><option value="sammi.ng">sammi.ng</option><option value="rania.lam">rania.lam</option><option value="winslee.hui">winslee.hui</option><option value="angela.chanhs">angela.chanhs</option><option value="aislin.hui">aislin.hui</option><option value="niki.ng">niki.ng</option><option value="yannux.man">yannux.man</option><option value="crystal.chanhy">crystal.chanhy</option><option value="rebecca.lam">rebecca.lam</option><option value="zoe.sohy">zoe.sohy</option><option value="joanne.chancy">joanne.chancy</option><option value="karena.leung.wt">karena.leung.wt</option><option value="miko.chen">miko.chen</option><option value="abbie.wong.kn">abbie.wong.kn</option><option value="michelle.choi">michelle.choi</option><option value="miki.wong">miki.wong</option><option value="Chrissie.wong">Chrissie.wong</option><option value="fanky.lam">fanky.lam</option><option value="milky.chong">milky.chong</option><option value="winnie.mowy">winnie.mowy</option><option value="ebbie.tam">ebbie.tam</option><option value="sharon.chu">sharon.chu</option><option value="wing.Chau">wing.Chau</option><option value="Angela.ChanHY">Angela.ChanHY</option><option value="Daisy.Wong">Daisy.Wong</option><option value="yandy.lee">yandy.lee</option>
                     </select>
                 </div>
-                
-                <div id="submit-status" class="text-xs mb-4 hidden font-bold text-emerald-600"></div>
-                <button id="submit-record-btn" onclick="submitDrawRecord()" class="w-full btn-impact py-4 rounded-2xl">提交存檔</button>
-            </div>
-        </div>
-
-        <!-- RESET MODAL -->
-        <div id="reset-confirm-modal" class="hidden fixed inset-0 bg-slate-900/90 z-[100] flex items-center justify-center p-6">
-            <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-                <h4 class="text-xl font-bold mb-4">確認清空雲端紀錄？</h4>
-                <p class="text-sm text-slate-500 mb-6 italic">此操作不可撤銷。請輸入 "RESET"。</p>
-                <input type="text" id="reset-type-input" oninput="validateDoubleConfirm()" placeholder="RESET" class="w-full px-4 py-3 rounded-xl border-2 text-center font-bold mb-4 outline-none">
-                <div id="reset-error-msg" class="text-rose-500 text-[10px] font-bold mb-4 hidden"></div>
-                <div class="space-y-2">
-                    <button id="final-reset-btn" onclick="executeDataReset()" disabled class="w-full py-4 bg-slate-200 text-slate-400 font-bold rounded-xl cursor-not-allowed">確認清空</button>
-                    <button onclick="closeResetModal()" class="w-full py-2 text-slate-400 font-bold">返回</button>
-                </div>
+                <div id="sub-msg" class="text-xs mb-4 hidden font-bold text-emerald-600"></div>
+                <button id="sub-btn" onclick="submitResult()" disabled class="w-full btn-main py-4 rounded-2xl opacity-50">確認存檔並扣除配額</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzlAeK5KjuT1qoF5N_ngdXVGzmvfTdwtOz0ge1Y0XrHa7Y-vjBdrqoCMWjkB8eULfrs/exec"; 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'neoderm-spring-2026';
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzk4csonS3ILtM8Kye2HaJF2JhKTRCRoLNFHJssHy3fnNgzVwRoheEcKvm6K_6eI9AT/exec";
         
-        let app, auth, db, user = null, lastPrize = "", selectedKey = 'silver', currentPool = null, spinning = false, isQuotaUnlocked = false, quotaUnsubscribe = null;
+        let sheetData = []; 
+        let selectedKey = 'silver';
+        let currentPoolPrizes = [];
+        let winPrizeName = "";
+        let isSpinning = false;
 
-        const pools = {
-            gold: { id: 'gold', name: "春日金池 (Premium)", prizes: [{ name: "Ulthera Prime Face", count: 1 }, { name: "High Pexo Face", count: 3 }, { name: "PN+", count: 5 }, { name: "Pico Face", count: 7 }, { name: "VT Face", count: 20 }, { name: "BBL Face", count: 20 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 210 }], description: "消費金額達 $50,000 或以上。" },
-            silver: { id: 'silver', name: "春日銀池 (Elite)", prizes: [{ name: "Pico Face", count: 3 }, { name: "VT Face", count: 30 }, { name: "BBL Face", count: 30 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 440 }], description: "消費金額介乎 $30,000 至 $49,999。" },
-            bronze: { id: 'bronze', name: "春日銅池 (Standard)", prizes: [{ name: "VT Face", count: 50 }, { name: "BBL Face", count: 50 }, { name: "Transkin M w/o Mask", count: 500 }, { name: "隨機精選醫美產品", count: 700 }], description: "消費金額介乎 $15,000 至 $29,999。" },
-            birthday: { id: 'birthday', name: "生日彩池 (Special)", prizes: [{ name: "$1,000療程卷 (折實滿$14,000)", count: 500 }, { name: "$800療程卷 (折實滿$12,000)", count: 500 }, { name: "$500療程卷 (折實滿$8,000)", count: 500 }], description: "適用於 2、3、4 月份生日之客戶。" }
+        const poolMeta = {
+            gold: { name: "春日金池 (Premium)", desc: "消費金額達 $50,000 或以上。" },
+            silver: { name: "春日銀池 (Elite)", desc: "消費金額介乎 $30,000 至 $49,999。" },
+            bronze: { name: "春日銅池 (Standard)", desc: "消費金額介乎 $15,000 至 $29,999。" },
+            birthday: { name: "生日彩池 (Special)", desc: "適用於 2、3、4 月份生日之客戶。" }
+        };
+
+        window.fetchData = async () => {
+            const badge = document.getElementById('conn-badge');
+            const text = document.getElementById('conn-text');
+            const entryBtn = document.getElementById('entry-btn');
+
+            badge.className = "status-badge st-loading";
+            text.innerText = "Syncing with Sheet...";
+
+            try {
+                // 使用快取清除參數
+                const response = await fetch(`${scriptURL}?v=${Date.now()}`);
+                if (!response.ok) throw new Error("Connection Error");
+                
+                sheetData = await response.json();
+                
+                if (sheetData.error) throw new Error(sheetData.error);
+
+                badge.className = "status-badge st-online";
+                text.innerText = "Online (Sheet Connected)";
+                entryBtn.disabled = false;
+                entryBtn.innerText = "進入抽獎";
+                
+                renderDashboard();
+                updateDesc();
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                badge.className = "status-badge st-offline";
+                text.innerText = "連線失敗 (Failed to fetch)";
+                entryBtn.innerText = "無法載入配額資料";
+            }
         };
 
         window.selectPool = (key) => {
             selectedKey = key;
             document.querySelectorAll('.pool-tab').forEach(b => b.classList.remove('active'));
             document.getElementById(`tab-${key}`).classList.add('active');
-            document.getElementById('pool-description').innerText = pools[key].description;
+            updateDesc();
         };
-        window.selectPool('silver');
 
-        if (firebaseConfig) {
-            app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
-                else await signInAnonymously(auth);
-            };
-            initAuth();
-            onAuthStateChanged(auth, u => { 
-                user = u; 
-                // Auto-start listener if password was already verified
-                if (user && isQuotaUnlocked) startQuotaListener(); 
-            });
+        function updateDesc() {
+            const el = document.getElementById('pool-desc');
+            if (sheetData.length === 0) return;
+            el.innerText = poolMeta[selectedKey].desc;
         }
 
-        window.checkFormValidity = () => {
-            const valid = document.getElementById('input-mmc').value.trim() && document.getElementById('input-invoice').value.trim() && document.getElementById('input-cse').value;
-            document.getElementById('submit-record-btn').style.opacity = valid ? "1" : "0.5";
-        };
-
-        window.toggleQuotaDashboard = () => {
-            document.getElementById('quota-dashboard').classList.toggle('hidden');
-        };
-
-        window.verifyQuotaPassword = () => {
-            if (document.getElementById('quota-password-input').value === "SoloTiff2004") {
-                isQuotaUnlocked = true;
-                document.getElementById('quota-auth-section').classList.add('hidden');
-                document.getElementById('quota-data-section').classList.remove('hidden');
-                // Trigger listener immediately
-                startQuotaListener();
-            } else {
-                document.getElementById('quota-password-input').value = "";
+        window.toggleDashboard = () => document.getElementById('dashboard').classList.toggle('hidden');
+        window.unlockDash = () => {
+            if (document.getElementById('dash-pass').value === "SoloTiff2004") {
+                document.getElementById('dash-auth').classList.add('hidden');
+                document.getElementById('dash-data').classList.remove('hidden');
             }
         };
 
-        function startQuotaListener() {
-            if (!db) return;
-            // Display initial state immediately so it doesn't stay as "--"
-            renderQuotaTable({});
-
-            if (!user) {
-                console.log("Waiting for user auth...");
-                return;
-            }
-
-            if (quotaUnsubscribe) quotaUnsubscribe(); 
-
-            quotaUnsubscribe = onSnapshot(
-                collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), 
-                snapshot => {
-                    const wins = {}; 
-                    snapshot.forEach(d => { 
-                        const p = (d.data().prize || "").trim(); 
-                        wins[p] = (wins[p] || 0) + 1; 
-                    });
-                    renderQuotaTable(wins);
-                },
-                err => {
-                    console.error("Quota Listener Error:", err);
-                    document.getElementById('quota-content').innerHTML = `<p class="text-[9px] text-rose-500 font-bold p-4 bg-white rounded">❌ 無法連線雲端資料庫 (${err.code})</p>`;
-                }
-            );
-        }
-
-        function renderQuotaTable(wins) {
+        function renderDashboard() {
             let html = "";
-            for (const pk in pools) {
-                html += `<div class="mb-4">
-                            <h4 class="text-[9px] font-black text-slate-800 mb-1 uppercase tracking-tight">${pools[pk].name}</h4>
-                            <table class="quota-table"><tbody>`;
-                pools[pk].prizes.forEach(p => {
-                    const winCount = wins[p.name.trim()] || 0;
-                    const rem = p.count - winCount;
-                    html += `<tr class="text-[9px] font-medium">
-                                <td class="text-slate-600">${p.name}</td>
-                                <td class="text-right font-mono ${rem <= (p.count * 0.1) ? 'text-rose-600 font-bold' : 'text-slate-400'}">${rem} / ${p.count}</td>
-                            </tr>`;
+            ['gold', 'silver', 'bronze', 'birthday'].forEach(k => {
+                const items = sheetData.filter(d => d.pool === k);
+                html += `<div class="mb-4"><p class="text-[9px] text-sky-400 font-bold mb-1">${poolMeta[k].name}</p>`;
+                html += `<table class="w-full text-[9px] border-collapse">`;
+                items.forEach(i => {
+                    html += `<tr class="border-b border-slate-700">
+                        <td class="py-1">${i.name}</td>
+                        <td class="text-right ${i.remaining <= 0 ? 'text-rose-500 font-bold' : 'text-slate-400'}">${i.remaining} / ${i.total}</td>
+                    </tr>`;
                 });
-                html += `</tbody></table></div>`;
-            }
-            document.getElementById('quota-content').innerHTML = html;
-            document.getElementById('quota-last-updated').innerText = "LIVE SYNC: " + new Date().toLocaleTimeString();
+                html += `</table></div>`;
+            });
+            document.getElementById('quota-list').innerHTML = html;
         }
-
-        window.requestResetData = () => { 
-            document.getElementById('reset-type-input').value = ""; 
-            document.getElementById('reset-confirm-modal').classList.remove('hidden'); 
-        };
-        window.closeResetModal = () => document.getElementById('reset-confirm-modal').classList.add('hidden');
-        window.validateDoubleConfirm = () => {
-            const ok = document.getElementById('reset-type-input').value.trim().toUpperCase() === "RESET";
-            const b = document.getElementById('final-reset-btn');
-            b.disabled = !ok; b.className = ok ? "w-full py-4 bg-rose-500 text-white font-bold rounded-xl shadow-lg cursor-pointer" : "w-full py-4 bg-slate-200 text-slate-400 font-bold rounded-xl cursor-not-allowed";
-        };
-
-        window.executeDataReset = async () => {
-            if (!db || !user) return;
-            const b = document.getElementById('final-reset-btn'); 
-            b.disabled = true; b.innerText = "清空中...";
-            try {
-                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'));
-                const ps = []; 
-                snap.forEach(d => ps.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id))));
-                await Promise.all(ps); 
-                closeResetModal();
-                b.innerText = "確認清空";
-            } catch (e) { 
-                console.error(e);
-                b.disabled = false; 
-                b.innerText = "錯誤，請重試"; 
-            }
-        };
 
         window.confirmEntry = () => {
-            currentPool = pools[selectedKey];
+            currentPoolPrizes = sheetData.filter(d => d.pool === selectedKey);
             document.getElementById('step-eligibility').classList.add('hidden-step');
             document.getElementById('step-draw').classList.remove('hidden-step');
-            document.getElementById('pool-badge').innerText = currentPool.name;
+            document.getElementById('pool-name-badge').innerText = poolMeta[selectedKey].name;
             setupGacha();
         };
 
-        window.goBackToSelection = () => { if(!spinning) { document.getElementById('step-draw').classList.add('hidden-step'); document.getElementById('step-eligibility').classList.remove('hidden-step'); } };
-
         function setupGacha() {
-            const container = document.getElementById('balls-container'); container.innerHTML = "";
-            const colors = ['#fb7185', '#0ea5e9', '#ffffff', '#fbbf24', '#f472b6', '#7dd3fc'];
-            for(let i=0; i<15; i++) {
-                const ball = document.createElement('div'); ball.className = 'gacha-ball';
-                ball.style.left = 15 + Math.random()*180 + 'px';
-                ball.style.top = 40 + Math.random()*150 + 'px';
-                ball.style.background = `radial-gradient(circle at 30% 30%, ${colors[i%colors.length]}, #0001)`;
-                container.appendChild(ball);
+            const wrap = document.getElementById('balls-wrap'); wrap.innerHTML = "";
+            for(let i=0; i<12; i++) {
+                const b = document.createElement('div');
+                b.className = "absolute w-8 h-8 rounded-full border border-white/20";
+                b.style.left = Math.random()*80 + "%"; b.style.top = Math.random()*70 + "%";
+                b.style.background = `radial-gradient(circle at 30% 30%, #fb7185, #0003)`;
+                wrap.appendChild(b);
             }
         }
 
-        window.spinGacha = () => {
-            if (spinning) return; spinning = true;
-            const b = document.getElementById('spin-btn'), bb = document.getElementById('btn-draw-back');
-            b.disabled = true; b.style.opacity = '0.5'; bb.style.visibility = 'hidden';
-            
-            const total = currentPool.prizes.reduce((s, p) => s + p.count, 0);
-            let rnd = Math.random() * total, winIdx = 0, cur = 0;
-            for (let i = 0; i < currentPool.prizes.length; i++) { cur += currentPool.prizes[i].count; if (rnd <= cur) { winIdx = i; break; } }
-            lastPrize = currentPool.prizes[winIdx].name;
+        window.startDraw = () => {
+            if (isSpinning) return;
+            const available = currentPoolPrizes.filter(p => p.remaining > 0);
+            if (available.length === 0) { alert("此彩池獎品已全數抽完！"); return; }
 
-            document.getElementById('gacha-machine').classList.add('shaking');
-            const j = setInterval(() => {
-                document.querySelectorAll('.gacha-ball').forEach(bl => bl.style.transform = `translate(${(Math.random()-0.5)*25}px, ${(Math.random()-0.5)*25}px)`);
-            }, 80);
-            
+            isSpinning = true;
+            document.getElementById('gacha-box').classList.add('shaking');
+            document.getElementById('draw-btn').disabled = true;
+
+            const totalRem = available.reduce((s, p) => s + p.remaining, 0);
+            let rnd = Math.random() * totalRem, cur = 0;
+            for (let i = 0; i < available.length; i++) {
+                cur += available[i].remaining;
+                if (rnd <= cur) { winPrizeName = available[i].name; break; }
+            }
+
             setTimeout(() => {
-                clearInterval(j); document.getElementById('gacha-machine').classList.remove('shaking');
-                const dbBall = document.getElementById('dropped-ball'); dbBall.style.display = 'block'; dbBall.style.background = `radial-gradient(circle at 30% 30%, #fb7185, #be123c)`;
-                setTimeout(() => {
-                    document.getElementById('prize-text').innerText = lastPrize;
-                    document.getElementById('draw-time-display').innerText = new Date().toLocaleString('zh-HK');
-                    document.getElementById('result-modal').classList.remove('hidden');
-                    checkFormValidity(); spinning = false; bb.style.visibility = 'visible';
-                }, 1000);
+                document.getElementById('gacha-box').classList.remove('shaking');
+                document.getElementById('win-text').innerText = winPrizeName;
+                document.getElementById('res-modal').classList.remove('hidden');
+                isSpinning = false;
             }, 2000);
         };
 
-        window.submitDrawRecord = async () => {
-            const mmc = document.getElementById('input-mmc').value.trim(), inv = document.getElementById('input-invoice').value.trim(), cse = document.getElementById('input-cse').value;
-            if (!mmc || !inv || !cse) return;
-            const sb = document.getElementById('submit-record-btn'); 
-            sb.disabled = true; sb.innerText = "儲存中...";
-            const d = { mmc, invoice_no: inv, cse, prize: lastPrize, pool: currentPool.name, date_display: new Date().toLocaleString('zh-HK') };
+        window.validateForm = () => {
+            const valid = document.getElementById('in-mmc').value.trim() && document.getElementById('in-inv').value.trim() && document.getElementById('in-cse').value;
+            const btn = document.getElementById('sub-btn');
+            btn.disabled = !valid; btn.style.opacity = valid ? "1" : "0.5";
+        };
+
+        window.submitResult = async () => {
+            const btn = document.getElementById('sub-btn');
+            btn.disabled = true; btn.innerText = "Saving to Google Sheet...";
+            const payload = {
+                mmc: document.getElementById('in-mmc').value.trim(),
+                invoice_no: document.getElementById('in-inv').value.trim(),
+                cse: document.getElementById('in-cse').value,
+                pool: poolMeta[selectedKey].name,
+                pool_id: selectedKey,
+                prize: winPrizeName
+            };
             try {
-                if (scriptURL) await fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) });
-                if (db && user) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), { ...d, timestamp: serverTimestamp() });
-                document.getElementById('submit-status').innerText = "✅ 提交成功！"; 
-                document.getElementById('submit-status').classList.remove('hidden');
-                setTimeout(resetApp, 1500);
-            } catch (e) { 
-                console.error(e);
-                setTimeout(resetApp, 1500); 
+                await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                document.getElementById('sub-msg').innerText = "✅ 已成功更新試算表！頁面即將跳轉...";
+                document.getElementById('sub-msg').classList.remove('hidden');
+                setTimeout(() => location.reload(), 2000);
+            } catch (e) {
+                alert("存檔失敗，請確認網路連線。");
+                btn.disabled = false;
             }
         };
 
-        window.resetApp = () => {
-            document.getElementById('result-modal').classList.add('hidden');
-            document.getElementById('step-draw').classList.add('hidden-step');
-            document.getElementById('step-eligibility').classList.remove('hidden-step');
-            document.getElementById('input-mmc').value = ""; document.getElementById('input-invoice').value = ""; document.getElementById('input-cse').selectedIndex = 0;
-            document.getElementById('submit-status').classList.add('hidden');
-            document.getElementById('spin-btn').disabled = false; document.getElementById('spin-btn').style.opacity = '1';
-            document.getElementById('dropped-ball').style.display = 'none';
-            document.getElementById('submit-record-btn').innerText = "提交存檔";
-        };
+        window.onload = fetchData;
 
-        // Sakura initialization
         const sc = document.getElementById('sakura-container');
         for (let i = 0; i < 20; i++) {
-            const p = document.createElement('div'); p.className = 'petal';
-            const sz = Math.random() * 8 + 6 + 'px'; p.style.width = sz; p.style.height = sz;
-            p.style.left = Math.random() * 100 + 'vw'; p.style.top = '-20px';
-            p.style.animationDuration = Math.random() * 5 + 4 + 's'; p.style.animationDelay = Math.random() * 5 + 's';
-            sc.appendChild(p);
+            const p = document.createElement('div'); p.className = 'petal w-2 h-2';
+            p.style.left = Math.random() * 100 + 'vw'; p.style.animationDuration = Math.random() * 4 + 4 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's'; sc.appendChild(p);
         }
     </script>
 </body>
