@@ -242,7 +242,9 @@
                         </div>
                         <button onclick="requestResetData()" class="text-[10px] text-rose-400 font-bold hover:underline">⚠️ 重置數據</button>
                     </div>
-                    <div id="quota-content" class="max-h-[350px] overflow-y-auto"></div>
+                    <div id="quota-content" class="max-h-[350px] overflow-y-auto">
+                        <p class="text-center text-[10px] text-slate-400 py-10 italic">正在獲取雲端數據...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -338,7 +340,11 @@
                 else await signInAnonymously(auth);
             };
             initAuth();
-            onAuthStateChanged(auth, u => { user = u; if (user && isQuotaUnlocked) startQuotaListener(); });
+            onAuthStateChanged(auth, u => { 
+                user = u; 
+                console.log("Auth State Changed: ", user ? user.uid : "No User");
+                if (user && isQuotaUnlocked) startQuotaListener(); 
+            });
         }
 
         window.checkFormValidity = () => {
@@ -362,22 +368,41 @@
         };
 
         function startQuotaListener() {
-            if (!db || !user || quotaUnsubscribe) return;
-            quotaUnsubscribe = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), snapshot => {
-                const wins = {}; snapshot.forEach(d => { const p = (d.data().prize || "").trim(); wins[p] = (wins[p] || 0) + 1; });
-                let html = "";
-                for (const pk in pools) {
-                    html += `<div class="mb-6 text-left"><h4 class="text-[11px] font-extrabold text-sky-600 mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>${pools[pk].name}</h4><table class="quota-table"><thead><tr><th>獎品</th><th>剩餘/總數</th></tr></thead><tbody>`;
-                    pools[pk].prizes.forEach(p => {
-                        const winCount = wins[p.name.trim()] || 0;
-                        const rem = p.count - winCount;
-                        html += `<tr><td>${p.name}</td><td class="${rem <= (p.count * 0.1) ? 'status-low' : ''}">${rem} / ${p.count}</td></tr>`;
+            if (!db || !user) {
+                console.warn("DB or User not initialized yet.");
+                return;
+            }
+            if (quotaUnsubscribe) quotaUnsubscribe(); // 防止重複監聽
+
+            console.log("Starting Quota Listener for AppId:", appId);
+
+            quotaUnsubscribe = onSnapshot(
+                collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), 
+                snapshot => {
+                    const wins = {}; 
+                    snapshot.forEach(d => { 
+                        const p = (d.data().prize || "").trim(); 
+                        wins[p] = (wins[p] || 0) + 1; 
                     });
-                    html += `</tbody></table></div>`;
+
+                    let html = "";
+                    for (const pk in pools) {
+                        html += `<div class="mb-6 text-left"><h4 class="text-[11px] font-extrabold text-sky-600 mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>${pools[pk].name}</h4><table class="quota-table"><thead><tr><th>獎品</th><th>剩餘/總數</th></tr></thead><tbody>`;
+                        pools[pk].prizes.forEach(p => {
+                            const winCount = wins[p.name.trim()] || 0;
+                            const rem = p.count - winCount;
+                            html += `<tr><td>${p.name}</td><td class="${rem <= (p.count * 0.1) ? 'status-low' : ''}">${rem} / ${p.count}</td></tr>`;
+                        });
+                        html += `</tbody></table></div>`;
+                    }
+                    document.getElementById('quota-content').innerHTML = html;
+                    document.getElementById('quota-last-updated').innerText = "最後同步: " + new Date().toLocaleTimeString();
+                },
+                error => {
+                    console.error("Firestore Error:", error);
+                    document.getElementById('quota-content').innerHTML = `<p class="text-center text-[10px] text-rose-500 py-10 font-bold uppercase tracking-widest">數據庫連接失敗: ${error.code}</p>`;
                 }
-                document.getElementById('quota-content').innerHTML = html;
-                document.getElementById('quota-last-updated').innerText = "最後同步: " + new Date().toLocaleTimeString();
-            });
+            );
         }
 
         window.requestResetData = () => { document.getElementById('reset-type-input').value = ""; validateDoubleConfirm(); document.getElementById('reset-confirm-modal').classList.remove('hidden'); };
