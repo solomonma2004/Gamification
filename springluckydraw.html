@@ -11,18 +11,19 @@
             --neo-rose: #ff4d6d;
             --neo-rose-dark: #c9184a;
             --neo-sky: #0ea5e9;
-            --neo-sky-light: #bae6fd;
+            --neo-sky-dark: #0369a1;
             --gold: #fbbf24;
+            --glass-white: rgba(255, 255, 255, 0.85);
         }
 
         body {
             font-family: 'Poppins', 'Noto Sans TC', sans-serif;
-            background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 40%, #fff5f7 100%);
+            background: linear-gradient(135deg, #f0f9ff 0%, #fff1f2 100%);
             color: #1e293b;
             min-height: 100vh;
-            overflow-x: hidden;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
 
         /* Sakura Petals Effect */
@@ -36,301 +37,305 @@
             position: absolute;
             background: linear-gradient(135deg, #ffdbed 0%, #ffb7d5 100%);
             border-radius: 150% 0 150% 50%;
-            opacity: 0.7;
-            transform-origin: center;
+            opacity: 0.6;
             animation: fall linear infinite;
         }
 
         @keyframes fall {
-            0% { transform: translate(0, -10px) rotate(0deg) scale(1); }
-            100% { transform: translate(150px, 100vh) rotate(720deg) scale(0.8); }
+            0% { transform: translate(0, -20px) rotate(0deg) scale(1); }
+            100% { transform: translate(100px, 110vh) rotate(720deg) scale(0.6); }
         }
 
-        /* Banner Section Styling */
-        .promotion-banner-container {
-            width: 100vw; position: relative;
-            left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
-            margin-bottom: 2.5rem; line-height: 0;
+        /* Streamlined Banner Container */
+        .banner-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+            line-height: 0;
+            overflow: hidden;
         }
 
-        .promotion-banner-img { width: 100%; height: auto; display: block; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
-
-        .grand-prize-banner {
-            position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(3, 105, 161, 0.98) 0%, rgba(14, 165, 233, 0.95) 100%);
-            backdrop-filter: blur(15px); color: white; padding: 18px 45px; border-radius: 120px;
-            display: flex; align-items: center; gap: 24px;
-            box-shadow: 0 20px 60px rgba(3, 105, 161, 0.5), inset 0 0 25px rgba(255, 255, 255, 0.3);
-            animation: banner-float 3s infinite ease-in-out, shimmer-move 4s infinite linear;
-            border: 4px solid rgba(255, 255, 255, 0.9); z-index: 20; width: fit-content; max-width: 95%;
-            pointer-events: none; background-size: 200% auto;
+        .banner-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain; /* Ensures the whole image is visible */
         }
 
-        .prize-icon-circle {
-            background: white; width: 60px; height: 60px; min-width: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 2rem;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        /* Impactful Prize Badge */
+        .prize-badge {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(3, 105, 161, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 12px 32px;
+            border-radius: 100px;
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 15px 35px rgba(3, 105, 161, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 20;
+            white-space: nowrap;
         }
 
-        .prize-text-container { text-align: left; display: flex; flex-direction: column; justify-content: center; }
-        .prize-label { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2px; }
-        .prize-main-row { display: flex; align-items: center; gap: 16px; }
-        .prize-main-title { font-size: 2rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1.1; text-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .prize-value-tag { background: white; color: #0369a1; padding: 4px 18px; border-radius: 40px; font-size: 1.1rem; font-weight: 900; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); border: 2px solid var(--gold); display: flex; align-items: center; gap: 4px; }
-        .small-label { font-size: 0.7rem; font-weight: 600; opacity: 0.8; }
+        .prize-badge-icon {
+            background: #fff;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .prize-badge-content { color: white; line-height: 1.2; }
+        .prize-badge-label { font-size: 0.75rem; font-weight: 700; opacity: 0.8; letter-spacing: 2px; text-transform: uppercase; }
+        .prize-badge-title { font-size: 1.25rem; font-weight: 800; }
+        .prize-badge-val { color: var(--gold); font-weight: 900; }
 
         @media (max-width: 768px) {
-            .grand-prize-banner { padding: 12px 24px; gap: 14px; bottom: 6%; border-radius: 30px; }
-            .prize-icon-circle { width: 44px; height: 44px; min-width: 44px; font-size: 1.4rem; }
-            .prize-main-title { font-size: 1.2rem; }
-            .prize-label { font-size: 0.7rem; letter-spacing: 2px; }
-            .prize-value-tag { font-size: 0.85rem; padding: 4px 12px; }
-            .prize-main-row { gap: 8px; flex-wrap: wrap; }
+            .prize-badge { padding: 8px 20px; bottom: 12px; gap: 10px; }
+            .prize-badge-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+            .prize-badge-title { font-size: 0.9rem; }
+            .prize-badge-label { font-size: 0.6rem; }
         }
 
-        @keyframes banner-float { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-10px); } }
-        @keyframes shimmer-move { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+        /* Glass Panels */
+        .glass-card {
+            background: var(--glass-white);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.7);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            position: relative;
+            z-index: 10;
+        }
 
-        /* Gacha Machine UI */
-        .gacha-container { position: relative; width: 320px; height: 460px; margin: 0 auto; }
+        .neo-gradient-text {
+            background: linear-gradient(135deg, #1e293b 0%, #c9184a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
+
+        /* Pool Tabs */
+        .pool-tab {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            filter: saturate(0.8) opacity(0.7);
+        }
+
+        .pool-tab.active {
+            filter: saturate(1.2) opacity(1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        /* Gacha Styles */
+        .gacha-container { position: relative; width: 300px; height: 420px; margin: 0 auto; }
         .gacha-glass {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 290px; height: 290px;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, rgba(186, 230, 253, 0.3) 100%);
-            border: 10px solid white; border-radius: 50%; backdrop-filter: blur(1px); overflow: hidden;
-            box-shadow: inset 0 10px 40px rgba(255,255,255,0.8), 0 20px 50px rgba(0,0,0,0.1);
+            width: 270px; height: 270px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(186, 230, 253, 0.4) 100%);
+            border: 8px solid #fff; border-radius: 50%; backdrop-filter: blur(2px); overflow: hidden;
+            box-shadow: inset 0 10px 40px rgba(255,255,255,1), 0 20px 40px rgba(0,0,0,0.05);
             z-index: 5;
         }
 
-        .gacha-glass::after {
-            content: ''; position: absolute; top: 12%; left: 18%; width: 45px; height: 90px;
-            background: rgba(255,255,255,0.4); border-radius: 50%; transform: rotate(40deg);
-        }
-
-        .gacha-balls-container { position: absolute; width: 100%; height: 100%; }
-        .gacha-ball { position: absolute; width: 50px; height: 50px; border-radius: 50%; box-shadow: inset -4px -4px 12px rgba(0,0,0,0.15), 0 5px 12px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.6); }
-
         .gacha-base {
             position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 250px; height: 200px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
-            border-radius: 30px 30px 60px 60px; z-index: 4; box-shadow: 0 15px 40px rgba(0,0,0,0.25); border: 5px solid var(--gold);
+            width: 240px; height: 180px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            border-radius: 20px 20px 50px 50px; z-index: 4; border: 4px solid #fff;
+            box-shadow: 0 10px 30px rgba(3, 105, 161, 0.3);
         }
 
-        .gacha-base::before { content: '🌸'; position: absolute; top: 15px; left: 20px; font-size: 1.5rem; }
-        .gacha-base::after { content: '🌸'; position: absolute; bottom: 60px; right: 20px; font-size: 1.2rem; opacity: 0.7; }
-
-        .gacha-knob-area { position: absolute; top: 35px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; background: rgba(0,0,0,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .gacha-knob { width: 70px; height: 70px; background: radial-gradient(circle, #fbbf24 0%, #d97706 100%); border-radius: 50%; border: 4px solid #92400e; box-shadow: 0 6px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
-        .gacha-knob::after { content: '💮'; font-size: 1.8rem; color: #78350f; }
-
-        .gacha-slot { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 100px; height: 55px; background: linear-gradient(to bottom, #082f49, #0c4a6e); border-radius: 12px; box-shadow: inset 0 8px 20px rgba(0,0,0,0.6); border: 2px solid rgba(251, 113, 133, 0.4); }
-
-        @keyframes rumble { 0%, 100% { transform: translateX(-50%) translateY(0); } 25% { transform: translateX(-51%) translateY(2px); } 75% { transform: translateX(-49%) translateY(-2px); } }
-        .shaking .gacha-glass { animation: rumble 0.12s infinite; }
-
-        .dropped-ball {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            width: 44px; height: 44px; border-radius: 50%; z-index: 10;
-            border: 2px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            animation: gacha-drop 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
-            display: none;
+        .gacha-knob { 
+            width: 60px; height: 60px; background: #fbbf24; border-radius: 50%; border: 4px solid #fff;
+            cursor: pointer; transition: 0.5s; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
         }
 
-        @keyframes gacha-drop { 0% { transform: translate(-50%, -190px) scale(0.4); opacity: 0; } 40% { transform: translate(-50%, -15px) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, 65px) scale(1); opacity: 1; } }
+        .shaking { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: translate(-50%, 0); } 50% { transform: translate(-50.5%, 1px); } 100% { transform: translate(-49.5%, -1px); } }
 
-        /* UI Framework Styling */
-        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); border: 1px solid white; border-radius: 32px; box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05); position: relative; z-index: 5; }
-        .neo-gradient-text { background: linear-gradient(135deg, #ff006e 0%, #ff5c8a 50%, #ff85a2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; filter: drop-shadow(0 2px 4px rgba(255, 0, 110, 0.2)); }
-        
-        .pool-tab { transition: all 0.3s ease; border: 3px solid transparent; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-        .tab-birthday { background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 25%, #fbc2eb 50%, #a1c4fd 75%, #c2e9fb 100%) !important; color: #be123c !important; }
-        .tab-birthday.active { border-color: #f472b6 !important; box-shadow: 0 0 20px rgba(244, 114, 182, 0.4); }
-        .tab-gold { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%) !important; color: #78350f !important; }
-        .tab-gold.active { border-color: #d97706 !important; box-shadow: 0 0 20px rgba(217, 119, 6, 0.4); }
-        .tab-silver { background: linear-gradient(135deg, #bdc3c7 0%, #ffffff 50%, #95a5a6 100%) !important; color: #2c3e50 !important; }
-        .tab-silver.active { border-color: #7f8c8d !important; box-shadow: 0 0 20px rgba(127, 140, 141, 0.4); }
-        .tab-bronze { background: linear-gradient(135deg, #d98b5f 0%, #ffcba4 50%, #a0522d 100%) !important; color: #ffffff !important; }
-        .tab-bronze.active { border-color: #8b4513 !important; box-shadow: 0 0 20px rgba(139, 69, 19, 0.4); }
+        .btn-impact {
+            background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
+            color: white;
+            padding: 18px 48px;
+            border-radius: 100px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+        }
+
+        .btn-impact:hover:not(:disabled) {
+            transform: scale(1.03);
+            filter: brightness(1.1);
+        }
+
+        .btn-impact:active:not(:disabled) {
+            transform: scale(0.97);
+        }
 
         .hidden-step { display: none; }
-        .btn-neo { background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%); color: white; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3); font-weight: 700; }
-        .btn-neo:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .quota-table { width: 100%; font-size: 0.8rem; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
-        .quota-table th { background: #f0f9ff; padding: 10px; text-align: left; color: #0369a1; border-bottom: 2px solid #bae6fd; }
-        .quota-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: #475569; }
-        .status-low { color: #ff4d6d !important; font-weight: 900; background: #fff1f2; }
         
-        .btn-back { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); }
-        .btn-back:hover { color: #0ea5e9; background: white; transform: translateX(-3px); }
+        .quota-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
+        .quota-table td { padding: 12px; background: #fff; }
+        .quota-table tr:first-child td:first-child { border-top-left-radius: 8px; }
+        .quota-table tr:last-child td:last-child { border-bottom-right-radius: 8px; }
     </style>
 </head>
-<body>
+<body class="antialiased">
     <div id="sakura-container"></div>
 
-    <div class="max-w-4xl mx-auto relative z-10 pb-10">
-        <header class="text-center">
-            <div class="promotion-banner-container">
-                <div class="grand-prize-banner">
-                    <div class="prize-icon-circle">💎</div>
-                    <div class="prize-text-container">
-                        <span class="prize-label">終極大獎 有機會贏取</span>
-                        <div class="prize-main-row">
-                            <span class="prize-main-title">Ultherapy 療程一次</span>
-                            <span class="prize-value-tag"><span class="small-label">價值</span> $32,888</span>
-                        </div>
-                    </div>
-                </div>
-                <img src="https://image2url.com/r2/default/images/1772197034322-b5062db0-1c7c-4337-a113-a1e0f9b526ff.jpeg" class="promotion-banner-img" alt="Banner">
+    <!-- Banner Section -->
+    <section class="banner-wrapper">
+        <div class="prize-badge">
+            <div class="prize-badge-icon">💎</div>
+            <div class="prize-badge-content">
+                <p class="prize-badge-label">Grand Prize</p>
+                <p class="prize-badge-title">Ultherapy 療程 <span class="prize-badge-val">$32,888</span></p>
             </div>
-            <div class="px-4 mb-6">
-                <h1 class="text-5xl md:text-7xl neo-gradient-text mb-4 tracking-tight">春日美肌綻放大抽獎</h1>
-                <p class="text-sky-700 font-bold text-lg md:text-xl">推廣期：即日至 2026年3月31日</p>
-            </div>
+        </div>
+        <img src="https://image2url.com/r2/default/images/1772197034322-b5062db0-1c7c-4337-a113-a1e0f9b526ff.jpeg" class="banner-img" alt="NeoDerm Spring Beauty">
+    </section>
+
+    <div class="max-w-4xl mx-auto px-4 py-8 relative z-10">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-6xl neo-gradient-text mb-4">春日美肌綻放大抽獎</h1>
+            <p class="text-sky-800 font-bold bg-sky-100/50 inline-block px-4 py-1 rounded-full text-sm">推廣期：即日至 2026年3月31日</p>
         </header>
 
         <!-- STEP 1: POOL SELECTION -->
-        <div id="step-eligibility" class="glass-panel p-6 md:p-8 max-w-4xl mx-auto mb-8 mx-4">
-            <h2 class="text-lg font-bold mb-6 text-center text-slate-700 text-shadow-sm">請選擇客戶對應彩池:</h2>
+        <div id="step-eligibility" class="glass-card p-6 md:p-10 mb-8">
+            <div class="text-center mb-8">
+                <h2 class="text-xl font-extrabold text-slate-800">請選擇您的消費彩池</h2>
+                <p class="text-slate-500 text-sm">根據您的發票總額選擇對應組別</p>
+            </div>
             
-            <!-- ROW 1: Spending Pools -->
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-3 md:p-4 rounded-2xl shadow-md">
-                    <span class="font-bold text-xs md:text-sm text-center">✨ 春日金池</span>
-                    <span class="text-[8px] md:text-[10px] font-bold opacity-80">>= $50K</span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-6 rounded-3xl flex flex-col items-center gap-2">
+                    <span class="text-2xl">✨</span>
+                    <span class="font-black text-lg">春日金池</span>
+                    <span class="text-[10px] font-bold py-1 px-3 bg-white/40 rounded-full">>= $50,000</span>
                 </button>
-                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-3 md:p-4 rounded-2xl active shadow-md">
-                    <span class="font-bold text-xs md:text-sm text-center">🥈 春日銀池</span>
-                    <span class="text-[8px] md:text-[10px] font-bold opacity-80">$30K-49K</span>
+                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-6 rounded-3xl flex flex-col items-center gap-2">
+                    <span class="text-2xl">🥈</span>
+                    <span class="font-black text-lg">春日銀池</span>
+                    <span class="text-[10px] font-bold py-1 px-3 bg-white/40 rounded-full">$30K - $49K</span>
                 </button>
-                <button onclick="selectPool('bronze')" id="tab-bronze" class="pool-tab tab-bronze p-3 md:p-4 rounded-2xl shadow-md">
-                    <span class="font-bold text-xs md:text-sm text-center">🥉 春日銅池</span>
-                    <span class="text-[8px] md:text-[10px] font-bold opacity-80">$15K-29K</span>
+                <button onclick="selectPool('bronze')" id="tab-bronze" class="pool-tab tab-bronze p-6 rounded-3xl flex flex-col items-center gap-2">
+                    <span class="text-2xl">🥉</span>
+                    <span class="font-black text-lg">春日銅池</span>
+                    <span class="text-[10px] font-bold py-1 px-3 bg-white/40 rounded-full">$15K - $29K</span>
                 </button>
             </div>
 
-            <!-- ROW 2: Birthday Pool (Next Row) -->
-            <div class="flex justify-center mb-8">
-                <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-4 rounded-2xl shadow-lg border-2 border-transparent">
-                    <span class="font-bold text-base text-center">🎂 生日彩池</span>
-                    <span class="text-[10px] font-bold opacity-80">2/3/4 月生日特別獎勵</span>
+            <div class="flex justify-center mb-10">
+                <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-6 rounded-3xl flex items-center justify-center gap-4">
+                    <span class="text-3xl">🎂</span>
+                    <div class="text-left">
+                        <span class="font-black text-lg block">生日彩池 特別獎勵</span>
+                        <span class="text-[10px] font-bold opacity-80 uppercase tracking-widest">2 / 3 / 4 月生日專享</span>
+                    </div>
                 </button>
             </div>
 
-            <div class="bg-white/60 p-4 rounded-2xl mb-8 border border-white/80 shadow-inner min-h-[50px] flex items-center justify-center text-center">
-                <p id="pool-description" class="text-slate-600 text-xs font-medium italic">載入中...</p>
+            <div class="bg-white/40 border border-white p-6 rounded-2xl mb-8 text-center">
+                <p id="pool-description" class="text-slate-700 font-medium italic">載入中...</p>
             </div>
-            <button onclick="confirmEntry()" class="w-full py-4 rounded-2xl btn-neo font-bold text-xl uppercase tracking-widest">進入抽獎</button>
+
+            <button onclick="confirmEntry()" class="w-full btn-impact uppercase tracking-widest">進入抽獎</button>
             
-            <button onclick="toggleQuotaDashboard()" class="w-full mt-6 text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-sky-500 transition-colors">
-                📊 獎品配額即時概況 (內部參考)
+            <button onclick="toggleQuotaDashboard()" class="w-full mt-10 text-slate-400 text-[10px] font-bold tracking-widest hover:text-sky-500 transition-colors uppercase">
+                📊 內部配額實時概況
             </button>
             
-            <div id="quota-dashboard" class="hidden mt-4 bg-white/50 rounded-2xl p-4 border border-white/50 overflow-hidden shadow-inner">
-                <div id="quota-auth-section" class="text-center py-2">
-                    <p class="text-[10px] text-slate-500 font-bold mb-3 uppercase">請輸入管理密碼</p>
+            <div id="quota-dashboard" class="hidden mt-6 bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                <div id="quota-auth-section" class="text-center">
+                    <p class="text-[10px] text-slate-400 font-bold mb-4 uppercase">管理權限驗證</p>
                     <div class="flex gap-2 max-w-xs mx-auto">
-                        <input type="password" id="quota-password-input" placeholder="Password" class="flex-1 px-3 py-2 rounded-xl text-sm border-none focus:ring-2 focus:ring-sky-400">
-                        <button onclick="verifyQuotaPassword()" class="bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-bold">驗證</button>
+                        <input type="password" id="quota-password-input" placeholder="密碼" class="flex-1 px-4 py-2 rounded-xl text-sm border-slate-200 focus:ring-2 focus:ring-sky-400 border outline-none">
+                        <button onclick="verifyQuotaPassword()" class="bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold">登入</button>
                     </div>
                 </div>
                 <div id="quota-data-section" class="hidden">
-                    <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-2">
+                    <div class="flex justify-between items-end mb-6">
                         <div>
-                            <h3 class="text-[10px] font-bold text-sky-700 uppercase">剩餘配額 (實時同步)</h3>
-                            <span id="quota-last-updated" class="text-[8px] text-slate-400 font-mono block">--</span>
+                            <h3 class="text-xs font-black text-slate-800 uppercase tracking-tighter">Inventory Status</h3>
+                            <span id="quota-last-updated" class="text-[8px] text-slate-400 font-mono">--</span>
                         </div>
-                        <button onclick="requestResetData()" class="text-[10px] text-rose-400 font-bold hover:underline">⚠️ 重置數據</button>
+                        <button onclick="requestResetData()" class="text-[9px] text-rose-500 font-bold bg-rose-50 px-3 py-1 rounded-lg">清空數據</button>
                     </div>
-                    <div id="quota-content" class="max-h-[350px] overflow-y-auto">
-                        <p class="text-center text-[10px] text-slate-400 py-10 italic">正在獲取雲端數據...</p>
-                    </div>
+                    <div id="quota-content" class="space-y-4"></div>
                 </div>
             </div>
         </div>
 
         <!-- STEP 2: DRAWING -->
-        <div id="step-draw" class="hidden-step text-center py-6 px-4">
-            <div class="flex justify-between items-center mb-6 max-w-xs mx-auto">
-                <button id="btn-draw-back" onclick="goBackToSelection()" class="btn-back"><span>⬅</span> 返回重選</button>
-                <div id="pool-badge" class="inline-block px-4 py-1 rounded-full border border-sky-200 bg-white/80 text-sky-600 text-[10px] font-bold uppercase shadow-sm">組別</div>
+        <div id="step-draw" class="hidden-step text-center py-10">
+            <div class="flex justify-between items-center mb-10">
+                <button id="btn-draw-back" onclick="goBackToSelection()" class="btn-back">⬅ 返回彩池</button>
+                <div id="pool-badge" class="px-6 py-2 rounded-full bg-sky-600 text-white text-[10px] font-black uppercase shadow-lg">組別</div>
             </div>
-            <h2 class="text-2xl font-bold mb-8 text-slate-800">請按按鈕進行抽獎</h2>
-            <div class="gacha-container" id="gacha-machine">
+            
+            <div class="gacha-container mb-12" id="gacha-machine">
                 <div class="gacha-glass"><div class="gacha-balls-container" id="balls-container"></div></div>
-                <div class="gacha-base"><div class="gacha-knob-area"><div class="gacha-knob" onclick="spinGacha()"></div></div><div class="gacha-slot"></div></div>
+                <div class="gacha-base">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <div class="gacha-knob" onclick="spinGacha()">💮</div>
+                    </div>
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-12 bg-slate-900/40 rounded-lg shadow-inner"></div>
+                </div>
                 <div id="dropped-ball" class="dropped-ball"></div>
             </div>
-            <button id="spin-btn" onclick="spinGacha()" class="mt-10 px-16 py-4 rounded-full btn-neo font-bold text-2xl animate-pulse shadow-xl">立即抽獎</button>
+            
+            <button id="spin-btn" onclick="spinGacha()" class="btn-impact animate-bounce">轉動抽獎</button>
         </div>
 
         <!-- RESULT MODAL -->
-        <div id="result-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 z-50 hidden overflow-y-auto">
-            <div class="glass-panel p-6 max-w-md w-full border-white shadow-2xl">
-                <div class="text-center mb-6">
-                    <div class="text-5xl mb-2">🌸</div>
-                    <h3 class="text-[10px] text-sky-500 font-bold uppercase mb-1">恭喜您！中獎項目</h3>
-                    <p class="text-xl font-bold text-slate-800" id="prize-text">獎品</p>
-                </div>
-                <div class="space-y-3 mb-6">
-                    <div class="bg-slate-50 p-3 rounded-xl text-center border border-slate-100"><span id="draw-time-display" class="font-mono text-xs text-slate-500">--</span></div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="input-mmc" oninput="checkFormValidity()" placeholder="MMC 客戶編號" class="w-full px-3 py-3 rounded-xl text-sm border">
-                        <input type="text" id="input-invoice" oninput="checkFormValidity()" placeholder="Invoice 編號" class="w-full px-3 py-3 rounded-xl text-sm border">
+        <div id="result-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 z-50 hidden">
+            <div class="glass-card p-8 max-w-md w-full text-center">
+                <div class="text-6xl mb-6">✨</div>
+                <h3 class="text-xs text-sky-600 font-black uppercase mb-2 tracking-widest">🎉 恭喜您獲得</h3>
+                <p class="text-2xl font-black text-slate-800 mb-8" id="prize-text">獎品</p>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="text-[10px] font-mono text-slate-400" id="draw-time-display">--</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="input-mmc" oninput="checkFormValidity()" placeholder="MMC No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none">
+                        <input type="text" id="input-invoice" oninput="checkFormValidity()" placeholder="Inv No." class="px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none">
                     </div>
-                    <select id="input-cse" onchange="checkFormValidity()" class="w-full px-3 py-3 rounded-xl text-sm cursor-pointer border bg-white">
+                    <select id="input-cse" onchange="checkFormValidity()" class="w-full px-4 py-3 rounded-xl text-sm border bg-slate-50 border-slate-200 outline-none">
                         <option value="">負責同事 (CSE)...</option>
-                        <option value="miko.ngan">miko.ngan</option>
-                        <option value="karykwong">karykwong</option>
-                        <option value="angel.leungsl">angel.leungsl</option>
-                        <option value="Helen.hui">Helen.hui</option>
-                        <option value="sammi.ng">sammi.ng</option>
-                        <option value="rania.lam">rania.lam</option>
-                        <option value="winslee.hui">winslee.hui</option>
-                        <option value="angela.chanhs">angela.chanhs</option>
-                        <option value="aislin.hui">aislin.hui</option>
-                        <option value="niki.ng">niki.ng</option>
-                        <option value="yannux.man">yannux.man</option>
-                        <option value="crystal.chanhy">crystal.chanhy</option>
-                        <option value="rebecca.lam">rebecca.lam</option>
-                        <option value="zoe.sohy">zoe.sohy</option>
-                        <option value="joanne.chancy">joanne.chancy</option>
-                        <option value="karena.leung.wt">karena.leung.wt</option>
-                        <option value="miko.chen">miko.chen</option>
-                        <option value="abbie.wong.kn">abbie.wong.kn</option>
-                        <option value="michelle.choi">michelle.choi</option>
-                        <option value="miki.wong">miki.wong</option>
-                        <option value="Chrissie.wong">Chrissie.wong</option>
-                        <option value="fanky.lam">fanky.lam</option>
-                        <option value="milky.chong">milky.chong</option>
-                        <option value="winnie.mowy">winnie.mowy</option>
-                        <option value="ebbie.tam">ebbie.tam</option>
-                        <option value="sharon.chu">sharon.chu</option>
-                        <option value="wing.Chau">wing.Chau</option>
-                        <option value="Angela.ChanHY">Angela.ChanHY</option>
-                        <option value="Daisy.Wong">Daisy.Wong</option>
-                        <option value="yandy.lee">yandy.lee</option>
+                        <option value="miko.ngan">miko.ngan</option><option value="karykwong">karykwong</option><option value="angel.leungsl">angel.leungsl</option><option value="Helen.hui">Helen.hui</option><option value="sammi.ng">sammi.ng</option><option value="rania.lam">rania.lam</option><option value="winslee.hui">winslee.hui</option><option value="angela.chanhs">angela.chanhs</option><option value="aislin.hui">aislin.hui</option><option value="niki.ng">niki.ng</option><option value="yannux.man">yannux.man</option><option value="crystal.chanhy">crystal.chanhy</option><option value="rebecca.lam">rebecca.lam</option><option value="zoe.sohy">zoe.sohy</option><option value="joanne.chancy">joanne.chancy</option><option value="karena.leung.wt">karena.leung.wt</option><option value="miko.chen">miko.chen</option><option value="abbie.wong.kn">abbie.wong.kn</option><option value="michelle.choi">michelle.choi</option><option value="miki.wong">miki.wong</option><option value="Chrissie.wong">Chrissie.wong</option><option value="fanky.lam">fanky.lam</option><option value="milky.chong">milky.chong</option><option value="winnie.mowy">winnie.mowy</option><option value="ebbie.tam">ebbie.tam</option><option value="sharon.chu">sharon.chu</option><option value="wing.Chau">wing.Chau</option><option value="Angela.ChanHY">Angela.ChanHY</option><option value="Daisy.Wong">Daisy.Wong</option><option value="yandy.lee">yandy.lee</option>
                     </select>
                 </div>
-                <div id="submit-status" class="text-center text-xs mb-4 hidden font-bold text-emerald-600"></div>
-                <button id="submit-record-btn" onclick="submitDrawRecord()" class="w-full py-4 btn-neo rounded-2xl font-bold shadow-lg uppercase">提交存檔</button>
-                <button id="btn-back-to-start" onclick="resetApp()" style="display: none;" class="w-full mt-4 py-1 text-slate-400 hover:text-rose-500 text-[10px] font-bold">返回重新開始</button>
+                
+                <div id="submit-status" class="text-xs mb-4 hidden font-bold text-emerald-600"></div>
+                <button id="submit-record-btn" onclick="submitDrawRecord()" class="w-full btn-impact py-4 rounded-2xl">提交領取</button>
             </div>
         </div>
 
-        <!-- RESET CONFIRM -->
-        <div id="reset-confirm-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[100] flex items-center justify-center p-6">
+        <!-- RESET MODAL -->
+        <div id="reset-confirm-modal" class="hidden fixed inset-0 bg-slate-900/90 z-[100] flex items-center justify-center p-6">
             <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-                <div class="text-4xl mb-4">🚨</div>
-                <h4 class="text-xl font-bold text-slate-800 mb-2">確認重置數據？</h4>
-                <p class="text-sm text-slate-500 mb-4 leading-relaxed">將永久刪除雲端所有紀錄。輸入 <span class="text-rose-500 font-bold">RESET</span> 以確認。</p>
-                <div class="mb-4">
-                    <input type="text" id="reset-type-input" oninput="validateDoubleConfirm()" placeholder="RESET" class="w-full px-4 py-3 rounded-xl border-2 text-center font-bold outline-none transition-all">
-                </div>
+                <h4 class="text-xl font-bold mb-4">重置所有紀錄？</h4>
+                <p class="text-sm text-slate-500 mb-6 italic">請輸入 "RESET" 並按下確認。</p>
+                <input type="text" id="reset-type-input" oninput="validateDoubleConfirm()" placeholder="RESET" class="w-full px-4 py-3 rounded-xl border-2 text-center font-bold mb-4 outline-none">
                 <div id="reset-error-msg" class="text-rose-500 text-[10px] font-bold mb-4 hidden"></div>
-                <div class="flex flex-col gap-2">
-                    <button id="final-reset-btn" onclick="executeDataReset()" disabled class="w-full py-4 bg-slate-200 text-slate-400 font-bold rounded-xl transition-all cursor-not-allowed">確認重置數據</button>
-                    <button onclick="closeResetModal()" class="w-full py-2 text-slate-400 font-bold">取消</button>
+                <div class="space-y-2">
+                    <button id="final-reset-btn" onclick="executeDataReset()" disabled class="w-full py-4 bg-slate-200 text-slate-400 font-bold rounded-xl cursor-not-allowed">確認重置</button>
+                    <button onclick="closeResetModal()" class="w-full py-2 text-slate-400 font-bold">返回</button>
                 </div>
             </div>
         </div>
@@ -348,17 +353,16 @@
         let app, auth, db, user = null, lastPrize = "", selectedKey = 'silver', currentPool = null, spinning = false, isQuotaUnlocked = false, quotaUnsubscribe = null;
 
         const pools = {
-            gold: { id: 'gold', name: "春日金池 (Premium)", prizes: [{ name: "Ulthera Prime Face", count: 1 }, { name: "High Pexo Face", count: 3 }, { name: "PN+", count: 5 }, { name: "Pico Face", count: 7 }, { name: "VT Face", count: 20 }, { name: "BBL Face", count: 20 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 210 }], description: "適用於消費金額達 $50,000 或以上之客戶。" },
-            silver: { id: 'silver', name: "春日銀池 (Elite)", prizes: [{ name: "Pico Face", count: 3 }, { name: "VT Face", count: 30 }, { name: "BBL Face", count: 30 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 440 }], description: "適用於消費金額介乎 $30,000 至 $49,999 之客戶。" },
-            bronze: { id: 'bronze', name: "春日銅池 (Standard)", prizes: [{ name: "VT Face", count: 50 }, { name: "BBL Face", count: 50 }, { name: "Transkin M w/o Mask", count: 500 }, { name: "隨機精選醫美產品", count: 700 }], description: "適用於消費金額介乎 $15,000 至 $29,999 之客戶。" },
+            gold: { id: 'gold', name: "春日金池 (Premium)", prizes: [{ name: "Ulthera Prime Face", count: 1 }, { name: "High Pexo Face", count: 3 }, { name: "PN+", count: 5 }, { name: "Pico Face", count: 7 }, { name: "VT Face", count: 20 }, { name: "BBL Face", count: 20 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 210 }], description: "消費金額達 $50,000 或以上。" },
+            silver: { id: 'silver', name: "春日銀池 (Elite)", prizes: [{ name: "Pico Face", count: 3 }, { name: "VT Face", count: 30 }, { name: "BBL Face", count: 30 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 440 }], description: "消費金額介乎 $30,000 至 $49,999。" },
+            bronze: { id: 'bronze', name: "春日銅池 (Standard)", prizes: [{ name: "VT Face", count: 50 }, { name: "BBL Face", count: 50 }, { name: "Transkin M w/o Mask", count: 500 }, { name: "隨機精選醫美產品", count: 700 }], description: "消費金額介乎 $15,000 至 $29,999。" },
             birthday: { id: 'birthday', name: "生日彩池 (Special)", prizes: [{ name: "$1,000療程卷 (折實滿$14,000)", count: 500 }, { name: "$800療程卷 (折實滿$12,000)", count: 500 }, { name: "$500療程卷 (折實滿$8,000)", count: 500 }], description: "適用於 2、3、4 月份生日之客戶。" }
         };
 
         window.selectPool = (key) => {
             selectedKey = key;
             document.querySelectorAll('.pool-tab').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById(`tab-${key}`);
-            if(btn) btn.classList.add('active');
+            document.getElementById(`tab-${key}`).classList.add('active');
             document.getElementById('pool-description').innerText = pools[key].description;
         };
         window.selectPool('silver');
@@ -378,13 +382,12 @@
 
         window.checkFormValidity = () => {
             const valid = document.getElementById('input-mmc').value.trim() && document.getElementById('input-invoice').value.trim() && document.getElementById('input-cse').value;
-            const btn = document.getElementById('btn-back-to-start');
-            if(btn) btn.style.display = valid ? "block" : "none";
+            const btn = document.getElementById('submit-record-btn');
+            btn.style.opacity = valid ? "1" : "0.5";
         };
 
         window.toggleQuotaDashboard = () => {
             document.getElementById('quota-dashboard').classList.toggle('hidden');
-            if (!document.getElementById('quota-dashboard').classList.contains('hidden') && isQuotaUnlocked) startQuotaListener();
         };
 
         window.verifyQuotaPassword = () => {
@@ -411,27 +414,22 @@
 
                     let html = "";
                     for (const pk in pools) {
-                        html += `<div class="mb-6 text-left"><h4 class="text-[11px] font-extrabold text-sky-600 mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>${pools[pk].name}</h4><table class="quota-table"><thead><tr><th>獎品</th><th>剩餘/總數</th></tr></thead><tbody>`;
+                        html += `<div class="mb-6"><h4 class="text-[10px] font-black text-slate-900 mb-2 uppercase tracking-wider">${pools[pk].name}</h4><table class="quota-table"><tbody>`;
                         pools[pk].prizes.forEach(p => {
                             const winCount = wins[p.name.trim()] || 0;
                             const rem = p.count - winCount;
-                            html += `<tr><td>${p.name}</td><td class="${rem <= (p.count * 0.1) ? 'status-low' : ''}">${rem} / ${p.count}</td></tr>`;
+                            html += `<tr class="text-[10px]"><td class="font-medium">${p.name}</td><td class="text-right font-mono ${rem <= (p.count * 0.1) ? 'text-rose-500 font-bold' : 'text-slate-400'}">${rem} / ${p.count}</td></tr>`;
                         });
                         html += `</tbody></table></div>`;
                     }
                     document.getElementById('quota-content').innerHTML = html;
-                    document.getElementById('quota-last-updated').innerText = "最後同步: " + new Date().toLocaleTimeString();
-                },
-                error => {
-                    document.getElementById('quota-content').innerHTML = `<p class="text-center text-[10px] text-rose-500 py-10 font-bold uppercase tracking-widest">數據庫連接失敗: ${error.code}</p>`;
+                    document.getElementById('quota-last-updated').innerText = "LIVE: " + new Date().toLocaleTimeString();
                 }
             );
         }
 
         window.requestResetData = () => { 
             document.getElementById('reset-type-input').value = ""; 
-            document.getElementById('reset-error-msg').classList.add('hidden');
-            validateDoubleConfirm(); 
             document.getElementById('reset-confirm-modal').classList.remove('hidden'); 
         };
         window.closeResetModal = () => document.getElementById('reset-confirm-modal').classList.add('hidden');
@@ -442,46 +440,14 @@
         };
 
         window.executeDataReset = async () => {
-            if (!db) return;
-            if (!user) {
-                document.getElementById('reset-error-msg').innerText = "❌ 未登錄，請刷新頁面重試";
-                document.getElementById('reset-error-msg').classList.remove('hidden');
-                return;
-            }
-
-            const b = document.getElementById('final-reset-btn'); 
-            const errorEl = document.getElementById('reset-error-msg');
-            b.disabled = true; b.innerText = "清除中...";
-            errorEl.classList.add('hidden');
-
+            if (!db || !user) return;
+            const b = document.getElementById('final-reset-btn'); b.disabled = true; b.innerText = "...";
             try {
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'draw_records');
-                const snap = await getDocs(colRef);
-                
-                if (snap.empty) {
-                    b.innerText = "完成 (無數據)";
-                    setTimeout(closeResetModal, 1000);
-                    return;
-                }
-
-                const ps = []; 
-                snap.forEach(d => {
-                    ps.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id)));
-                });
-                
-                await Promise.all(ps); 
-                b.innerText = "重置成功！";
-                setTimeout(() => {
-                    closeResetModal();
-                    b.innerText = "確認重置數據";
-                }, 1500);
-            } catch (e) { 
-                console.error("Reset Error:", e);
-                b.disabled = false; 
-                b.innerText = "重試"; 
-                errorEl.innerText = `❌ 錯誤: ${e.code || "連線失敗"}`;
-                errorEl.classList.remove('hidden');
-            }
+                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'));
+                const ps = []; snap.forEach(d => ps.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id))));
+                await Promise.all(ps); closeResetModal();
+                b.innerText = "確認重置";
+            } catch (e) { b.disabled = false; b.innerText = "錯誤"; }
         };
 
         window.confirmEntry = () => {
@@ -497,12 +463,11 @@
         function setupGacha() {
             const container = document.getElementById('balls-container'); container.innerHTML = "";
             const colors = ['#fb7185', '#0ea5e9', '#ffffff', '#fbbf24', '#f472b6', '#7dd3fc'];
-            for(let i=0; i<20; i++) {
+            for(let i=0; i<15; i++) {
                 const ball = document.createElement('div'); ball.className = 'gacha-ball';
-                ball.style.left = 15 + Math.random()*220 + 'px';
-                ball.style.top = 60 + Math.random()*150 + 'px';
-                ball.style.background = `radial-gradient(circle at 30% 30%, ${colors[i%colors.length]}, #0002)`;
-                ball.style.zIndex = Math.floor(Math.random()*10);
+                ball.style.left = 15 + Math.random()*200 + 'px';
+                ball.style.top = 50 + Math.random()*150 + 'px';
+                ball.style.background = `radial-gradient(circle at 30% 30%, ${colors[i%colors.length]}, #0001)`;
                 container.appendChild(ball);
             }
         }
@@ -519,7 +484,7 @@
 
             document.getElementById('gacha-machine').classList.add('shaking');
             const j = setInterval(() => {
-                document.querySelectorAll('.gacha-ball').forEach(bl => bl.style.transform = `translate(${(Math.random()-0.5)*35}px, ${(Math.random()-0.5)*35}px)`);
+                document.querySelectorAll('.gacha-ball').forEach(bl => bl.style.transform = `translate(${(Math.random()-0.5)*30}px, ${(Math.random()-0.5)*30}px)`);
             }, 80);
             
             setTimeout(() => {
@@ -531,18 +496,18 @@
                     document.getElementById('result-modal').classList.remove('hidden');
                     checkFormValidity(); spinning = false; bb.style.visibility = 'visible';
                 }, 1100);
-            }, 3000);
+            }, 2500);
         };
 
         window.submitDrawRecord = async () => {
             const mmc = document.getElementById('input-mmc').value.trim(), inv = document.getElementById('input-invoice').value.trim(), cse = document.getElementById('input-cse').value;
             if (!mmc || !inv || !cse) return;
-            const sb = document.getElementById('submit-record-btn'); sb.disabled = true; sb.innerText = "儲存中...";
+            const sb = document.getElementById('submit-record-btn'); sb.disabled = true; sb.innerText = "Processing...";
             const d = { mmc, invoice_no: inv, cse, prize: lastPrize, pool: currentPool.name, date_display: new Date().toLocaleString('zh-HK') };
             try {
                 if (scriptURL) await fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) });
                 if (db && user) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), { ...d, timestamp: serverTimestamp() });
-                document.getElementById('submit-status').innerText = "✅ 提交成功！資料已同步。"; 
+                document.getElementById('submit-status').innerText = "SUCCESS! RECORD SYNCED."; 
                 document.getElementById('submit-status').classList.remove('hidden');
                 setTimeout(resetApp, 1500);
             } catch (e) { setTimeout(resetApp, 1500); }
@@ -556,14 +521,15 @@
             document.getElementById('submit-status').classList.add('hidden');
             document.getElementById('spin-btn').disabled = false; document.getElementById('spin-btn').style.opacity = '1';
             document.getElementById('dropped-ball').style.display = 'none';
+            document.getElementById('submit-record-btn').innerText = "提交領取";
         };
 
         const sc = document.getElementById('sakura-container');
-        for (let i = 0; i < 35; i++) {
+        for (let i = 0; i < 25; i++) {
             const p = document.createElement('div'); p.className = 'petal';
-            const sz = Math.random() * 12 + 8 + 'px'; p.style.width = sz; p.style.height = sz;
+            const sz = Math.random() * 10 + 6 + 'px'; p.style.width = sz; p.style.height = sz;
             p.style.left = Math.random() * 100 + 'vw'; p.style.top = '-20px';
-            p.style.animationDuration = Math.random() * 5 + 5 + 's'; p.style.animationDelay = Math.random() * 10 + 's';
+            p.style.animationDuration = Math.random() * 5 + 4 + 's'; p.style.animationDelay = Math.random() * 5 + 's';
             sc.appendChild(p);
         }
     </script>
