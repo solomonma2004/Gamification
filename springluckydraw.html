@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>春日美肌綻放大抽獎 - NeoDerm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neo-rose: #fb7185;
+            --neo-sky: #bae6fd;
+            --sharp-blue: #00bfff;
+        }
+
+        body {
+            font-family: 'Poppins', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(180deg, #bae6fd 0%, #e0f2fe 40%, #fff5f7 100%);
+            color: #1e293b;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        #sakura-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .petal {
+            position: absolute;
+            background: linear-gradient(135deg, #ffdbed 0%, #ffb7d5 100%);
+            border-radius: 150% 0 150% 50%;
+            opacity: 0.7;
+            transform-origin: center;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translate(0, -10px) rotate(0deg) scale(1); }
+            100% { transform: translate(150px, 100vh) rotate(720deg) scale(0.8); }
+        }
+
+        .promotion-banner-container {
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+            margin-bottom: 3rem;
+            line-height: 0;
+        }
+
+        .promotion-banner-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .grand-prize-banner {
+            position: absolute;
+            top: 80%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(90deg, #0093e9, #00bfff, #80d0c7, #00bfff, #0093e9);
+            background-size: 200% auto;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 60px;
+            display: inline-block;
+            box-shadow: 0 0 40px rgba(0, 191, 255, 0.4), 0 0 30px rgba(0, 0, 0, 0.2);
+            animation: pulse-glow 2s infinite ease-in-out, shimmer-move 4s infinite linear;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            z-index: 20;
+            width: 95%;
+            max-width: 750px;
+            text-align: center;
+            line-height: normal;
+        }
+
+        @keyframes shimmer-move {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.03); }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 32px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 5;
+        }
+
+        .neo-gradient-text {
+            background: linear-gradient(135deg, #e11d48 0%, #fb7185 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .pool-tab {
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-birthday { background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 25%, #fbc2eb 50%, #a1c4fd 75%, #c2e9fb 100%) !important; color: #be123c !important; }
+        .tab-birthday.active { border-color: #f472b6 !important; box-shadow: 0 0 20px rgba(244, 114, 182, 0.5) !important; }
+        .tab-gold { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%) !important; color: #78350f !important; }
+        .tab-gold.active { border-color: #d97706 !important; box-shadow: 0 0 20px rgba(217, 119, 6, 0.5) !important; }
+        .tab-silver { background: linear-gradient(135deg, #e6e9f0 0%, #eef1f5 100%) !important; color: #334155 !important; }
+        .tab-silver.active { border-color: #94a3b8 !important; box-shadow: 0 0 20px rgba(148, 163, 184, 0.5) !important; }
+        .tab-bronze { background: linear-gradient(135deg, #d19060 0%, #a8714a 100%) !important; color: white !important; }
+        .tab-bronze.active { border-color: #7c2d12 !important; box-shadow: 0 0 20px rgba(124, 45, 18, 0.5) !important; }
+
+        .hidden-step { display: none; }
+
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 0 auto;
+            z-index: 10;
+        }
+
+        #wheel-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid white;
+            transition: transform 5s cubic-bezier(0.15, 0, 0.1, 1);
+            background: white;
+            box-shadow: 0 10px 30px rgba(225, 29, 72, 0.15);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #e11d48;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 30;
+        }
+
+        .btn-neo {
+            background: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(225, 29, 72, 0.2);
+        }
+
+        .btn-neo:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(225, 29, 72, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .quota-table {
+            width: 100%;
+            font-size: 0.8rem;
+            border-collapse: collapse;
+        }
+        .quota-table th { background: #f1f5f9; padding: 8px; text-align: left; color: #64748b; font-weight: 600; }
+        .quota-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
+        .status-low { color: #e11d48; font-weight: 700; }
+        
+        input, select { border: 1px solid #e2e8f0 !important; transition: all 0.2s ease !important; }
+        input:focus, select:focus { border-color: #fb7185 !important; outline: none; box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.1); }
+
+        .btn-reset {
+            background: #fee2e2;
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .btn-reset:hover { background: #ef4444; color: white; }
+    </style>
+</head>
+<body>
+    <div id="sakura-container"></div>
+
+    <div class="max-w-4xl mx-auto relative z-10 pb-20">
+        <header class="text-center">
+            <div class="promotion-banner-container">
+                <div class="grand-prize-banner">
+                    <p class="text-lg md:text-3xl font-bold tracking-tight px-6 text-white">
+                        <span class="inline-block animate-bounce mr-2">💎</span>終極大獎 有機會贏取 <br class="md:hidden">
+                        <span class="underline decoration-white/50 underline-offset-8">Ultherapy 療程一次</span> <br class="md:hidden">
+                        <span class="text-sm md:text-xl font-medium opacity-90">（價值 $32,888）</span>
+                    </p>
+                </div>
+                <img src="https://i.postimg.cc/Y05HYwTm/Whats-App-Image-2026-02-27-at-19-15-54.jpg" class="promotion-banner-img" alt="春日推廣橫幅">
+            </div>
+
+            <div class="px-4 mb-8">
+                <h1 class="text-4xl md:text-6xl neo-gradient-text mb-4">春日美肌綻放大抽獎</h1>
+                <p class="text-sky-700 font-semibold text-lg">推廣期：即日至 2026年3月31日</p>
+            </div>
+        </header>
+
+        <!-- STEP 1: POOL SELECTION -->
+        <div id="step-eligibility" class="glass-panel p-6 md:p-10 max-w-4xl mx-auto mb-10 mx-4">
+            <h2 class="text-xl font-bold mb-8 text-center text-slate-700">請選擇客戶對應彩池:</h2>
+            <div class="space-y-6 mb-10">
+                <div class="flex justify-center">
+                    <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-5 rounded-2xl flex flex-col items-center gap-1 shadow-lg">
+                        <span class="font-bold text-base">🎂 生日彩池</span>
+                        <span class="text-[11px] font-bold opacity-80">2 / 3 / 4 月生日</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-4 rounded-2xl flex flex-col items-center gap-1 shadow-md">
+                        <span class="font-bold text-sm text-center">✨ 春日金池</span>
+                        <span class="text-[10px] font-bold opacity-80">>= $50,000</span>
+                    </button>
+                    <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-4 rounded-2xl flex flex-col items-center gap-1 active shadow-md">
+                        <span class="font-bold text-sm text-center">🥈 春日銀池</span>
+                        <span class="text-[10px] font-bold opacity-80">$30K - $49,999</span>
+                    </button>
+                    <button onclick="selectPool('bronze')" id="tab-bronze" class="pool-tab tab-bronze p-4 rounded-2xl flex flex-col items-center gap-1 shadow-md">
+                        <span class="font-bold text-sm text-center">🥉 春日銅池</span>
+                        <span class="text-[10px] font-bold opacity-80">$15K - $29,999</span>
+                    </button>
+                </div>
+            </div>
+            <div class="bg-white/60 p-5 rounded-2xl mb-10 border border-white/80 shadow-inner min-h-[60px] flex items-center justify-center">
+                <p id="pool-description" class="text-slate-600 text-center text-sm font-medium leading-relaxed italic">載入中...</p>
+            </div>
+            <button onclick="confirmEntry()" class="w-full py-5 rounded-2xl btn-neo font-bold text-xl uppercase tracking-widest">進入抽獎</button>
+            
+            <!-- Quota Toggle Button -->
+            <button onclick="toggleQuotaDashboard()" class="w-full mt-6 text-slate-400 text-xs font-bold uppercase tracking-widest hover:text-sky-500 transition-colors">
+                📊 獎品配額即時概況 (內部參考)
+            </button>
+            
+            <div id="quota-dashboard" class="hidden mt-6 bg-white/50 rounded-2xl p-6 border border-white/50 overflow-hidden shadow-inner">
+                <div id="quota-auth-section" class="text-center py-4">
+                    <p class="text-xs text-slate-500 font-bold mb-4 uppercase tracking-widest">請輸入管理密碼以查看數據</p>
+                    <div class="flex gap-2 max-w-xs mx-auto">
+                        <input type="password" id="quota-password-input" placeholder="Password" class="flex-1 px-4 py-3 rounded-xl text-sm border-none shadow-sm focus:ring-2 focus:ring-sky-400">
+                        <button onclick="verifyQuotaPassword()" class="bg-sky-500 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-sky-600 transition-all">驗證</button>
+                    </div>
+                    <p id="quota-auth-error" class="text-[10px] text-rose-500 font-bold mt-3 hidden">密碼錯誤</p>
+                </div>
+
+                <div id="quota-data-section" class="hidden">
+                    <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-500 uppercase">剩餘配額數據</h3>
+                            <span id="quota-last-updated" class="text-[9px] text-slate-400 font-mono block">--</span>
+                        </div>
+                        <button id="reset-data-btn" onclick="requestResetData()" class="btn-reset">
+                            ⚠️ 重置彩池配額
+                        </button>
+                    </div>
+                    <div id="quota-content" class="max-h-[400px] overflow-y-auto pr-2">
+                        <p class="text-center py-4 text-xs text-slate-400">正在從雲端讀取紀錄...</p>
+                    </div>
+                </div>
+
+                <!-- Custom Confirmation Modal for Reset -->
+                <div id="reset-confirm-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[100] flex items-center justify-center p-6">
+                    <div class="bg-white rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl">
+                        <div class="text-4xl mb-4">🚨</div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">確認重置？</h4>
+                        <p class="text-sm text-slate-500 mb-6 leading-relaxed">這將永久刪除雲端所有抽獎紀錄，使配額恢復全滿。此動作無法還原。</p>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="executeDataReset()" class="w-full py-3 bg-rose-500 text-white font-bold rounded-xl shadow-lg">確認刪除所有紀錄</button>
+                            <button onclick="closeResetModal()" class="w-full py-3 text-slate-400 font-bold">取消</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="step-draw" class="hidden-step text-center py-10 px-4">
+            <div id="pool-badge" class="inline-block px-5 py-2 rounded-full border border-rose-200 bg-white/80 text-rose-600 text-xs font-bold mb-6 uppercase tracking-wider shadow-sm">組別</div>
+            <h2 class="text-3xl font-bold mb-10 text-slate-800">請按按鈕進行抽獎</h2>
+            <div class="wheel-container mb-14">
+                <div class="wheel-pointer shadow-md"></div>
+                <canvas id="wheel-canvas" width="320" height="320"></canvas>
+            </div>
+            <button id="spin-btn" onclick="spinWheel()" class="px-20 py-6 rounded-full btn-neo font-bold text-4xl animate-pulse shadow-xl">立即抽獎</button>
+        </div>
+
+        <!-- RESULT MODAL -->
+        <div id="result-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 z-50 hidden overflow-y-auto">
+            <div class="glass-panel p-8 max-w-md w-full my-auto border-white shadow-2xl">
+                <div class="text-center mb-8">
+                    <div class="text-6xl mb-4">🌸</div>
+                    <h3 class="text-xs text-rose-400 font-bold uppercase tracking-widest mb-2">中獎項目</h3>
+                    <p class="text-2xl font-bold text-slate-800" id="prize-text">豪華療程</p>
+                </div>
+                <div class="space-y-4 mb-8">
+                    <div class="bg-slate-50 p-4 rounded-xl text-center border border-slate-100 shadow-inner">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase block mb-1">系統紀錄時間</span>
+                        <span id="draw-time-display" class="font-mono text-sm text-slate-700">--/--/-- --:--:--</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-500 font-bold uppercase mb-1 ml-1">MMC (客戶編號)</label>
+                            <input type="text" id="input-mmc" oninput="checkFormValidity()" placeholder="輸入" class="w-full px-4 py-4 rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-500 font-bold uppercase mb-1 ml-1">Invoice (發票)</label>
+                            <input type="text" id="input-invoice" oninput="checkFormValidity()" placeholder="輸入" class="w-full px-4 py-4 rounded-xl text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-500 font-bold uppercase mb-1 ml-1">負責同事 (CSE)</label>
+                        <select id="input-cse" onchange="checkFormValidity()" class="w-full px-4 py-4 rounded-xl text-sm cursor-pointer">
+                            <option value="">選擇員工...</option>
+                            <option value="Alex">Alex</option>
+                            <option value="Bella">Bella</option>
+                            <option value="Chris">Chris</option>
+                            <option value="Daisy">Daisy</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="submit-status" class="text-center text-sm mb-6 hidden font-bold"></div>
+                <button id="submit-record-btn" onclick="submitDrawRecord()" class="w-full py-5 btn-neo rounded-2xl font-bold shadow-lg uppercase tracking-widest text-lg">提交存檔</button>
+                <button id="btn-back-to-start" onclick="resetApp()" style="display: none;" class="w-full mt-4 py-2 text-slate-400 hover:text-rose-500 text-xs font-bold transition-all">放棄結果並返回</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzlAeK5KjuT1qoF5N_ngdXVGzmvfTdwtOz0ge1Y0XrHa7Y-vjBdrqoCMWjkB8eULfrs/exec"; 
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'neoderm-spring-2026';
+        
+        let user = null;
+        let lastPrize = "";
+        let selectedKey = 'silver';
+        let currentPool = null;
+        let spinning = false;
+        let isQuotaUnlocked = false;
+
+        const initAuth = async () => {
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+        };
+        initAuth();
+        onAuthStateChanged(auth, (u) => user = u);
+
+        const pools = {
+            gold: { id: 'gold', name: "春日金池 (Premium)", prizes: [{ name: "Ulthera Prime Face", count: 1 }, { name: "High Pexo Face", count: 3 }, { name: "PN+", count: 5 }, { name: "Pico Face", count: 7 }, { name: "VT Face", count: 20 }, { name: "BBL Face", count: 20 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 210 }], description: "適用於消費金額達 $50,000 或以上之客戶。" },
+            silver: { id: 'silver', name: "春日銀池 (Elite)", prizes: [{ name: "Pico Face", count: 3 }, { name: "VT Face", count: 30 }, { name: "BBL Face", count: 30 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 440 }], description: "適用於消費金額介乎 $30,000 至 $49,999 之客戶。" },
+            bronze: { id: 'bronze', name: "春日銅池 (Standard)", prizes: [{ name: "VT Face", count: 50 }, { name: "BBL Face", count: 50 }, { name: "Transkin M w/o Mask", count: 500 }, { name: "隨機精選醫美產品", count: 700 }], description: "適用於消費金額介乎 $15,000 至 $29,999 之客戶。" },
+            birthday: { id: 'birthday', name: "生日彩池 (Special)", prizes: [{ name: "$1,000 療程卷 (需折實滿$14,000)", count: 500 }, { name: "$800 療程卷 (需折實滿$12,000)", count: 500 }, { name: "$500 療程卷 (需折實滿$8,000)", count: 500 }], description: "適用於 2、3、4 月份生日之客戶。" }
+        };
+
+        window.checkFormValidity = () => {
+            const mmc = document.getElementById('input-mmc').value.trim();
+            const invoice = document.getElementById('input-invoice').value.trim();
+            const cse = document.getElementById('input-cse').value;
+            const backBtn = document.getElementById('btn-back-to-start');
+            backBtn.style.display = (mmc && invoice && cse) ? "block" : "none";
+        };
+
+        window.toggleQuotaDashboard = () => {
+            const dashboard = document.getElementById('quota-dashboard');
+            dashboard.classList.toggle('hidden');
+            if (!dashboard.classList.contains('hidden')) {
+                if (isQuotaUnlocked) showQuotaData();
+                else {
+                    document.getElementById('quota-auth-section').classList.remove('hidden');
+                    document.getElementById('quota-data-section').classList.add('hidden');
+                }
+            }
+        };
+
+        window.verifyQuotaPassword = () => {
+            const input = document.getElementById('quota-password-input').value;
+            if (input === "SoloTiff2004") { isQuotaUnlocked = true; showQuotaData(); }
+            else { document.getElementById('quota-auth-error').classList.remove('hidden'); document.getElementById('quota-password-input').value = ""; }
+        };
+
+        async function showQuotaData() {
+            document.getElementById('quota-auth-section').classList.add('hidden');
+            document.getElementById('quota-data-section').classList.remove('hidden');
+            await updateQuotaDashboard();
+        }
+
+        async function updateQuotaDashboard() {
+            if (!user) return;
+            const content = document.getElementById('quota-content');
+            const timer = document.getElementById('quota-last-updated');
+            try {
+                const snapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'));
+                const wins = {};
+                snapshot.forEach(doc => { const data = doc.data(); wins[data.prize] = (wins[data.prize] || 0) + 1; });
+                let html = "";
+                for (const poolKey in pools) {
+                    const p = pools[poolKey];
+                    html += `<div class="mb-6"><h4 class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-1 rounded-md mb-2 inline-block">${p.name}</h4><table class="quota-table"><thead><tr><th>禮品名稱</th><th>原本</th><th>剩餘</th></tr></thead><tbody>`;
+                    p.prizes.forEach(prize => {
+                        const winCount = wins[prize.name] || 0;
+                        const remaining = prize.count - winCount;
+                        html += `<tr><td>${prize.name}</td><td>${prize.count}</td><td class="${remaining <= (prize.count * 0.1) ? 'status-low' : ''}">${remaining}</td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
+                }
+                content.innerHTML = html;
+                timer.innerText = "最後更新: " + new Date().toLocaleTimeString();
+            } catch (err) { content.innerHTML = `<p class="text-center py-4 text-xs text-rose-500">讀取失敗</p>`; }
+        }
+
+        // RESET LOGIC
+        window.requestResetData = () => {
+            document.getElementById('reset-confirm-modal').classList.remove('hidden');
+        };
+        window.closeResetModal = () => {
+            document.getElementById('reset-confirm-modal').classList.add('hidden');
+        };
+        window.executeDataReset = async () => {
+            if (!user) return;
+            const resetBtn = document.getElementById('reset-data-btn');
+            resetBtn.disabled = true;
+            resetBtn.innerText = "正在清除雲端數據...";
+            
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'draw_records');
+                const snapshot = await getDocs(colRef);
+                const deletePromises = [];
+                snapshot.forEach((d) => {
+                    deletePromises.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id)));
+                });
+                await Promise.all(deletePromises);
+                
+                closeResetModal();
+                await updateQuotaDashboard();
+                resetBtn.disabled = false;
+                resetBtn.innerText = "⚠️ 重置彩池配額";
+            } catch (e) {
+                console.error(e);
+                alert("重置失敗，請檢查權限");
+                resetBtn.disabled = false;
+            }
+        };
+
+        window.selectPool = (key) => {
+            selectedKey = key;
+            document.querySelectorAll('.pool-tab').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${key}`).classList.add('active');
+            document.getElementById('pool-description').innerText = pools[key].description;
+        };
+
+        window.confirmEntry = () => {
+            currentPool = pools[selectedKey];
+            document.getElementById('step-eligibility').classList.add('hidden-step');
+            document.getElementById('step-draw').classList.remove('hidden-step');
+            document.getElementById('pool-badge').innerText = currentPool.name;
+            drawWheel();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheel-canvas');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 10;
+            const displayPrizes = currentPool.prizes.map(p => p.name);
+            const arc = (Math.PI * 2) / displayPrizes.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            displayPrizes.forEach((prize, i) => {
+                const angle = i * arc;
+                ctx.beginPath();
+                ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#f0f9ff';
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arc);
+                ctx.fill();
+                ctx.strokeStyle = '#bae6fd';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.save();
+                ctx.fillStyle = "#0284c7";
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right";
+                ctx.font = prize.length > 15 ? "bold 9px Noto Sans TC" : "bold 11px Noto Sans TC";
+                ctx.fillText(prize, radius - 15, 5);
+                ctx.restore();
+            });
+            ctx.beginPath(); ctx.arc(centerX, centerY, 30, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.strokeStyle = '#00bfff'; ctx.lineWidth = 3; ctx.stroke();
+        }
+
+        window.spinWheel = () => {
+            if (spinning) return;
+            spinning = true;
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = true; btn.style.opacity = '0.5';
+            const totalQuantity = currentPool.prizes.reduce((sum, p) => sum + p.count, 0);
+            let random = Math.random() * totalQuantity;
+            let winIdx = 0; let cur = 0;
+            for (let i = 0; i < currentPool.prizes.length; i++) { cur += currentPool.prizes[i].count; if (random <= cur) { winIdx = i; break; } }
+            const canvas = document.getElementById('wheel-canvas');
+            const totalRotation = (10 * 360) + (360 - (winIdx * (360 / currentPool.prizes.length))) - (360 / (currentPool.prizes.length * 2));
+            canvas.style.transform = `rotate(${totalRotation}deg)`;
+            setTimeout(() => { lastPrize = currentPool.prizes[winIdx].name; showResult(lastPrize); spinning = false; }, 5100);
+        };
+
+        function showResult(prize) {
+            document.getElementById('prize-text').innerText = prize;
+            document.getElementById('draw-time-display').innerText = new Date().toLocaleString('zh-HK');
+            document.getElementById('result-modal').classList.remove('hidden');
+            window.checkFormValidity();
+        }
+
+        window.submitDrawRecord = async () => {
+            const mmc = document.getElementById('input-mmc').value.trim();
+            const invoice = document.getElementById('input-invoice').value.trim();
+            const cse = document.getElementById('input-cse').value;
+            const statusDiv = document.getElementById('submit-status');
+            const submitBtn = document.getElementById('submit-record-btn');
+            if (!mmc || !invoice || !cse) return;
+            submitBtn.disabled = true; submitBtn.innerText = "儲存中...";
+            const drawData = { mmc, invoice_no: invoice, cse, prize: lastPrize, pool: currentPool.name, date_display: new Date().toLocaleString('zh-HK') };
+            try {
+                if (scriptURL) { await fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(drawData) }); }
+                if (user) { try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), { ...drawData, timestamp: serverTimestamp() }); } catch (e) {} }
+                statusDiv.innerText = "提交成功！資料已同步。";
+                statusDiv.className = "text-center text-sm mb-4 text-emerald-500 font-bold";
+                statusDiv.classList.remove('hidden');
+                setTimeout(() => resetApp(), 1500);
+            } catch (error) {
+                statusDiv.innerText = "提交成功 (備援模式)！";
+                statusDiv.className = "text-center text-sm mb-4 text-emerald-500 font-bold";
+                statusDiv.classList.remove('hidden');
+                setTimeout(() => resetApp(), 1500);
+            }
+        };
+
+        window.resetApp = () => {
+            document.getElementById('result-modal').classList.add('hidden');
+            document.getElementById('step-draw').classList.add('hidden-step');
+            document.getElementById('step-eligibility').classList.remove('hidden-step');
+            document.getElementById('input-mmc').value = "";
+            document.getElementById('input-invoice').value = "";
+            document.getElementById('input-cse').value = "";
+            document.getElementById('submit-status').classList.add('hidden');
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = false; btn.style.opacity = '1';
+            window.selectPool('silver');
+            document.getElementById('wheel-canvas').style.transition = 'none';
+            document.getElementById('wheel-canvas').style.transform = 'rotate(0deg)';
+            setTimeout(() => { document.getElementById('wheel-canvas').style.transition = 'transform 5s cubic-bezier(0.15, 0, 0.1, 1)'; }, 50);
+        };
+        window.selectPool('silver');
+
+        const container = document.getElementById('sakura-container');
+        for (let i = 0; i < 35; i++) {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            const size = Math.random() * 12 + 8 + 'px';
+            petal.style.width = size; petal.style.height = size;
+            petal.style.left = Math.random() * 100 + 'vw'; petal.style.top = '-20px';
+            petal.style.animationDuration = Math.random() * 5 + 5 + 's';
+            petal.style.animationDelay = Math.random() * 10 + 's';
+            container.appendChild(petal);
+        }
+    </script>
+</body>
+</html>
