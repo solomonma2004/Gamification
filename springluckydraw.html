@@ -248,11 +248,11 @@
                 </div>
             </div>
             <div class="bg-white/60 p-5 rounded-2xl mb-10 border border-white/80 shadow-inner min-h-[60px] flex items-center justify-center">
-                <p id="pool-description" class="text-slate-600 text-center text-sm font-medium leading-relaxed italic">載入中...</p>
+                <p id="pool-description" class="text-slate-600 text-center text-sm font-medium leading-relaxed italic">準備中...</p>
             </div>
             <button onclick="confirmEntry()" class="w-full py-5 rounded-2xl btn-neo font-bold text-xl uppercase tracking-widest">進入抽獎</button>
             
-            <!-- Quota Toggle Button -->
+            <!-- Quota Tracker -->
             <button onclick="toggleQuotaDashboard()" class="w-full mt-6 text-slate-400 text-xs font-bold uppercase tracking-widest hover:text-sky-500 transition-colors">
                 📊 獎品配額即時概況 (內部參考)
             </button>
@@ -282,7 +282,6 @@
                     </div>
                 </div>
 
-                <!-- Custom Confirmation Modal for Reset -->
                 <div id="reset-confirm-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[100] flex items-center justify-center p-6">
                     <div class="bg-white rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl">
                         <div class="text-4xl mb-4">🚨</div>
@@ -334,10 +333,33 @@
                         <label class="block text-[11px] text-slate-500 font-bold uppercase mb-1 ml-1">負責同事 (CSE)</label>
                         <select id="input-cse" onchange="checkFormValidity()" class="w-full px-4 py-4 rounded-xl text-sm cursor-pointer">
                             <option value="">選擇員工...</option>
-                            <option value="Alex">Alex</option>
-                            <option value="Bella">Bella</option>
-                            <option value="Chris">Chris</option>
-                            <option value="Daisy">Daisy</option>
+                            <option value="Helen.hui">Helen.hui</option>
+                            <option value="sammi.ng">sammi.ng</option>
+                            <option value="rania.lam">rania.lam</option>
+                            <option value="winslee.hui">winslee.hui</option>
+                            <option value="angela.chanhs">angela.chanhs</option>
+                            <option value="aislin.hui">aislin.hui</option>
+                            <option value="niki.ng">niki.ng</option>
+                            <option value="yannux.man">yannux.man</option>
+                            <option value="crystal.chanhy">crystal.chanhy</option>
+                            <option value="rebecca.lam">rebecca.lam</option>
+                            <option value="zoe.sohy">zoe.sohy</option>
+                            <option value="joanne.chancy">joanne.chancy</option>
+                            <option value="karena.leung.wt">karena.leung.wt</option>
+                            <option value="miko.chen">miko.chen</option>
+                            <option value="abbie.wong.kn">abbie.wong.kn</option>
+                            <option value="michelle.choi">michelle.choi</option>
+                            <option value="miki.wong">miki.wong</option>
+                            <option value="Chrissie.wong">Chrissie.wong</option>
+                            <option value="fanky.lam">fanky.lam</option>
+                            <option value="milky.chong">milky.chong</option>
+                            <option value="winnie.mowy">winnie.mowy</option>
+                            <option value="ebbie.tam">ebbie.tam</option>
+                            <option value="sharon.chu">sharon.chu</option>
+                            <option value="wing.Chau">wing.Chau</option>
+                            <option value="Angela.ChanHY">Angela.ChanHY</option>
+                            <option value="Daisy.Wong">Daisy.Wong</option>
+                            <option value="yandy.lee">yandy.lee</option>
                         </select>
                     </div>
                 </div>
@@ -353,13 +375,19 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // --- 設定與變數 ---
         const scriptURL = "https://script.google.com/macros/s/AKfycbzlAeK5KjuT1qoF5N_ngdXVGzmvfTdwtOz0ge1Y0XrHa7Y-vjBdrqoCMWjkB8eULfrs/exec"; 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        
+        /* 如果您想在「本地 HTML」中使用雲端功能，
+           請在此處填入您的 Firebase 設定。
+           否則，本地運行時系統會自動跳過雲端儲存。
+        */
+        const myFirebaseConfig = null; // 格式: { apiKey: "...", authDomain: "...", ... }
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'neoderm-spring-2026';
         
+        let app, auth, db;
         let user = null;
         let lastPrize = "";
         let selectedKey = 'silver';
@@ -367,29 +395,62 @@
         let spinning = false;
         let isQuotaUnlocked = false;
 
-        const initAuth = async () => {
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-        };
-        initAuth();
-        onAuthStateChanged(auth, (u) => user = u);
-
         const pools = {
             gold: { id: 'gold', name: "春日金池 (Premium)", prizes: [{ name: "Ulthera Prime Face", count: 1 }, { name: "High Pexo Face", count: 3 }, { name: "PN+", count: 5 }, { name: "Pico Face", count: 7 }, { name: "VT Face", count: 20 }, { name: "BBL Face", count: 20 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 210 }], description: "適用於消費金額達 $50,000 或以上之客戶。" },
             silver: { id: 'silver', name: "春日銀池 (Elite)", prizes: [{ name: "Pico Face", count: 3 }, { name: "VT Face", count: 30 }, { name: "BBL Face", count: 30 }, { name: "Transkin M w/o Mask", count: 400 }, { name: "隨機精選醫美產品", count: 440 }], description: "適用於消費金額介乎 $30,000 至 $49,999 之客戶。" },
             bronze: { id: 'bronze', name: "春日銅池 (Standard)", prizes: [{ name: "VT Face", count: 50 }, { name: "BBL Face", count: 50 }, { name: "Transkin M w/o Mask", count: 500 }, { name: "隨機精選醫美產品", count: 700 }], description: "適用於消費金額介乎 $15,000 至 $29,999 之客戶。" },
-            birthday: { id: 'birthday', name: "生日彩池 (Special)", prizes: [{ name: "$1,000 療程卷 (需折實滿$14,000)", count: 500 }, { name: "$800 療程卷 (需折實滿$12,000)", count: 500 }, { name: "$500 療程卷 (需折實滿$8,000)", count: 500 }], description: "適用於 2、3、4 月份生日之客戶。" }
+            birthday: { id: 'birthday', name: "生日彩池 (Special)", prizes: [{ name: "$1,000療程卷 (折實滿$14,000)", count: 500 }, { name: "$800療程卷 (折實滿$12,000)", count: 500 }, { name: "$500療程卷 (折實滿$8,000)", count: 500 }], description: "適用於 2、3、4 月份生日之客戶。" }
         };
 
+        // --- 初始化 UI ---
+        window.selectPool = (key) => {
+            selectedKey = key;
+            const tabElements = document.querySelectorAll('.pool-tab');
+            const descElement = document.getElementById('pool-description');
+            if (tabElements.length > 0) {
+                tabElements.forEach(btn => btn.classList.remove('active'));
+                const activeTab = document.getElementById(`tab-${key}`);
+                if (activeTab) activeTab.classList.add('active');
+            }
+            if (descElement && pools[key]) {
+                descElement.innerText = pools[key].description;
+            }
+        };
+
+        // 立即設定預設 UI，不等待 Firebase
+        window.selectPool('silver');
+
+        // --- 初始化 Firebase (僅當有設定時) ---
+        if (firebaseConfig) {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (e) { console.error("Firebase Auth error:", e); }
+                };
+                initAuth();
+                onAuthStateChanged(auth, (u) => user = u);
+            } catch (e) { console.error("Firebase init failed:", e); }
+        } else {
+            console.log("Running in offline mode (No Firebase Config).");
+            document.querySelector('button[onclick="toggleQuotaDashboard()"]').style.display = 'none';
+        }
+
+        // --- 功能函數 ---
         window.checkFormValidity = () => {
             const mmc = document.getElementById('input-mmc').value.trim();
             const invoice = document.getElementById('input-invoice').value.trim();
             const cse = document.getElementById('input-cse').value;
             const backBtn = document.getElementById('btn-back-to-start');
-            backBtn.style.display = (mmc && invoice && cse) ? "block" : "none";
+            if(backBtn) backBtn.style.display = (mmc && invoice && cse) ? "block" : "none";
         };
 
         window.toggleQuotaDashboard = () => {
@@ -417,7 +478,7 @@
         }
 
         async function updateQuotaDashboard() {
-            if (!user) return;
+            if (!db || !user) return;
             const content = document.getElementById('quota-content');
             const timer = document.getElementById('quota-last-updated');
             try {
@@ -440,44 +501,21 @@
             } catch (err) { content.innerHTML = `<p class="text-center py-4 text-xs text-rose-500">讀取失敗</p>`; }
         }
 
-        // RESET LOGIC
-        window.requestResetData = () => {
-            document.getElementById('reset-confirm-modal').classList.remove('hidden');
-        };
-        window.closeResetModal = () => {
-            document.getElementById('reset-confirm-modal').classList.add('hidden');
-        };
+        window.requestResetData = () => { document.getElementById('reset-confirm-modal').classList.remove('hidden'); };
+        window.closeResetModal = () => { document.getElementById('reset-confirm-modal').classList.add('hidden'); };
         window.executeDataReset = async () => {
-            if (!user) return;
+            if (!db || !user) return;
             const resetBtn = document.getElementById('reset-data-btn');
-            resetBtn.disabled = true;
-            resetBtn.innerText = "正在清除雲端數據...";
-            
+            resetBtn.disabled = true; resetBtn.innerText = "正在清除雲端數據...";
             try {
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'draw_records');
                 const snapshot = await getDocs(colRef);
                 const deletePromises = [];
-                snapshot.forEach((d) => {
-                    deletePromises.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id)));
-                });
+                snapshot.forEach((d) => { deletePromises.push(deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'draw_records', d.id))); });
                 await Promise.all(deletePromises);
-                
-                closeResetModal();
-                await updateQuotaDashboard();
-                resetBtn.disabled = false;
-                resetBtn.innerText = "⚠️ 重置彩池配額";
-            } catch (e) {
-                console.error(e);
-                alert("重置失敗，請檢查權限");
-                resetBtn.disabled = false;
-            }
-        };
-
-        window.selectPool = (key) => {
-            selectedKey = key;
-            document.querySelectorAll('.pool-tab').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-${key}`).classList.add('active');
-            document.getElementById('pool-description').innerText = pools[key].description;
+                closeResetModal(); await updateQuotaDashboard();
+                resetBtn.disabled = false; resetBtn.innerText = "⚠️ 重置彩池配額";
+            } catch (e) { console.error(e); resetBtn.disabled = false; }
         };
 
         window.confirmEntry = () => {
@@ -504,15 +542,9 @@
                 ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#f0f9ff';
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, angle, angle + arc);
-                ctx.fill();
-                ctx.strokeStyle = '#bae6fd';
-                ctx.lineWidth = 1;
-                ctx.stroke();
+                ctx.fill(); ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 1; ctx.stroke();
                 ctx.save();
-                ctx.fillStyle = "#0284c7";
-                ctx.translate(centerX, centerY);
-                ctx.rotate(angle + arc / 2);
-                ctx.textAlign = "right";
+                ctx.fillStyle = "#0284c7"; ctx.translate(centerX, centerY); ctx.rotate(angle + arc / 2); ctx.textAlign = "right";
                 ctx.font = prize.length > 15 ? "bold 9px Noto Sans TC" : "bold 11px Noto Sans TC";
                 ctx.fillText(prize, radius - 15, 5);
                 ctx.restore();
@@ -539,7 +571,7 @@
             document.getElementById('prize-text').innerText = prize;
             document.getElementById('draw-time-display').innerText = new Date().toLocaleString('zh-HK');
             document.getElementById('result-modal').classList.remove('hidden');
-            window.checkFormValidity();
+            checkFormValidity();
         }
 
         window.submitDrawRecord = async () => {
@@ -553,13 +585,13 @@
             const drawData = { mmc, invoice_no: invoice, cse, prize: lastPrize, pool: currentPool.name, date_display: new Date().toLocaleString('zh-HK') };
             try {
                 if (scriptURL) { await fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(drawData) }); }
-                if (user) { try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), { ...drawData, timestamp: serverTimestamp() }); } catch (e) {} }
+                if (db && user) { try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'draw_records'), { ...drawData, timestamp: serverTimestamp() }); } catch (e) {} }
                 statusDiv.innerText = "提交成功！資料已同步。";
                 statusDiv.className = "text-center text-sm mb-4 text-emerald-500 font-bold";
                 statusDiv.classList.remove('hidden');
                 setTimeout(() => resetApp(), 1500);
             } catch (error) {
-                statusDiv.innerText = "提交成功 (備援模式)！";
+                statusDiv.innerText = "提交成功 (本地儲存完成)！";
                 statusDiv.className = "text-center text-sm mb-4 text-emerald-500 font-bold";
                 statusDiv.classList.remove('hidden');
                 setTimeout(() => resetApp(), 1500);
@@ -572,8 +604,9 @@
             document.getElementById('step-eligibility').classList.remove('hidden-step');
             document.getElementById('input-mmc').value = "";
             document.getElementById('input-invoice').value = "";
-            document.getElementById('input-cse').value = "";
+            document.getElementById('input-cse').selectedIndex = 0;
             document.getElementById('submit-status').classList.add('hidden');
+            document.getElementById('btn-back-to-start').style.display = "none";
             const btn = document.getElementById('spin-btn');
             btn.disabled = false; btn.style.opacity = '1';
             window.selectPool('silver');
@@ -581,8 +614,8 @@
             document.getElementById('wheel-canvas').style.transform = 'rotate(0deg)';
             setTimeout(() => { document.getElementById('wheel-canvas').style.transition = 'transform 5s cubic-bezier(0.15, 0, 0.1, 1)'; }, 50);
         };
-        window.selectPool('silver');
 
+        // --- 櫻花效果 ---
         const container = document.getElementById('sakura-container');
         for (let i = 0; i < 35; i++) {
             const petal = document.createElement('div');
