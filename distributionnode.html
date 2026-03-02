@@ -5,6 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Node Momentum Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase Integration for Daily Tracking -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDocs, collection, query, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase
+        window.firebaseVars = { doc, setDoc, getDocs, collection, query, limit };
+        
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        window.db = db;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'distribution-node-dashboard';
+
+        // Auth before queries (Rule 3)
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+
+        window.initDashboard = async () => {
+            await initAuth();
+            fetchData();
+        };
+
+        // Snapshot logic to calculate daily change specifically against yesterday
+        window.calculateDailyDelta = async (currentTotal, metricKey) => {
+            if (!auth.currentUser) return 0;
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots');
+            const snap = await getDocs(colRef);
+            
+            // Get all historical records for this metric, sorted by newest first
+            const allRecords = snap.docs
+                .map(d => d.data())
+                .filter(d => d.metric === metricKey)
+                .sort((a, b) => b.timestamp - a.timestamp);
+            
+            const todayStr = new Date().toDateString();
+            
+            // Find the most recent record that is NOT from today (Yesterday's baseline)
+            const yesterdayRecord = allRecords.find(d => new Date(d.timestamp).toDateString() !== todayStr);
+            
+            // Check if we have already saved a snapshot for today
+            const todayRecordExists = allRecords.some(d => d.timestamp && new Date(d.timestamp).toDateString() === todayStr);
+            
+            // If no snapshot exists for today yet, create one using current data
+            if (!todayRecordExists) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots', `${metricKey}_${Date.now()}`), {
+                    metric: metricKey,
+                    value: currentTotal,
+                    timestamp: Date.now()
+                });
+            }
+
+            // Return difference between right now and the final state of "not today"
+            return yesterdayRecord ? (currentTotal - yesterdayRecord.value) : 0;
+        };
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         
@@ -31,74 +95,45 @@
             transform: translateY(-2px);
         }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
         .kpi-table th {
-            font-size: 12px;
-            letter-spacing: 0.1em;
+            font-size: 8px;
+            letter-spacing: 0.02em;
             color: #94a3b8;
             text-transform: uppercase;
-            padding: 16px 12px;
-            border-bottom: 2px solid #1e293b;
+            padding: 6px 2px;
+            border: 1px solid #1e293b;
+            line-height: 1.1;
+            text-align: center;
         }
         .kpi-table td {
-            padding: 14px 12px;
+            padding: 8px 2px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
+            font-size: 11px;
+            border: 1px solid rgba(30, 41, 59, 0.3);
+            text-align: center;
         }
 
-        #loading-overlay {
-            transition: opacity 0.5s ease;
-        }
-        
-        .error-box {
-            background: rgba(244, 63, 94, 0.1);
-            border: 1px solid rgba(244, 63, 94, 0.2);
-            color: #fb7185;
-        }
+        #loading-overlay { transition: opacity 0.5s ease; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6">
         <div id="loading-spinner" class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <div id="loading-content" class="text-center max-w-md">
-            <p class="text-sky-400 font-mono text-lg animate-pulse mb-4" id="loading-text">CONNECTING TO NETWORK DATA...</p>
-            <div id="error-message" class="hidden error-box p-6 rounded-lg text-base space-y-4">
-                <p class="font-bold text-xl text-rose-400">Connection Error</p>
-                <p id="error-details" class="text-sm font-mono bg-black/30 p-3 rounded text-rose-300 break-all"></p>
-                <div class="text-sm text-left space-y-3 text-slate-300 bg-slate-900/50 p-4 rounded mt-2">
-                    <p class="font-bold text-sky-400 underline uppercase tracking-widest">Action Required in Google Sheets:</p>
-                    <ol class="list-decimal list-inside space-y-2">
-                        <li>Open the Google Sheet and go to <b>Extensions > Apps Script</b>.</li>
-                        <li>Click the blue <b>Deploy</b> button > <b>New Deployment</b>.</li>
-                        <li>Select <b>Web App</b> as the type.</li>
-                        <li>Change "Who has access" to <b>"Anyone"</b>.</li>
-                        <li>Click Deploy, copy the <b>URL</b>, and update the <code>API_URL</code> in this code if it has changed.</li>
-                    </ol>
-                </div>
-                <button onclick="location.reload()" class="mt-6 px-8 py-3 bg-sky-500 hover:bg-sky-600 text-white rounded font-bold text-sm transition-colors w-full uppercase tracking-wider">
-                    Retry Connection
-                </button>
-            </div>
-        </div>
+        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase">Syncing Dashboard...</p>
     </div>
 
     <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
+            <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase">
                 Distribution Node Momentum
             </h1>
-            <p class="text-slate-400 mt-2 text-lg">Real-time Network Activation & Replication Monitoring</p>
+            <p class="text-slate-400 mt-2 text-lg italic">Real-time Activation & Replication Monitoring</p>
         </div>
         <div class="flex gap-4">
             <button onclick="fetchData()" class="px-6 py-3 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
                 <div id="sync-status" class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                <span id="sync-text" class="text-base font-semibold text-slate-300 uppercase tracking-tight">Live Network Feed</span>
+                <span id="sync-text" class="text-base font-semibold text-slate-300 uppercase tracking-tight">Live Feed</span>
             </button>
             <div class="px-6 py-3 glass-panel">
                 <span class="text-base font-medium text-slate-300" id="current-time"></span>
@@ -109,16 +144,18 @@
     <!-- SECTION 1: Overview -->
     <section class="mb-12">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Distribution Node Overview</h2>
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Distribution Node Overview</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="overview-container"></div>
+        <div id="overview-container">
+            <!-- Content injected via renderOverview -->
+        </div>
     </section>
 
-    <!-- SECTION 2: Identity Analysis -->
+    <!-- SECTION 2: Identity -->
     <section class="mb-12">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Identity Analysis</h2>
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Identity Analysis</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
         <div class="glass-panel overflow-hidden">
@@ -127,9 +164,9 @@
                     <thead>
                         <tr class="bg-slate-900/50 border-b-2 border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                             <th class="p-6">Shop Category</th>
-                            <th class="p-6 text-center">No. of Node (Δ P30d)</th>
-                            <th class="p-6 text-center">Activation: Active Traffic (Δ P30d)</th>
-                            <th class="p-6 text-center">Activation: Purchase (Δ P30d)</th>
+                            <th class="p-6 text-center">Total Nodes (P30D Change)</th>
+                            <th class="p-6 text-center">Active Traffic (P30D Change)</th>
+                            <th class="p-6 text-center">Purchase (P30D Change)</th>
                         </tr>
                     </thead>
                     <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
@@ -141,7 +178,7 @@
     <!-- SECTION 3: Operations -->
     <section class="mb-24">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Operations Activation & Replication Metrics</h2>
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Operations Metrics Breakdown</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
         <div class="flex flex-col gap-14" id="ops-container"></div>
@@ -149,7 +186,8 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxq1U8l7Ktl6pTK6_uud0f_AbjplXi0tJ_R_qIf-gZRoxuQ6HbYixxCjZngFrNT-cheow/exec";
-
+        const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
+        
         const colors = {
             dermes: 'sky',
             elyze: 'emerald',
@@ -158,71 +196,33 @@
             default: 'slate'
         };
 
-        const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
-
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
             if (!val) return 0;
-            // Handle comma-separated values or string representations
             return parseFloat(val.toString().replace(/,/g, '')) || 0;
+        }
+
+        // Helper for bracket formatting and coloring
+        function getBracketHtml(val, sizeClass = "text-base") {
+            const num = parseSheetNum(val);
+            const colorClass = num >= 0 ? 'text-emerald-500' : 'text-rose-500';
+            const sign = num >= 0 ? '+' : '';
+            return `<span class="${colorClass} ${sizeClass} font-bold">(${sign}${num})</span>`;
         }
 
         async function fetchData() {
             setSyncStatus(true);
             try {
-                // Add a cache-busting parameter to bypass any intermediate caching
-                const fetchUrl = `${API_URL}?t=${new Date().getTime()}`;
-                
-                // GAS uses 302 redirects. fetch handles this by default, 
-                // but we omit credentials to avoid potential CORS preflight issues with public scripts.
-                const response = await fetch(fetchUrl, {
-                    method: 'GET',
-                    mode: 'cors',
-                    credentials: 'omit'
-                });
-
-                if (!response.ok) throw new Error(`Server status: ${response.status}`);
-                
+                const response = await fetch(`${API_URL}?t=${Date.now()}`);
                 const data = await response.json();
-                
-                if (!data.overview || !data.identities || !data.operations) {
-                    throw new Error("Data structure mismatch: One or more required sheets (Overview, Identities, Operations) are missing or misnamed.");
-                }
-
                 updateDashboard(data);
-                
                 document.getElementById('loading-overlay').style.opacity = '0';
                 setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
-                document.getElementById('sync-status').className = 'w-3 h-3 rounded-full bg-emerald-500';
             } catch (error) {
                 console.error("Fetch Error:", error);
-                showFetchError(error);
             } finally {
                 setSyncStatus(false);
             }
-        }
-
-        function showFetchError(err) {
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('loading-spinner');
-            const text = document.getElementById('loading-text');
-            const errorBox = document.getElementById('error-message');
-            const details = document.getElementById('error-details');
-            const status = document.getElementById('sync-status');
-            
-            overlay.style.display = 'flex';
-            overlay.style.opacity = '1';
-            spinner.classList.add('hidden');
-            text.innerText = "DATA ACCESS BLOCKED";
-            text.classList.replace('text-sky-400', 'text-rose-500');
-            errorBox.classList.remove('hidden');
-            
-            // Provide specific details if possible
-            details.innerText = err.name === 'TypeError' ? 
-                "Network Error: The connection was refused. This usually happens if the script access is not set to 'Anyone'." : 
-                err.message;
-                
-            status.className = 'w-3 h-3 rounded-full bg-rose-500';
         }
 
         function setSyncStatus(isSyncing) {
@@ -233,17 +233,17 @@
                 text.innerText = "Syncing...";
             } else {
                 status.classList.remove('animate-pulse');
-                if (status.className.includes('bg-emerald')) text.innerText = "Live Network Feed";
+                text.innerText = "Live Feed";
             }
         }
 
-        function updateDashboard(data) {
-            renderOverview(data.overview);
+        async function updateDashboard(data) {
+            await renderOverview(data.overview);
             renderIdentities(data.identities);
             renderOperations(data.operations);
         }
 
-        function renderOverview(overviewData) {
+        async function renderOverview(overviewData) {
             const container = document.getElementById('overview-container');
             container.innerHTML = '';
             
@@ -251,64 +251,105 @@
             const trafficItem = overviewData.find(item => item.Metric === "Traffic") || overviewData[1];
             const purchaseItem = overviewData.find(item => item.Metric === "Purchase") || overviewData[2];
 
-            const reordered = [
-                { item: nodesItem, style: { border: 'border-l-sky-500', text: 'text-sky-400', tag: 'Replication', label: 'Total Nodes' } },
-                { item: trafficItem, style: { border: 'border-l-emerald-500', text: 'text-emerald-400', tag: 'Traffic', label: 'Active Traffic' } },
-                { item: purchaseItem, style: { border: 'border-l-rose-500', text: 'text-rose-400', tag: 'Purchase', label: 'Activated Purchase' } }
+            const replicationData = { item: nodesItem, style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
+            const activationData = [
+                { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'Active Traffic', key: 'active_traffic' } },
+                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'Active Purchase', key: 'active_purchase' } }
             ];
 
-            reordered.forEach((entry) => {
-                const item = entry.item;
-                if (!item) return;
-                const style = entry.style;
-                const total = parseSheetNum(item.Total);
-                const change = parseSheetNum(item.Change_P30d);
-                const changeColor = change >= 0 ? 'text-emerald-500' : 'text-rose-500';
+            // Build Replication Card HTML
+            const totalRep = parseSheetNum(replicationData.item?.Total);
+            const p30Rep = replicationData.item?.Change_P30d;
+            const dailyRep = await window.calculateDailyDelta(totalRep, replicationData.style.key);
 
-                container.innerHTML += `
-                    <div class="glass-panel p-8 stat-card border-l-8 ${style.border}">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-slate-400 text-sm font-bold uppercase tracking-widest ${style.text}/80">${style.label} (P30D Δ)</span>
-                            <span class="px-3 py-1 rounded bg-white/5 text-slate-400 text-xs font-bold uppercase tracking-tighter">${style.tag}</span>
-                        </div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-5xl font-black tracking-tighter">${total.toLocaleString()}</span>
-                            <span class="${changeColor} text-2xl font-bold tracking-tight">(${change >= 0 ? '+' : ''}${change})</span>
+            const replicationCardHtml = `
+                <div class="glass-panel p-8 stat-card border-l-8 ${replicationData.style.border} h-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${replicationData.style.label}</span>
+                        <div class="flex flex-col items-end">
+                            <span class="text-[10px] text-slate-500 uppercase font-black leading-none mb-1">Daily Change</span>
+                            <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
+                                ${dailyRep >= 0 ? '+' : ''}${dailyRep}
+                            </span>
+                            <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
                         </div>
                     </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-5xl font-black tracking-tighter">${totalRep.toLocaleString()}</span>
+                        ${getBracketHtml(p30Rep, 'text-2xl')}
+                    </div>
+                    <p class="text-[9px] text-slate-600 mt-2 font-mono uppercase tracking-tighter italic">P30D Rolling Metric</p>
+                </div>
+            `;
+
+            // Build Activation Cards HTML
+            let activationCardsHtml = '';
+            for (const entry of activationData) {
+                const totalAct = parseSheetNum(entry.item?.Total);
+                const p30Act = entry.item?.Change_P30d;
+                const dailyAct = await window.calculateDailyDelta(totalAct, entry.style.key);
+                
+                activationCardsHtml += `
+                    <div class="glass-panel p-8 stat-card border-l-8 ${entry.style.border}">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${entry.style.label}</span>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[10px] text-slate-500 uppercase font-black leading-none mb-1">Daily Change</span>
+                                <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
+                                    ${dailyAct >= 0 ? '+' : ''}${dailyAct}
+                                </span>
+                                <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-5xl font-black tracking-tighter">${totalAct.toLocaleString()}</span>
+                            ${getBracketHtml(p30Act, 'text-2xl')}
+                        </div>
+                        <p class="text-[9px] text-slate-600 mt-2 font-mono uppercase tracking-tighter italic">P30D Rolling Metric</p>
+                    </div>
                 `;
-            });
+            }
+
+            container.innerHTML = `
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Replication Group -->
+                    <div class="lg:w-1/3 flex flex-col">
+                        <div class="mb-4 flex items-center gap-3">
+                            <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">REPLICATION</h3>
+                            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div>
+                        </div>
+                        ${replicationCardHtml}
+                    </div>
+                    <!-- Activation Group -->
+                    <div class="lg:w-2/3 flex flex-col">
+                        <div class="mb-4 flex items-center gap-3">
+                            <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">ACTIVATION</h3>
+                            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            ${activationCardsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderIdentities(identitiesData) {
             const tbody = document.getElementById('identities-body');
             tbody.innerHTML = '';
-            const idColors = { 'ACB': 'text-sky-400', 'ICB': 'text-indigo-400', 'Therapist': 'text-emerald-400', 'Others': 'text-slate-300' };
-
             identitiesData.forEach(row => {
-                const identityName = row['Shop Category'] || row.Identity || 'N/A';
-                const textColor = idColors[identityName] || 'text-slate-100';
-                const n = parseSheetNum(row.Nodes);
-                const nD = parseSheetNum(row.Nodes_Delta);
-                const t = parseSheetNum(row.Traffic);
-                const tD = parseSheetNum(row.Traffic_Delta);
-                const p = parseSheetNum(row.Purchase);
-                const pD = parseSheetNum(row.Purchase_Delta);
-
+                const name = row['Shop Category'] || row.Identity || 'N/A';
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/20 transition-colors">
-                        <td class="p-6 font-bold text-xl ${textColor}">${identityName}</td>
+                        <td class="p-6 font-bold text-xl text-sky-400">${name}</td>
                         <td class="p-6 text-center font-mono text-xl">
-                            ${n.toLocaleString()} 
-                            <span class="${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-base">(${nD >= 0 ? '+' : ''}${nD})</span>
+                            ${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta)}
                         </td>
                         <td class="p-6 text-center font-mono text-xl">
-                            ${t.toLocaleString()} 
-                            <span class="${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-base">(${tD >= 0 ? '+' : ''}${tD})</span>
+                            ${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta)}
                         </td>
                         <td class="p-6 text-center font-mono text-xl">
-                            ${p.toLocaleString()} 
-                            <span class="${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} text-base">(${pD >= 0 ? '+' : ''}${pD})</span>
+                            ${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta)}
                         </td>
                     </tr>
                 `;
@@ -318,22 +359,11 @@
         function renderOperations(opsData) {
             const container = document.getElementById('ops-container');
             container.innerHTML = '';
-
             let brands = [...new Set(opsData.map(d => d.Brand))];
-            
-            brands.sort((a, b) => {
-                let indexA = preferredBrandOrder.indexOf(a);
-                let indexB = preferredBrandOrder.indexOf(b);
-                if (indexA === -1) indexA = 99;
-                if (indexB === -1) indexB = 99;
-                return indexA - indexB;
-            });
+            brands.sort((a, b) => preferredBrandOrder.indexOf(a) - preferredBrandOrder.indexOf(b));
 
             brands.forEach(brand => {
-                if (!brand) return;
                 const brandColor = colors[brand.toLowerCase()] || colors.default;
-                const filtered = opsData.filter(d => d.Brand === brand);
-
                 let brandHtml = `
                     <div class="space-y-6">
                         <div class="flex items-center gap-4 p-5 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-2xl">
@@ -342,66 +372,55 @@
                         </div>
                         <div class="glass-panel overflow-hidden border border-slate-800/50">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1200px]">
+                                <table class="w-full text-left kpi-table min-w-[1500px]">
                                     <thead>
+                                        <tr class="bg-slate-900/60 text-slate-100">
+                                            <th rowspan="2" class="px-2 text-center bg-slate-950/40">Location</th>
+                                            <th colspan="2" class="text-center bg-emerald-500/10 text-emerald-400 border-l border-white/10">Customer Base</th>
+                                            <th colspan="3" class="text-center bg-sky-500/10 text-sky-400 border-l border-white/10">Summary Metrics</th>
+                                            <th colspan="2" class="text-center bg-indigo-500/10 text-indigo-400 border-l border-white/10">Pillar: Paid Trial Giftcard</th>
+                                            <th colspan="3" class="text-center bg-violet-500/10 text-violet-400 border-l border-white/10">Pillar: Birthday Giftcard</th>
+                                        </tr>
                                         <tr class="bg-slate-900/40">
-                                            <th class="w-[22%] px-8 text-slate-100">Floor Location</th>
-                                            <th class="text-center">No. of Node (Net Δ)</th>
-                                            <th class="text-center">Activation: Active Traffic (Δ)</th>
-                                            <th class="text-center">Activation: Purchase (Δ)</th>
-                                            <th class="text-center text-sky-400/80 border-l border-slate-800/50">ACB Ref</th>
-                                            <th class="text-center text-indigo-400/80">ICB Ref</th>
+                                            <th class="border-l border-white/10">ACB Reference</th><th>ICB Reference</th>
+                                            <th class="border-l border-white/10">Nodes (Change)</th><th>Traffic (Change)</th><th>Purchase (Change)</th>
+                                            <th class="border-l border-white/10">Head (Entitled)</th><th>Tail (Booking/Show/Sign/Amount)</th>
+                                            <th class="border-l border-white/10">Head (Entitled)</th><th>Head (Redeem)</th><th>Tail (Booking/Show/Sign/Amount)</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-800/30">
                 `;
-
-                filtered.forEach(d => {
-                    const n = parseSheetNum(d.Nodes);
-                    const nD = parseSheetNum(d.Nodes_Delta);
-                    const t = parseSheetNum(d.Traffic);
-                    const tD = parseSheetNum(d.Traffic_Delta);
-                    const p = parseSheetNum(d.Purchase);
-                    const pD = parseSheetNum(d.Purchase_Delta);
-                    const acb = parseSheetNum(d.ACB_Ref);
-                    const icb = parseSheetNum(d.ICB_Ref);
-
+                opsData.filter(d => d.Brand === brand).forEach(d => {
                     brandHtml += `
-                        <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="px-8 font-bold text-lg text-slate-200">${d.Floor}</td>
-                            <td class="text-center">
-                                <span class="font-bold text-slate-100 text-lg">${n.toLocaleString()}</span>
-                                <span class="text-sm ${nD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold ml-1">(${nD >= 0 ? '+' : ''}${nD})</span>
+                        <tr class="hover:bg-white/[0.02]">
+                            <td class="px-2 font-bold text-slate-200 text-[11px] text-left">${d.Floor}</td>
+                            <td class="text-sky-400 font-bold border-l border-white/5 bg-sky-500/5">${parseSheetNum(d.ACB_Ref).toLocaleString()}</td>
+                            <td class="text-indigo-400 font-bold bg-indigo-500/5">${parseSheetNum(d.ICB_Ref).toLocaleString()}</td>
+                            <td class="border-l border-white/10 font-bold">
+                                ${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[10px]')}
                             </td>
-                            <td class="text-center">
-                                <span class="font-bold text-slate-100 text-lg">${t.toLocaleString()}</span>
-                                <span class="text-sm ${tD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold ml-1">(${tD >= 0 ? '+' : ''}${tD})</span>
+                            <td class="font-bold">
+                                ${parseSheetNum(d.Traffic).toLocaleString()} ${getBracketHtml(d.Traffic_Delta, 'text-[10px]')}
                             </td>
-                            <td class="text-center">
-                                <span class="font-bold text-slate-100 text-lg">${p.toLocaleString()}</span>
-                                <span class="text-sm ${pD >= 0 ? 'text-emerald-500' : 'text-rose-400'} font-bold ml-1">(${pD >= 0 ? '+' : ''}${pD})</span>
+                            <td class="font-bold">
+                                ${parseSheetNum(d.Purchase).toLocaleString()} ${getBracketHtml(d.Purchase_Delta, 'text-[10px]')}
                             </td>
-                            <td class="text-center text-sky-400/90 font-bold text-lg border-l border-slate-800/50 bg-sky-500/[0.02]">${acb.toLocaleString()}</td>
-                            <td class="text-center text-indigo-400/90 font-bold text-lg bg-indigo-500/[0.02]">${icb.toLocaleString()}</td>
+                            <td class="border-l border-white/5 bg-indigo-500/5 text-indigo-300 font-bold">${d.PT_Eligible || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400 text-[10px]">${d.PT_Tail || '-'}</td>
+                            <td class="border-l border-white/5 bg-violet-500/5 text-violet-300 font-bold">${d.Bday_Eligible || '-'}</td>
+                            <td class="bg-violet-500/5 text-violet-400 font-bold">${d.Bday_Redeem || '-'}</td>
+                            <td class="bg-violet-500/5 text-slate-400 text-[10px]">${d.Bday_Tail || '-'}</td>
                         </tr>
                     `;
                 });
-
                 brandHtml += `</tbody></table></div></div></div>`;
                 container.innerHTML += brandHtml;
             });
         }
 
-        function updateTime() {
-            const timeEl = document.getElementById('current-time');
-            if (timeEl) timeEl.innerText = new Date().toLocaleString();
-        }
-
         window.onload = () => {
-            fetchData();
-            updateTime();
-            setInterval(updateTime, 1000);
-            setInterval(fetchData, 300000); 
+            if (window.initDashboard) window.initDashboard();
+            setInterval(() => document.getElementById('current-time').innerText = new Date().toLocaleString(), 1000);
         };
     </script>
 </body>
