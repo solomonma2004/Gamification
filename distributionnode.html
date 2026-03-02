@@ -37,7 +37,6 @@
             }
         };
 
-        // Failsafe sequence to prevent "Stuck Syncing"
         window.initDashboard = async () => {
             const timeout = new Promise(res => setTimeout(() => {
                 console.warn("Sync taking too long, entering failsafe mode...");
@@ -47,29 +46,20 @@
             try {
                 await Promise.race([initAuth(), timeout]);
             } finally {
-                // Hides overlay once data is retrieved or timeout hits
                 fetchData();
             }
         };
 
-        // Snapshot logic with timeout to prevent hanging
         window.calculateDailyDelta = async (currentTotal, metricKey) => {
             if (!auth?.currentUser || !db) return 0;
-            
             try {
                 const fetchPromise = (async () => {
                     const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots');
                     const snap = await getDocs(colRef);
-                    
-                    const allRecords = snap.docs
-                        .map(d => d.data())
-                        .filter(d => d.metric === metricKey)
-                        .sort((a, b) => b.timestamp - a.timestamp);
-                    
+                    const allRecords = snap.docs.map(d => d.data()).filter(d => d.metric === metricKey).sort((a, b) => b.timestamp - a.timestamp);
                     const todayStr = new Date().toDateString();
                     const yesterdayRecord = allRecords.find(d => new Date(d.timestamp).toDateString() !== todayStr);
                     const todayRecordExists = allRecords.some(d => d.timestamp && new Date(d.timestamp).toDateString() === todayStr);
-                    
                     if (!todayRecordExists) {
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots', `${metricKey}_${Date.now()}`), {
                             metric: metricKey, value: currentTotal, timestamp: Date.now()
@@ -77,23 +67,32 @@
                     }
                     return yesterdayRecord ? (currentTotal - yesterdayRecord.value) : 0;
                 })();
-
-                // Don't wait longer than 1.5s for the delta calculation
                 return await Promise.race([fetchPromise, new Promise(res => setTimeout(() => res(0), 1500))]);
-            } catch (e) {
-                return 0;
-            }
+            } catch (e) { return 0; }
         };
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1.1rem; }
         .glass-panel { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1rem; }
         .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
         .stat-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
-        .kpi-table th { font-size: 8px; letter-spacing: 0.02em; color: #94a3b8; text-transform: uppercase; padding: 6px 2px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; }
-        .kpi-table td { padding: 8px 2px; font-family: 'JetBrains Mono', monospace; font-size: 11px; border: 1px solid rgba(30, 41, 59, 0.3); text-align: center; }
+        .kpi-table th { font-size: 9px; letter-spacing: 0.1em; color: #94a3b8; text-transform: uppercase; padding: 12px 6px; border: 1px solid #1e293b; line-height: 1.2; text-align: center; background: rgba(15, 23, 42, 0.9); font-weight: 900; }
+        .kpi-table td { padding: 6px 6px; font-family: 'Inter', sans-serif; font-size: 12px; border: 1px solid rgba(30, 41, 59, 0.4); text-align: center; vertical-align: middle; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
         #loading-overlay { transition: opacity 0.5s ease; }
+        
+        /* High Impact Condensed Styles */
+        .stacked-cell { display: flex; flex-direction: column; gap: 1px; }
+        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; }
+        .mini-label { font-size: 8px; color: #f8fafc; text-transform: uppercase; font-weight: 900; line-height: 1; opacity: 0.6; }
+        .grid-item { background: rgba(255, 255, 255, 0.05); padding: 4px 2px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.02); }
+        .data-value-lg { font-size: 14px; font-weight: 900; tracking: -0.02em; }
+        .data-value-xl { font-size: 18px; font-weight: 900; tracking: -0.05em; }
+
+        /* Filter Tab Styles */
+        .filter-tab { transition: all 0.3s ease; cursor: pointer; }
+        .filter-tab.active { background: rgba(168, 85, 247, 0.3); border-color: rgba(168, 85, 247, 0.6); color: #e9d5ff; box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); transform: scale(1.05); }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -105,44 +104,42 @@
 
     <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase">
+            <h1 class="text-4xl font-black tracking-tighter bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase italic">
                 Distribution Node Momentum
             </h1>
-            <p class="text-slate-400 mt-2 text-lg italic">Real-time Activation & Replication Monitoring</p>
+            <p class="text-slate-400 mt-2 text-lg italic font-bold">Real-time Activation & Replication Monitoring</p>
         </div>
         <div class="flex gap-4">
             <button onclick="fetchData()" class="px-6 py-3 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
                 <div id="sync-status" class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                <span id="sync-text" class="text-base font-semibold text-slate-300 uppercase tracking-tight">Live Feed</span>
+                <span id="sync-text" class="text-base font-black text-slate-200 uppercase tracking-tight">Live Feed</span>
             </button>
-            <div class="px-6 py-3 glass-panel font-mono text-slate-300" id="current-time"></div>
+            <div class="px-6 py-3 glass-panel font-mono text-slate-300 font-bold" id="current-time"></div>
         </div>
     </header>
 
-    <!-- SECTION 1: Overview -->
     <section class="mb-12">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Distribution Node Overview</h2>
-            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+            <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic">Distribution Node Overview</h2>
+            <div class="h-1 flex-1 bg-gradient-to-r from-slate-800 to-transparent ml-4"></div>
         </div>
         <div id="overview-container"></div>
     </section>
 
-    <!-- SECTION 2: Identity Analysis -->
     <section class="mb-12">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight uppercase text-sky-400">Identity Analysis</h2>
-            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+            <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic text-sky-400">Identity Analysis</h2>
+            <div class="h-1 flex-1 bg-gradient-to-r from-sky-900/30 to-transparent ml-4"></div>
         </div>
-        <div class="glass-panel overflow-hidden">
+        <div class="glass-panel overflow-hidden border border-white/10">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
-                        <tr class="bg-slate-900/50 border-b-2 border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                        <tr class="bg-slate-900/80 border-b-2 border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-widest">
                             <th class="p-6">Shop Category</th>
-                            <th class="p-6 text-center">Total Nodes (Past 30 Days)</th>
-                            <th class="p-6 text-center">activated (traffic) (Past 30 Days)</th>
-                            <th class="p-6 text-center">activated (purchase) (Past 30 Days)</th>
+                            <th class="p-6 text-center text-sky-400">Total Nodes (Δ)</th>
+                            <th class="p-6 text-center text-emerald-400">activated (traffic) (Δ)</th>
+                            <th class="p-6 text-center text-rose-400">activated (purchase) (Δ)</th>
                         </tr>
                     </thead>
                     <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
@@ -151,19 +148,29 @@
         </div>
     </section>
 
-    <!-- SECTION 3: Operations -->
     <section class="mb-24">
-        <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight uppercase text-fuchsia-400">Operations Metrics Breakdown</h2>
-            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-fuchsia-400">Operations Metrics Breakdown</h2>
+            
+            <!-- BRAND FILTER BAR -->
+            <div class="flex items-center glass-panel p-1.5 border border-white/10 overflow-hidden shadow-2xl">
+                <button onclick="setBrandFilter('All')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-All">All</button>
+                <button onclick="setBrandFilter('Dermes')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest active" id="filter-Dermes">Dermes</button>
+                <button onclick="setBrandFilter('Elyze')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-Elyze">Elyze</button>
+                <button onclick="setBrandFilter('Reenex')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-Reenex">Reenex</button>
+                <button onclick="setBrandFilter('Evvus')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-Evvus">Evvus</button>
+            </div>
         </div>
-        <div class="flex flex-col gap-14" id="ops-container"></div>
+        <div class="flex flex-col gap-10" id="ops-container"></div>
     </section>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxq1U8l7Ktl6pTK6_uud0f_AbjplXi0tJ_R_qIf-gZRoxuQ6HbYixxCjZngFrNT-cheow/exec";
         const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
         const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
+        
+        let lastData = null;
+        let currentFilter = 'Dermes'; // Default select Dermes only
 
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
@@ -175,7 +182,14 @@
             const num = parseSheetNum(val);
             const colorClass = num >= 0 ? 'text-emerald-500' : 'text-rose-500';
             const sign = num >= 0 ? '+' : '';
-            return `<span class="${colorClass} ${sizeClass} font-bold">(${sign}${num})</span>`;
+            return `<span class="${colorClass} ${sizeClass} font-black italic tabular-nums tracking-tighter">(${sign}${num})</span>`;
+        }
+
+        function setBrandFilter(brand) {
+            currentFilter = brand;
+            document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`filter-${brand}`).classList.add('active');
+            if (lastData) renderOperations(lastData.operations);
         }
 
         async function fetchData() {
@@ -183,12 +197,12 @@
             try {
                 const response = await fetch(`${API_URL}?t=${Date.now()}`);
                 const data = await response.json();
+                lastData = data;
                 updateDashboard(data);
                 document.getElementById('loading-overlay').style.opacity = '0';
                 setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
             } catch (error) {
                 console.error("Fetch Error:", error);
-                document.querySelector('#loading-overlay p').innerText = "Google Data Connection Unavailable. Re-check GAS Deployment.";
             } finally {
                 setSyncStatus(false);
             }
@@ -219,64 +233,68 @@
             const nodesItem = overviewData.find(item => item.Metric === "Total Nodes") || overviewData[0];
             const trafficItem = overviewData.find(item => item.Metric === "Traffic") || overviewData[1];
             const purchaseItem = overviewData.find(item => item.Metric === "Purchase") || overviewData[2];
+            const getSub = (key) => parseSheetNum(overviewData.find(item => item.Metric === key)?.Total);
 
             const replicationData = { item: nodesItem, style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
             const activationData = [
-                { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'activated (traffic)', key: 'active_traffic' } },
-                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'activated (purchase)', key: 'active_purchase' } }
+                { 
+                    item: trafficItem, 
+                    style: { border: 'border-l-emerald-500', label: 'activated (traffic)', key: 'active_traffic' },
+                    head: getSub("Traffic Head"), tail: getSub("Traffic Tail") 
+                },
+                { 
+                    item: purchaseItem, 
+                    style: { border: 'border-l-rose-500', label: 'activated (purchase)', key: 'active_purchase' },
+                    head: getSub("Purchase Head"), tail: getSub("Purchase Tail")
+                }
             ];
 
-            const totalRep = parseSheetNum(replicationData.item?.Total);
-            const p30Rep = replicationData.item?.Change_P30d;
-            const dailyRep = await window.calculateDailyDelta(totalRep, replicationData.style.key);
+            const dailyRep = await window.calculateDailyDelta(parseSheetNum(nodesItem?.Total), replicationData.style.key);
 
             let replicationCardHtml = `
-                <div class="glass-panel p-8 stat-card border-l-8 ${replicationData.style.border} h-full">
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${replicationData.style.label}</span>
+                <div class="glass-panel p-8 stat-card border-l-8 ${replicationData.style.border} h-full relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-slate-400 text-xs font-black uppercase tracking-widest">${replicationData.style.label}</span>
                         <div class="flex flex-col items-end">
-                            <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
-                            <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
-                                ${dailyRep >= 0 ? '+' : ''}${dailyRep}
-                            </span>
-                            <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
+                            <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Δ</span>
+                            <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm tabular-nums">${dailyRep >= 0 ? '+' : ''}${dailyRep}</span>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col">
                         <div class="flex items-baseline gap-3">
-                            <span class="text-5xl font-black tracking-tighter">${totalRep.toLocaleString()}</span>
-                            ${getBracketHtml(p30Rep, 'text-2xl')}
-                        </div>
-                        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 w-fit">
-                            <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">30 days rolling change</span>
+                            <span class="text-6xl font-black tracking-tighter tabular-nums">${parseSheetNum(nodesItem?.Total).toLocaleString()}</span>
+                            <div class="flex flex-col leading-none translate-y-[-2px]">
+                                ${getBracketHtml(nodesItem?.Change_P30d, 'text-2xl')}
+                                <span class="text-[8px] text-slate-500 font-black uppercase tracking-tighter mt-1">30 Days Rolling Change</span>
+                            </div>
                         </div>
                     </div>
                 </div>`;
 
             let activationCardsHtml = '';
             for (const entry of activationData) {
-                const totalAct = parseSheetNum(entry.item?.Total);
-                const p30Act = entry.item?.Change_P30d;
-                const dailyAct = await window.calculateDailyDelta(totalAct, entry.style.key);
+                const dailyAct = await window.calculateDailyDelta(parseSheetNum(entry.item?.Total), entry.style.key);
                 activationCardsHtml += `
-                    <div class="glass-panel p-8 stat-card border-l-8 ${entry.style.border}">
-                        <div class="flex justify-between items-start mb-6">
-                            <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${entry.style.label}</span>
+                    <div class="glass-panel p-8 stat-card border-l-8 ${entry.style.border} relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-slate-400 text-xs font-black uppercase tracking-widest">${entry.style.label}</span>
                             <div class="flex flex-col items-end">
-                                <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
-                                <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
-                                    ${dailyAct >= 0 ? '+' : ''}${dailyAct}
-                                </span>
-                                <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Δ</span>
+                                <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm tabular-nums">${dailyAct >= 0 ? '+' : ''}${dailyAct}</span>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-2">
+                        <div class="flex flex-col">
                             <div class="flex items-baseline gap-3">
-                                <span class="text-5xl font-black tracking-tighter">${totalAct.toLocaleString()}</span>
-                                ${getBracketHtml(p30Act, 'text-2xl')}
+                                <span class="text-6xl font-black tracking-tighter tabular-nums">${parseSheetNum(entry.item?.Total).toLocaleString()}</span>
+                                <div class="flex flex-col leading-none translate-y-[-2px]">
+                                    ${getBracketHtml(entry.item?.Change_P30d, 'text-2xl')}
+                                    <span class="text-[8px] text-slate-500 font-black uppercase tracking-tighter mt-1">30 Days Rolling Change</span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 w-fit">
-                                <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">30 days rolling change</span>
+                            <div class="flex items-center gap-6 mt-6">
+                                <div class="flex flex-col"><span class="text-[9px] text-slate-500 font-black uppercase tracking-tighter mb-0.5">HEAD (Owner)</span><span class="text-2xl font-black text-white tabular-nums">${entry.head.toLocaleString()}</span></div>
+                                <div class="w-px h-10 bg-white/10"></div>
+                                <div class="flex flex-col"><span class="text-[9px] text-slate-500 font-black uppercase tracking-tighter mb-0.5">tail (Customer)</span><span class="text-2xl font-black text-white tabular-nums">${entry.tail.toLocaleString()}</span></div>
                             </div>
                         </div>
                     </div>`;
@@ -284,20 +302,8 @@
 
             container.innerHTML = `
                 <div class="flex flex-col lg:flex-row gap-8">
-                    <div class="lg:w-1/3 flex flex-col">
-                        <div class="mb-4 flex items-center gap-3">
-                            <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">REPLICATION</h3>
-                            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div>
-                        </div>
-                        ${replicationCardHtml}
-                    </div>
-                    <div class="lg:w-2/3 flex flex-col">
-                        <div class="mb-4 flex items-center gap-3">
-                            <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">ACTIVATION</h3>
-                            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">${activationCardsHtml}</div>
-                    </div>
+                    <div class="lg:w-1/3 flex flex-col"><div class="mb-4 flex items-center gap-3"><h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">REPLICATION</h3><div class="h-1 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div>${replicationCardHtml}</div>
+                    <div class="lg:w-2/3 flex flex-col"><div class="mb-4 flex items-center gap-3"><h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">ACTIVATION</h3><div class="h-1 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-8">${activationCardsHtml}</div></div>
                 </div>`;
         }
 
@@ -305,13 +311,12 @@
             const tbody = document.getElementById('identities-body');
             tbody.innerHTML = '';
             identitiesData.forEach(row => {
-                const name = row['Shop Category'] || row.Identity || 'N/A';
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/20 transition-colors">
-                        <td class="p-6 font-bold text-xl text-sky-400">${name}</td>
-                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta)}</td>
-                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta)}</td>
-                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta)}</td>
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="p-6 font-black text-2xl text-sky-400 uppercase italic tracking-tighter">${row['Shop Category'] || row.Identity}</td>
+                        <td class="p-6 text-center mono text-2xl font-black tabular-nums tracking-tighter">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-xl')}</td>
+                        <td class="p-6 text-center mono text-2xl font-black tabular-nums tracking-tighter">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-xl')}</td>
+                        <td class="p-6 text-center mono text-2xl font-black tabular-nums tracking-tighter">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-xl')}</td>
                     </tr>`;
             });
         }
@@ -321,61 +326,98 @@
             container.innerHTML = '';
             let brands = [...new Set(opsData.map(d => d.Brand))];
             brands.sort((a, b) => preferredBrandOrder.indexOf(a) - preferredBrandOrder.indexOf(b));
+            if (currentFilter !== 'All') brands = brands.filter(b => b === currentFilter);
 
             brands.forEach(brand => {
                 const brandColor = colors[brand.toLowerCase()] || colors.default;
                 let brandHtml = `
-                    <div class="space-y-6">
-                        <div class="flex items-center gap-4 p-5 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-2xl">
-                            <span class="w-2 h-8 bg-${brandColor}-500 rounded-full"></span>
-                            <h3 class="text-xl font-black uppercase tracking-widest text-${brandColor}-400">${brand} Network</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-${brandColor}-500/20 border border-${brandColor}-500/40 rounded-xl shadow-xl">
+                            <h3 class="text-2xl font-black uppercase tracking-[0.2em] text-${brandColor}-200">${brand} Network</h3>
                         </div>
-                        <div class="glass-panel overflow-hidden border border-slate-800/50">
+                        <div class="glass-panel overflow-hidden border border-white/10 shadow-2xl">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1500px]">
+                                <table class="w-full text-left kpi-table min-w-[1300px]">
                                     <thead>
-                                        <tr class="bg-slate-900/60 text-slate-100">
-                                            <th rowspan="2" class="px-2 text-center bg-slate-950/40">Location</th>
-                                            <th colspan="2" class="text-center bg-emerald-500/10 text-emerald-400 border-l border-white/10">Customer Base</th>
-                                            <th colspan="3" class="text-center bg-sky-500/10 text-sky-400 border-l border-white/10">Summary Metrics</th>
-                                            <th colspan="5" class="text-center bg-indigo-500/10 text-indigo-400 border-l border-white/10">Pillar: Paid Trial Giftcard</th>
-                                            <th colspan="6" class="text-center bg-violet-500/10 text-violet-400 border-l border-white/10">Pillar: Birthday Giftcard</th>
+                                        <tr>
+                                            <th rowspan="2" class="w-[10%] border-r border-slate-800 bg-slate-950/60">Location</th>
+                                            <th class="border-b border-slate-800 text-emerald-400 uppercase font-black">Customer Base</th>
+                                            <th colspan="3" class="border-b border-slate-800 text-sky-400 uppercase font-black">Network Efficiency</th>
+                                            <th colspan="2" class="border-b border-slate-800 text-rose-400 uppercase font-black tracking-widest">Activation (HEAD vs tail)</th>
+                                            <th class="border-b border-slate-800 text-indigo-400 uppercase font-black italic">Paid Trial Giftcard</th>
+                                            <th class="border-b border-slate-800 text-violet-400 uppercase font-black italic">Birthday Giftcard</th>
                                         </tr>
-                                        <tr class="bg-slate-900/40">
-                                            <th class="border-l border-white/10">ACB Reference</th><th>ICB Reference</th>
-                                            <th class="border-l border-white/10">Nodes</th><th>activated (traffic)</th><th>activated (purchase)</th>
-                                            <!-- Pillar PT (5 Cols) -->
-                                            <th class="border-l border-white/10 bg-indigo-900/20">Head (Entitled)</th>
-                                            <th class="bg-indigo-900/20 text-[7px]">Tail (Booking)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Show)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Sign)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Amount)</th>
-                                            <!-- Pillar Bday (6 Cols) -->
-                                            <th class="border-l border-white/10 bg-violet-900/20">Head (Entitled)</th><th class="bg-violet-900/20">Head (Redeem)</th>
-                                            <th class="bg-violet-900/20 text-[7px]">Tail (Booking)</th><th class="bg-violet-900/20 text-[7px]">Tail (Show)</th><th class="bg-violet-900/20 text-[7px]">Tail (Sign)</th><th class="bg-violet-900/20 text-[7px]">Tail (Amount)</th>
+                                        <tr>
+                                            <th class="border-r border-slate-800">A / I Reference</th>
+                                            <th>Nodes (Δ)</th>
+                                            <th class="bg-sky-500/10">Ratio</th>
+                                            <th class="border-r border-slate-800">HC</th>
+                                            <th>(traffic)</th>
+                                            <th class="border-r border-slate-800">(purchase)</th>
+                                            <th class="border-r border-slate-800">HEAD / tail-funnel</th>
+                                            <th>HEAD / tail-funnel</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-800/30">`;
+                                    <tbody class="divide-y divide-slate-800/60">`;
 
                 opsData.filter(d => d.Brand === brand).forEach(d => {
+                    const hc = parseSheetNum(d.HC);
+                    const nodeCount = parseSheetNum(d.Nodes);
+                    const ratio = (hc > 0) ? (nodeCount / hc).toFixed(1) : '-';
+
                     brandHtml += `
-                        <tr class="hover:bg-white/[0.02]">
-                            <td class="px-2 font-bold text-slate-200 text-[11px] text-left italic">${d.Floor}</td>
-                            <td class="text-sky-400 font-bold border-l border-white/5 bg-sky-500/5">${parseSheetNum(d.ACB_Ref).toLocaleString()}</td>
-                            <td class="text-indigo-400 font-bold bg-indigo-500/5">${parseSheetNum(d.ICB_Ref).toLocaleString()}</td>
-                            <td class="border-l border-white/10 font-bold">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[9px]')}</td>
-                            <td class="font-bold">${parseSheetNum(d.Traffic).toLocaleString()} ${getBracketHtml(d.Traffic_Delta, 'text-[9px]')}</td>
-                            <td class="font-bold">${parseSheetNum(d.Purchase).toLocaleString()} ${getBracketHtml(d.Purchase_Delta, 'text-[9px]')}</td>
-                            <!-- PT Pillar -->
-                            <td class="border-l border-white/5 bg-indigo-500/5 text-indigo-300 font-bold">${d.PT_Eligible || '-'}</td>
-                            <td class="bg-indigo-500/5 text-slate-400">${d.PT_Book || '-'}</td>
-                            <td class="bg-indigo-500/5 text-slate-400">${d.PT_Show || '-'}</td>
-                            <td class="bg-indigo-500/5 text-slate-400 font-bold">${d.PT_Sign || '-'}</td>
-                            <td class="bg-indigo-500/5 text-emerald-400 font-bold">${d.PT_Amount || '-'}</td>
-                            <!-- Bday Pillar -->
-                            <td class="border-l border-white/5 bg-violet-500/5 text-violet-300 font-bold">${d.Bday_Eligible || '-'}</td>
-                            <td class="bg-violet-500/5 text-violet-400 font-bold">${d.Bday_Redeem || '-'}</td>
-                            <td class="bg-violet-500/5 text-slate-400">${d.Bday_Book || '-'}</td>
-                            <td class="bg-violet-500/5 text-slate-400">${d.Bday_Show || '-'}</td>
-                            <td class="bg-violet-500/5 text-slate-400 font-bold">${d.Bday_Sign || '-'}</td>
-                            <td class="bg-violet-500/5 text-emerald-400 font-bold">${d.Bday_Amount || '-'}</td>
+                        <tr class="hover:bg-white/[0.04] transition-colors">
+                            <td class="p-3 font-black text-slate-100 border-r border-slate-800 text-sm italic uppercase tracking-tighter">${d.Floor}</td>
+                            
+                            <td class="p-3 border-r border-slate-800">
+                                <div class="stacked-cell">
+                                    <span class="text-sky-300 font-black text-sm tracking-tighter">A: ${parseSheetNum(d.ACB_Ref).toLocaleString()}</span>
+                                    <span class="text-indigo-400 font-black text-sm tracking-tighter">I: ${parseSheetNum(d.ICB_Ref).toLocaleString()}</span>
+                                </div>
+                            </td>
+                            
+                            <td class="p-3 font-black data-value-lg mono text-white">${nodeCount.toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[10px]')}</td>
+                            <td class="p-3 text-sky-300 font-black data-value-xl bg-sky-500/5">${ratio}</td>
+                            <td class="p-3 text-slate-400 border-r border-slate-800 tabular-nums font-bold text-sm">${hc > 0 ? hc.toLocaleString() : '-'}</td>
+                            
+                            <td class="p-3">
+                                <div class="stacked-cell">
+                                    <div class="flex justify-between items-center"><span class="mini-label">HEAD</span><span class="font-black text-white text-sm">${parseSheetNum(d.Traffic_Head).toLocaleString()}</span></div>
+                                    <div class="flex justify-between items-center"><span class="mini-label">tail</span><span class="font-black text-emerald-400 text-sm">${parseSheetNum(d.Traffic_Tail).toLocaleString()}</span></div>
+                                </div>
+                            </td>
+                            <td class="p-3 border-r border-slate-800">
+                                <div class="stacked-cell">
+                                    <div class="flex justify-between items-center"><span class="mini-label">HEAD</span><span class="font-black text-white text-sm">${parseSheetNum(d.Purchase_Head).toLocaleString()}</span></div>
+                                    <div class="flex justify-between items-center"><span class="mini-label">tail</span><span class="font-black text-rose-400 text-sm">${parseSheetNum(d.Purchase_Tail).toLocaleString()}</span></div>
+                                </div>
+                            </td>
+                            
+                            <td class="p-2 border-r border-slate-800">
+                                <div class="stacked-cell">
+                                    <div class="flex justify-between mb-2"><span class="mini-label">HEAD (Ent)</span><span class="font-black text-indigo-300 text-sm">${d.PT_Eligible || '-'}</span></div>
+                                    <div class="mini-grid">
+                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-[10px]">${d.PT_Book || '-'}</span></div>
+                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-[10px]">${d.PT_Show || '-'}</span></div>
+                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Sign</span><span class="font-black text-[10px]">${d.PT_Sign || '-'}</span></div>
+                                        <div class="grid-item flex flex-col items-center border-emerald-500/20"><span class="mini-label text-emerald-400/70">Amt</span><span class="font-black text-emerald-400 text-[10px]">${d.PT_Amount || '-'}</span></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-2">
+                                <div class="stacked-cell">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex flex-col items-start"><span class="mini-label">Ent</span><span class="text-violet-300 font-black text-sm">${d.Bday_Eligible || '-'}</span></div>
+                                        <div class="flex flex-col items-end"><span class="mini-label text-violet-400">Redm</span><span class="text-violet-400 font-black text-sm">${d.Bday_Redeem || '-'}</span></div>
+                                    </div>
+                                    <div class="mini-grid">
+                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-[10px]">${d.Bday_Book || '-'}</span></div>
+                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-[10px]">${d.Bday_Show || '-'}</span></div>
+                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Sign</span><span class="font-black text-[10px]">${d.Bday_Sign || '-'}</span></div>
+                                        <div class="grid-item flex flex-col items-center border-emerald-500/20"><span class="mini-label text-emerald-400/70">Amt</span><span class="font-black text-emerald-400 text-[10px]">${d.Bday_Amount || '-'}</span></div>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>`;
                 });
                 brandHtml += `</tbody></table></div></div></div>`;
@@ -383,10 +425,7 @@
             });
         }
 
-        window.onload = () => {
-            if (window.initDashboard) window.initDashboard();
-            setInterval(() => document.getElementById('current-time').innerText = new Date().toLocaleString(), 1000);
-        };
+        window.onload = () => { if (window.initDashboard) window.initDashboard(); setInterval(() => { const timeEl = document.getElementById('current-time'); if (timeEl) timeEl.innerText = new Date().toLocaleString(); }, 1000); };
     </script>
 </body>
 </html>
