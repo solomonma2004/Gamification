@@ -73,69 +73,77 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1.1rem; }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1rem; }
         .glass-panel { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1rem; }
         .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
         .stat-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
-        .kpi-table th { font-size: 9px; letter-spacing: 0.1em; color: #94a3b8; text-transform: uppercase; padding: 12px 6px; border: 1px solid #1e293b; line-height: 1.2; text-align: center; background: rgba(15, 23, 42, 0.9); font-weight: 900; }
-        .kpi-table td { padding: 6px 6px; font-family: 'Inter', sans-serif; font-size: 12px; border: 1px solid rgba(30, 41, 59, 0.4); text-align: center; vertical-align: middle; }
+        
+        /* UPDATED: Bigger Header Sizes */
+        .kpi-table th { font-size: 14px; letter-spacing: 0.05em; color: #cbd5e1; text-transform: uppercase; padding: 14px 4px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
+        .kpi-table td { padding: 6px 4px; font-family: 'Inter', sans-serif; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         #loading-overlay { transition: opacity 0.5s ease; }
         
         /* High Impact Condensed Styles */
-        .stacked-cell { display: flex; flex-direction: column; gap: 1px; }
-        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; }
-        .mini-label { font-size: 8px; color: #f8fafc; text-transform: uppercase; font-weight: 900; line-height: 1; opacity: 0.6; }
-        .grid-item { background: rgba(255, 255, 255, 0.05); padding: 4px 2px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.02); }
-        .data-value-lg { font-size: 14px; font-weight: 900; tracking: -0.02em; }
-        .data-value-xl { font-size: 18px; font-weight: 900; tracking: -0.05em; }
-
-        /* Filter Tab Styles */
-        .filter-tab { transition: all 0.3s ease; cursor: pointer; }
-        .filter-tab.active { background: rgba(168, 85, 247, 0.3); border-color: rgba(168, 85, 247, 0.6); color: #e9d5ff; box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); transform: scale(1.05); }
+        .stacked-cell { display: flex; flex-direction: column; gap: 0.5px; }
+        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin-top: 4px; }
+        
+        /* UPDATED: Bigger Mini Labels */
+        .mini-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 900; line-height: 1; opacity: 1; }
+        .grid-item { background: rgba(255, 255, 255, 0.07); padding: 5px 2px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.03); }
+        
+        /* Text Size Boosts */
+        .data-value-base { font-size: 16px; font-weight: 900; letter-spacing: -0.03em; }
+        .data-value-lg { font-size: 22px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+        .data-value-xl { font-size: 32px; font-weight: 900; letter-spacing: -0.08em; line-height: 1; }
+        
+        .filter-tab { transition: all 0.3s ease; cursor: pointer; border: 1px solid transparent; }
+        .filter-tab.active { background: rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.6); color: #fff; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); transform: scale(1.05); }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-2 md:p-6">
 
-    <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6">
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6 text-center">
         <div id="loading-spinner" class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase tracking-widest">Initialising Node Network...</p>
+        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase tracking-widest font-black">Syncing Node Network...</p>
     </div>
 
-    <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <h1 class="text-4xl font-black tracking-tighter bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase italic">
-                Distribution Node Momentum
+            <h1 class="text-4xl font-black tracking-tighter bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase italic leading-none">
+                Node Momentum
             </h1>
-            <p class="text-slate-400 mt-2 text-lg italic font-bold">Real-time Activation & Replication Monitoring</p>
+            <p class="text-slate-400 mt-1 text-sm font-black tracking-widest uppercase opacity-70">Activation & Replication Intelligence</p>
         </div>
         <div class="flex gap-4">
-            <button onclick="fetchData()" class="px-6 py-3 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
-                <div id="sync-status" class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                <span id="sync-text" class="text-base font-black text-slate-200 uppercase tracking-tight">Live Feed</span>
+            <button onclick="fetchData()" class="px-5 py-2 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
+                <div id="sync-status" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                <span id="sync-text" class="text-sm font-black text-slate-200 uppercase tracking-widest">Live Feed</span>
             </button>
-            <div class="px-6 py-3 glass-panel font-mono text-slate-300 font-bold" id="current-time"></div>
+            <div class="px-5 py-2 glass-panel font-mono text-slate-300 font-bold text-sm" id="current-time"></div>
         </div>
     </header>
 
-    <section class="mb-12">
-        <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic">Distribution Node Overview</h2>
-            <div class="h-1 flex-1 bg-gradient-to-r from-slate-800 to-transparent ml-4"></div>
+    <!-- SECTION 1: OVERVIEW -->
+    <section class="mb-10">
+        <div class="flex items-center gap-3 mb-4">
+            <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic">Overview</h2>
+            <div class="h-0.5 flex-1 bg-gradient-to-r from-slate-800 to-transparent ml-2"></div>
         </div>
         <div id="overview-container"></div>
     </section>
 
-    <section class="mb-12">
-        <div class="flex items-center gap-3 mb-6">
+    <!-- SECTION 2: IDENTITY -->
+    <section class="mb-10">
+        <div class="flex items-center gap-3 mb-4">
             <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic text-sky-400">Identity Analysis</h2>
-            <div class="h-1 flex-1 bg-gradient-to-r from-sky-900/30 to-transparent ml-4"></div>
+            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-900/30 to-transparent ml-2"></div>
         </div>
-        <div class="glass-panel overflow-hidden border border-white/10">
+        <div class="glass-panel overflow-hidden border border-white/10 shadow-xl">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[1000px]">
+                <table class="w-full text-left border-collapse min-w-[1000px] kpi-table">
                     <thead>
-                        <tr class="bg-slate-900/80 border-b-2 border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                        <tr class="bg-slate-900/80 border-b-2 border-slate-800 text-slate-400 uppercase">
                             <th class="p-6">Shop Category</th>
                             <th class="p-6 text-center text-sky-400">Total Nodes (Δ)</th>
                             <th class="p-6 text-center text-emerald-400">activated (traffic) (Δ)</th>
@@ -148,20 +156,20 @@
         </div>
     </section>
 
-    <section class="mb-24">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-fuchsia-400">Operations Metrics Breakdown</h2>
+    <!-- SECTION 3: OPERATIONS -->
+    <section class="mb-20">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-fuchsia-400">Metrics Breakdown</h2>
             
-            <!-- BRAND FILTER BAR -->
-            <div class="flex items-center glass-panel p-1.5 border border-white/10 overflow-hidden shadow-2xl">
-                <button onclick="setBrandFilter('All')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-All">All</button>
-                <button onclick="setBrandFilter('Dermes')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest active" id="filter-Dermes">Dermes</button>
-                <button onclick="setBrandFilter('Elyze')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-Elyze">Elyze</button>
-                <button onclick="setBrandFilter('Reenex')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-Reenex">Reenex</button>
-                <button onclick="setBrandFilter('Evvus')" class="filter-tab px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest" id="filter-Evvus">Evvus</button>
+            <div class="flex items-center glass-panel p-1.5 border border-white/10 overflow-hidden shadow-2xl scale-100">
+                <button onclick="setBrandFilter('All')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-All">All</button>
+                <button onclick="setBrandFilter('Dermes')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest active" id="filter-Dermes">Dermes</button>
+                <button onclick="setBrandFilter('Elyze')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Elyze">Elyze</button>
+                <button onclick="setBrandFilter('Reenex')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Reenex">Reenex</button>
+                <button onclick="setBrandFilter('Evvus')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Evvus">Evvus</button>
             </div>
         </div>
-        <div class="flex flex-col gap-10" id="ops-container"></div>
+        <div class="flex flex-col gap-8" id="ops-container"></div>
     </section>
 
     <script>
@@ -170,7 +178,7 @@
         const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
         
         let lastData = null;
-        let currentFilter = 'Dermes'; // Default select Dermes only
+        let currentFilter = 'Dermes';
 
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
@@ -237,36 +245,26 @@
 
             const replicationData = { item: nodesItem, style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
             const activationData = [
-                { 
-                    item: trafficItem, 
-                    style: { border: 'border-l-emerald-500', label: 'activated (traffic)', key: 'active_traffic' },
-                    head: getSub("Traffic Head"), tail: getSub("Traffic Tail") 
-                },
-                { 
-                    item: purchaseItem, 
-                    style: { border: 'border-l-rose-500', label: 'activated (purchase)', key: 'active_purchase' },
-                    head: getSub("Purchase Head"), tail: getSub("Purchase Tail")
-                }
+                { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'activated (traffic)', key: 'active_traffic' }, head: getSub("Traffic Head"), tail: getSub("Traffic Tail") },
+                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'activated (purchase)', key: 'active_purchase' }, head: getSub("Purchase Head"), tail: getSub("Purchase Tail") }
             ];
 
             const dailyRep = await window.calculateDailyDelta(parseSheetNum(nodesItem?.Total), replicationData.style.key);
 
             let replicationCardHtml = `
-                <div class="glass-panel p-8 stat-card border-l-8 ${replicationData.style.border} h-full relative overflow-hidden">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-slate-400 text-xs font-black uppercase tracking-widest">${replicationData.style.label}</span>
-                        <div class="flex flex-col items-end">
-                            <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Δ</span>
-                            <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm tabular-nums">${dailyRep >= 0 ? '+' : ''}${dailyRep}</span>
+                <div class="glass-panel p-6 stat-card border-l-8 ${replicationData.style.border} h-full relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-slate-400 text-[12px] font-black uppercase tracking-[0.2em]">${replicationData.style.label}</span>
+                        <div class="flex flex-col items-end leading-none">
+                            <span class="text-[9px] text-slate-500 uppercase font-black">Daily Δ</span>
+                            <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black text-base tabular-nums">${dailyRep >= 0 ? '+' : ''}${dailyRep}</span>
                         </div>
                     </div>
-                    <div class="flex flex-col">
-                        <div class="flex items-baseline gap-3">
-                            <span class="text-6xl font-black tracking-tighter tabular-nums">${parseSheetNum(nodesItem?.Total).toLocaleString()}</span>
-                            <div class="flex flex-col leading-none translate-y-[-2px]">
-                                ${getBracketHtml(nodesItem?.Change_P30d, 'text-2xl')}
-                                <span class="text-[8px] text-slate-500 font-black uppercase tracking-tighter mt-1">30 Days Rolling Change</span>
-                            </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-5xl font-black tracking-tighter tabular-nums">${parseSheetNum(nodesItem?.Total).toLocaleString()}</span>
+                        <div class="flex flex-col leading-none">
+                            ${getBracketHtml(nodesItem?.Change_P30d, 'text-xl')}
+                            <span class="text-[8px] text-slate-500 font-black uppercase tracking-tight mt-1">30d Rolling Change</span>
                         </div>
                     </div>
                 </div>`;
@@ -275,35 +273,35 @@
             for (const entry of activationData) {
                 const dailyAct = await window.calculateDailyDelta(parseSheetNum(entry.item?.Total), entry.style.key);
                 activationCardsHtml += `
-                    <div class="glass-panel p-8 stat-card border-l-8 ${entry.style.border} relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-slate-400 text-xs font-black uppercase tracking-widest">${entry.style.label}</span>
-                            <div class="flex flex-col items-end">
-                                <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Δ</span>
-                                <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm tabular-nums">${dailyAct >= 0 ? '+' : ''}${dailyAct}</span>
+                    <div class="glass-panel p-6 stat-card border-l-8 ${entry.style.border} relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-slate-400 text-[12px] font-black uppercase tracking-[0.2em]">${entry.style.label}</span>
+                            <div class="flex flex-col items-end leading-none">
+                                <span class="text-[9px] text-slate-500 uppercase font-black">Daily Δ</span>
+                                <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black text-base tabular-nums">${dailyAct >= 0 ? '+' : ''}${dailyAct}</span>
                             </div>
                         </div>
                         <div class="flex flex-col">
-                            <div class="flex items-baseline gap-3">
-                                <span class="text-6xl font-black tracking-tighter tabular-nums">${parseSheetNum(entry.item?.Total).toLocaleString()}</span>
-                                <div class="flex flex-col leading-none translate-y-[-2px]">
-                                    ${getBracketHtml(entry.item?.Change_P30d, 'text-2xl')}
-                                    <span class="text-[8px] text-slate-500 font-black uppercase tracking-tighter mt-1">30 Days Rolling Change</span>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-5xl font-black tracking-tighter tabular-nums">${parseSheetNum(entry.item?.Total).toLocaleString()}</span>
+                                <div class="flex flex-col leading-none">
+                                    ${getBracketHtml(entry.item?.Change_P30d, 'text-xl')}
+                                    <span class="text-[8px] text-slate-500 font-black uppercase tracking-tight mt-1">30d Rolling Change</span>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-6 mt-6">
-                                <div class="flex flex-col"><span class="text-[9px] text-slate-500 font-black uppercase tracking-tighter mb-0.5">HEAD (Owner)</span><span class="text-2xl font-black text-white tabular-nums">${entry.head.toLocaleString()}</span></div>
-                                <div class="w-px h-10 bg-white/10"></div>
-                                <div class="flex flex-col"><span class="text-[9px] text-slate-500 font-black uppercase tracking-tighter mb-0.5">tail (Customer)</span><span class="text-2xl font-black text-white tabular-nums">${entry.tail.toLocaleString()}</span></div>
+                            <div class="flex items-center gap-4 mt-4 border-t border-white/5 pt-3">
+                                <div class="flex flex-col"><span class="text-[10px] text-slate-500 font-black uppercase tracking-tighter">HEAD</span><span class="text-2xl font-black text-white tabular-nums">${entry.head.toLocaleString()}</span></div>
+                                <div class="w-px h-6 bg-white/10"></div>
+                                <div class="flex flex-col"><span class="text-[10px] text-slate-500 font-black uppercase tracking-tighter">tail</span><span class="text-2xl font-black text-white tabular-nums">${entry.tail.toLocaleString()}</span></div>
                             </div>
                         </div>
                     </div>`;
             }
 
             container.innerHTML = `
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <div class="lg:w-1/3 flex flex-col"><div class="mb-4 flex items-center gap-3"><h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">REPLICATION</h3><div class="h-1 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div>${replicationCardHtml}</div>
-                    <div class="lg:w-2/3 flex flex-col"><div class="mb-4 flex items-center gap-3"><h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">ACTIVATION</h3><div class="h-1 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-8">${activationCardsHtml}</div></div>
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <div class="lg:w-1/3 flex flex-col"><div class="mb-2 flex items-center gap-2"><h3 class="text-sky-400 text-[12px] font-black uppercase tracking-[0.4em]">REPLICATION</h3><div class="h-px flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div>${replicationCardHtml}</div>
+                    <div class="lg:w-2/3 flex flex-col"><div class="mb-2 flex items-center gap-2"><h3 class="text-sky-400 text-[12px] font-black uppercase tracking-[0.4em]">ACTIVATION</h3><div class="h-px flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4">${activationCardsHtml}</div></div>
                 </div>`;
         }
 
@@ -313,10 +311,10 @@
             identitiesData.forEach(row => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/40 transition-colors">
-                        <td class="p-6 font-black text-2xl text-sky-400 uppercase italic tracking-tighter">${row['Shop Category'] || row.Identity}</td>
-                        <td class="p-6 text-center mono text-2xl font-black tabular-nums tracking-tighter">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-xl')}</td>
-                        <td class="p-6 text-center mono text-2xl font-black tabular-nums tracking-tighter">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-xl')}</td>
-                        <td class="p-6 text-center mono text-2xl font-black tabular-nums tracking-tighter">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-xl')}</td>
+                        <td class="p-4 font-black text-2xl text-white uppercase italic tracking-tighter">${row['Shop Category'] || row.Identity}</td>
+                        <td class="p-4 text-center mono text-3xl font-black tabular-nums tracking-tighter text-sky-400">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-lg')}</td>
+                        <td class="p-4 text-center mono text-3xl font-black tabular-nums tracking-tighter text-emerald-400">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-lg')}</td>
+                        <td class="p-4 text-center mono text-3xl font-black tabular-nums tracking-tighter text-rose-400">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-lg')}</td>
                     </tr>`;
             });
         }
@@ -331,29 +329,29 @@
             brands.forEach(brand => {
                 const brandColor = colors[brand.toLowerCase()] || colors.default;
                 let brandHtml = `
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-4 p-4 bg-${brandColor}-500/20 border border-${brandColor}-500/40 rounded-xl shadow-xl">
-                            <h3 class="text-2xl font-black uppercase tracking-[0.2em] text-${brandColor}-200">${brand} Network</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3 p-3 bg-${brandColor}-500/15 border border-${brandColor}-500/30 rounded-xl shadow-lg">
+                            <h3 class="text-xl font-black uppercase tracking-[0.1em] text-${brandColor}-300">${brand} Network</h3>
                         </div>
                         <div class="glass-panel overflow-hidden border border-white/10 shadow-2xl">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left kpi-table min-w-[1300px]">
                                     <thead>
                                         <tr>
-                                            <th rowspan="2" class="w-[10%] border-r border-slate-800 bg-slate-950/60">Location</th>
-                                            <th class="border-b border-slate-800 text-emerald-400 uppercase font-black">Customer Base</th>
-                                            <th colspan="3" class="border-b border-slate-800 text-sky-400 uppercase font-black">Network Efficiency</th>
-                                            <th colspan="2" class="border-b border-slate-800 text-rose-400 uppercase font-black tracking-widest">Activation (HEAD vs tail)</th>
-                                            <th class="border-b border-slate-800 text-indigo-400 uppercase font-black italic">Paid Trial Giftcard</th>
-                                            <th class="border-b border-slate-800 text-violet-400 uppercase font-black italic">Birthday Giftcard</th>
+                                            <th rowspan="2" class="w-[8%] border-r border-slate-800 bg-slate-950/70">Location</th>
+                                            <th class="border-b border-slate-800 text-emerald-400">Base</th>
+                                            <th colspan="3" class="border-b border-slate-800 text-sky-400">Efficiency</th>
+                                            <th colspan="2" class="border-b border-slate-800 text-rose-400">Activation</th>
+                                            <th class="border-b border-slate-800 text-indigo-400 italic">Paid Trial</th>
+                                            <th class="border-b border-slate-800 text-violet-400 italic">Birthday</th>
                                         </tr>
                                         <tr>
-                                            <th class="border-r border-slate-800">A / I Reference</th>
+                                            <th class="border-r border-slate-800">A / I Ref</th>
                                             <th>Nodes (Δ)</th>
-                                            <th class="bg-sky-500/10">Ratio</th>
+                                            <th class="bg-sky-500/10">Node/HC</th>
                                             <th class="border-r border-slate-800">HC</th>
-                                            <th>(traffic)</th>
-                                            <th class="border-r border-slate-800">(purchase)</th>
+                                            <th>activated (traffic)</th>
+                                            <th class="border-r border-slate-800">activated (purchase)</th>
                                             <th class="border-r border-slate-800">HEAD / tail-funnel</th>
                                             <th>HEAD / tail-funnel</th>
                                         </tr>
@@ -366,55 +364,67 @@
                     const ratio = (hc > 0) ? (nodeCount / hc).toFixed(1) : '-';
 
                     brandHtml += `
-                        <tr class="hover:bg-white/[0.04] transition-colors">
-                            <td class="p-3 font-black text-slate-100 border-r border-slate-800 text-sm italic uppercase tracking-tighter">${d.Floor}</td>
+                        <tr class="hover:bg-white/[0.05] transition-colors">
+                            <td class="p-1.5 font-black text-slate-100 border-r border-slate-800 text-lg italic uppercase tracking-tighter">${d.Floor}</td>
                             
-                            <td class="p-3 border-r border-slate-800">
+                            <td class="p-1.5 border-r border-slate-800">
                                 <div class="stacked-cell">
-                                    <span class="text-sky-300 font-black text-sm tracking-tighter">A: ${parseSheetNum(d.ACB_Ref).toLocaleString()}</span>
-                                    <span class="text-indigo-400 font-black text-sm tracking-tighter">I: ${parseSheetNum(d.ICB_Ref).toLocaleString()}</span>
+                                    <span class="text-sky-300 font-black text-sm">A: ${parseSheetNum(d.ACB_Ref).toLocaleString()}</span>
+                                    <span class="text-indigo-400 font-black text-sm">I: ${parseSheetNum(d.ICB_Ref).toLocaleString()}</span>
                                 </div>
                             </td>
                             
-                            <td class="p-3 font-black data-value-lg mono text-white">${nodeCount.toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[10px]')}</td>
-                            <td class="p-3 text-sky-300 font-black data-value-xl bg-sky-500/5">${ratio}</td>
-                            <td class="p-3 text-slate-400 border-r border-slate-800 tabular-nums font-bold text-sm">${hc > 0 ? hc.toLocaleString() : '-'}</td>
+                            <td class="p-1.5 font-black data-value-lg mono text-white">${nodeCount.toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[12px]')}</td>
+                            <td class="p-1.5 text-sky-300 font-black data-value-xl bg-sky-500/5">${ratio}</td>
+                            <td class="p-1.5 text-slate-400 border-r border-slate-800 tabular-nums font-black text-2xl">${hc > 0 ? hc.toLocaleString() : '-'}</td>
                             
-                            <td class="p-3">
+                            <td class="p-1.5">
                                 <div class="stacked-cell">
-                                    <div class="flex justify-between items-center"><span class="mini-label">HEAD</span><span class="font-black text-white text-sm">${parseSheetNum(d.Traffic_Head).toLocaleString()}</span></div>
-                                    <div class="flex justify-between items-center"><span class="mini-label">tail</span><span class="font-black text-emerald-400 text-sm">${parseSheetNum(d.Traffic_Tail).toLocaleString()}</span></div>
+                                    <div class="flex justify-between items-center"><span class="mini-label">HEAD</span><span class="font-black text-white text-xl">${parseSheetNum(d.Traffic_Head).toLocaleString()}</span></div>
+                                    <div class="flex justify-between items-center"><span class="mini-label text-emerald-500/80">tail</span><span class="font-black text-emerald-400 text-xl">${parseSheetNum(d.Traffic_Tail).toLocaleString()}</span></div>
                                 </div>
                             </td>
-                            <td class="p-3 border-r border-slate-800">
+                            <td class="p-1.5 border-r border-slate-800">
                                 <div class="stacked-cell">
-                                    <div class="flex justify-between items-center"><span class="mini-label">HEAD</span><span class="font-black text-white text-sm">${parseSheetNum(d.Purchase_Head).toLocaleString()}</span></div>
-                                    <div class="flex justify-between items-center"><span class="mini-label">tail</span><span class="font-black text-rose-400 text-sm">${parseSheetNum(d.Purchase_Tail).toLocaleString()}</span></div>
+                                    <div class="flex justify-between items-center"><span class="mini-label">HEAD</span><span class="font-black text-white text-xl">${parseSheetNum(d.Purchase_Head).toLocaleString()}</span></div>
+                                    <div class="flex justify-between items-center"><span class="mini-label text-rose-500/80">tail</span><span class="font-black text-rose-400 text-xl">${parseSheetNum(d.Purchase_Tail).toLocaleString()}</span></div>
                                 </div>
                             </td>
                             
-                            <td class="p-2 border-r border-slate-800">
+                            <!-- PAID TRIAL PILLAR -->
+                            <td class="p-1 border-r border-slate-800 bg-indigo-500/[0.04]">
                                 <div class="stacked-cell">
-                                    <div class="flex justify-between mb-2"><span class="mini-label">HEAD (Ent)</span><span class="font-black text-indigo-300 text-sm">${d.PT_Eligible || '-'}</span></div>
-                                    <div class="mini-grid">
-                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-[10px]">${d.PT_Book || '-'}</span></div>
-                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-[10px]">${d.PT_Show || '-'}</span></div>
-                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Sign</span><span class="font-black text-[10px]">${d.PT_Sign || '-'}</span></div>
-                                        <div class="grid-item flex flex-col items-center border-emerald-500/20"><span class="mini-label text-emerald-400/70">Amt</span><span class="font-black text-emerald-400 text-[10px]">${d.PT_Amount || '-'}</span></div>
+                                    <div class="flex justify-between items-center px-1 pb-1 border-b border-white/10">
+                                        <span class="mini-label text-indigo-400">HEAD</span>
+                                        <span class="font-black text-indigo-300 text-2xl">${d.PT_Eligible || '-'}</span>
+                                    </div>
+                                    <div class="flex flex-col px-1 pt-1">
+                                        <span class="mini-label text-white/40 text-[9px] mb-1 tracking-widest italic">tail (funnel)</span>
+                                        <div class="mini-grid">
+                                            <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-base text-white">${d.PT_Book || '-'}</span></div>
+                                            <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-base text-white">${d.PT_Show || '-'}</span></div>
+                                            <div class="grid-item flex flex-col items-center"><span class="mini-label">Sign</span><span class="font-black text-base text-white">${d.PT_Sign || '-'}</span></div>
+                                            <div class="grid-item flex flex-col items-center bg-emerald-500/10 border-emerald-500/20"><span class="mini-label text-emerald-400">$</span><span class="font-black text-base text-emerald-400">${d.PT_Amount || '-'}</span></div>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-2">
+
+                            <!-- BIRTHDAY PILLAR -->
+                            <td class="p-1 bg-violet-500/[0.04]">
                                 <div class="stacked-cell">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <div class="flex flex-col items-start"><span class="mini-label">Ent</span><span class="text-violet-300 font-black text-sm">${d.Bday_Eligible || '-'}</span></div>
-                                        <div class="flex flex-col items-end"><span class="mini-label text-violet-400">Redm</span><span class="text-violet-400 font-black text-sm">${d.Bday_Redeem || '-'}</span></div>
+                                    <div class="flex justify-between items-center px-1 pb-1 border-b border-white/10">
+                                        <div class="flex flex-col items-start leading-none"><span class="mini-label text-violet-400">Ent</span><span class="text-violet-300 font-black text-2xl">${d.Bday_Eligible || '-'}</span></div>
+                                        <div class="flex flex-col items-end leading-none"><span class="mini-label text-violet-500">Red</span><span class="text-violet-400 font-black text-2xl">${d.Bday_Redeem || '-'}</span></div>
                                     </div>
-                                    <div class="mini-grid">
-                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-[10px]">${d.Bday_Book || '-'}</span></div>
-                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-[10px]">${d.Bday_Show || '-'}</span></div>
-                                        <div class="grid-item flex flex-col items-center"><span class="mini-label">Sign</span><span class="font-black text-[10px]">${d.Bday_Sign || '-'}</span></div>
-                                        <div class="grid-item flex flex-col items-center border-emerald-500/20"><span class="mini-label text-emerald-400/70">Amt</span><span class="font-black text-emerald-400 text-[10px]">${d.Bday_Amount || '-'}</span></div>
+                                    <div class="flex flex-col px-1 pt-1">
+                                        <span class="mini-label text-white/40 text-[9px] mb-1 tracking-widest italic">tail (funnel)</span>
+                                        <div class="mini-grid">
+                                            <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-base text-white">${d.Bday_Book || '-'}</span></div>
+                                            <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-base text-white">${d.Bday_Show || '-'}</span></div>
+                                            <div class="grid-item flex flex-col items-center"><span class="mini-label">Sign</span><span class="font-black text-base text-white">${d.Bday_Sign || '-'}</span></div>
+                                            <div class="grid-item flex flex-col items-center bg-emerald-500/10 border-emerald-500/20"><span class="mini-label text-emerald-400">$</span><span class="font-black text-base text-emerald-400">${d.Bday_Amount || '-'}</span></div>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
