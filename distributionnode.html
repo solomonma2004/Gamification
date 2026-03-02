@@ -8,111 +8,91 @@
     <!-- Firebase Integration for Daily Tracking -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDocs, collection, query, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables for Firebase
-        window.firebaseVars = { doc, setDoc, getDocs, collection, query, limit };
-        
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        window.db = db;
-
+        let db;
+        let auth;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'distribution-node-dashboard';
 
-        // Auth before queries (Rule 3)
+        try {
+            const firebaseConfig = JSON.parse(__firebase_config);
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            window.db = db;
+        } catch (e) {
+            console.error("Firebase Configuration Missing or Invalid:", e);
+        }
+
         const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Authentication Service Unavailable:", e);
             }
         };
 
+        // Failsafe sequence to prevent "Stuck Syncing"
         window.initDashboard = async () => {
-            await initAuth();
-            fetchData();
+            const timeout = new Promise(res => setTimeout(() => {
+                console.warn("Sync taking too long, entering failsafe mode...");
+                res();
+            }, 4000));
+
+            try {
+                await Promise.race([initAuth(), timeout]);
+            } finally {
+                // Hides overlay once data is retrieved or timeout hits
+                fetchData();
+            }
         };
 
-        // Snapshot logic to calculate daily change specifically against yesterday
+        // Snapshot logic with timeout to prevent hanging
         window.calculateDailyDelta = async (currentTotal, metricKey) => {
-            if (!auth.currentUser) return 0;
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots');
-            const snap = await getDocs(colRef);
+            if (!auth?.currentUser || !db) return 0;
             
-            // Get all historical records for this metric, sorted by newest first
-            const allRecords = snap.docs
-                .map(d => d.data())
-                .filter(d => d.metric === metricKey)
-                .sort((a, b) => b.timestamp - a.timestamp);
-            
-            const todayStr = new Date().toDateString();
-            
-            // Find the most recent record that is NOT from today (Yesterday's baseline)
-            const yesterdayRecord = allRecords.find(d => new Date(d.timestamp).toDateString() !== todayStr);
-            
-            // Check if we have already saved a snapshot for today
-            const todayRecordExists = allRecords.some(d => d.timestamp && new Date(d.timestamp).toDateString() === todayStr);
-            
-            // If no snapshot exists for today yet, create one using current data
-            if (!todayRecordExists) {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots', `${metricKey}_${Date.now()}`), {
-                    metric: metricKey,
-                    value: currentTotal,
-                    timestamp: Date.now()
-                });
-            }
+            try {
+                const fetchPromise = (async () => {
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots');
+                    const snap = await getDocs(colRef);
+                    
+                    const allRecords = snap.docs
+                        .map(d => d.data())
+                        .filter(d => d.metric === metricKey)
+                        .sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    const todayStr = new Date().toDateString();
+                    const yesterdayRecord = allRecords.find(d => new Date(d.timestamp).toDateString() !== todayStr);
+                    const todayRecordExists = allRecords.some(d => d.timestamp && new Date(d.timestamp).toDateString() === todayStr);
+                    
+                    if (!todayRecordExists) {
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots', `${metricKey}_${Date.now()}`), {
+                            metric: metricKey, value: currentTotal, timestamp: Date.now()
+                        });
+                    }
+                    return yesterdayRecord ? (currentTotal - yesterdayRecord.value) : 0;
+                })();
 
-            // Return difference between right now and the final state of "not today"
-            return yesterdayRecord ? (currentTotal - yesterdayRecord.value) : 0;
+                // Don't wait longer than 1.5s for the delta calculation
+                return await Promise.race([fetchPromise, new Promise(res => setTimeout(() => res(0), 1500))]);
+            } catch (e) {
+                return 0;
+            }
         };
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            font-size: 1.1rem;
-        }
-
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.5);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 1rem;
-        }
-
-        .stat-card {
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .stat-card:hover {
-            border-color: rgba(56, 189, 248, 0.4);
-            transform: translateY(-2px);
-        }
-
-        .kpi-table th {
-            font-size: 8px;
-            letter-spacing: 0.02em;
-            color: #94a3b8;
-            text-transform: uppercase;
-            padding: 6px 2px;
-            border: 1px solid #1e293b;
-            line-height: 1.1;
-            text-align: center;
-        }
-        .kpi-table td {
-            padding: 8px 2px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            border: 1px solid rgba(30, 41, 59, 0.3);
-            text-align: center;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1.1rem; }
+        .glass-panel { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1rem; }
+        .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
+        .stat-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
+        .kpi-table th { font-size: 8px; letter-spacing: 0.02em; color: #94a3b8; text-transform: uppercase; padding: 6px 2px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; }
+        .kpi-table td { padding: 8px 2px; font-family: 'JetBrains Mono', monospace; font-size: 11px; border: 1px solid rgba(30, 41, 59, 0.3); text-align: center; }
         #loading-overlay { transition: opacity 0.5s ease; }
     </style>
 </head>
@@ -120,7 +100,7 @@
 
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6">
         <div id="loading-spinner" class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase">Syncing Dashboard...</p>
+        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase tracking-widest">Initialising Node Network...</p>
     </div>
 
     <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -135,27 +115,19 @@
                 <div id="sync-status" class="w-3 h-3 rounded-full bg-emerald-500"></div>
                 <span id="sync-text" class="text-base font-semibold text-slate-300 uppercase tracking-tight">Live Feed</span>
             </button>
-            <div class="px-6 py-3 glass-panel">
-                <span class="text-base font-medium text-slate-300" id="current-time"></span>
-            </div>
+            <div class="px-6 py-3 glass-panel font-mono text-slate-300" id="current-time"></div>
         </div>
     </header>
 
     <!-- SECTION 1: Overview -->
     <section class="mb-12">
-        <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Distribution Node Overview</h2>
-            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
-        </div>
-        <div id="overview-container">
-            <!-- Content injected via renderOverview -->
-        </div>
+        <div id="overview-container"></div>
     </section>
 
-    <!-- SECTION 2: Identity -->
+    <!-- SECTION 2: Identity Analysis -->
     <section class="mb-12">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Identity Analysis</h2>
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase text-sky-400">Identity Analysis</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
         <div class="glass-panel overflow-hidden">
@@ -164,9 +136,9 @@
                     <thead>
                         <tr class="bg-slate-900/50 border-b-2 border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                             <th class="p-6">Shop Category</th>
-                            <th class="p-6 text-center">Total Nodes (P30D Change)</th>
-                            <th class="p-6 text-center">Active Traffic (P30D Change)</th>
-                            <th class="p-6 text-center">Purchase (P30D Change)</th>
+                            <th class="p-6 text-center">Total Nodes (Past 30 Days)</th>
+                            <th class="p-6 text-center">Active Traffic (Past 30 Days)</th>
+                            <th class="p-6 text-center">Purchase (Past 30 Days)</th>
                         </tr>
                     </thead>
                     <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
@@ -178,7 +150,7 @@
     <!-- SECTION 3: Operations -->
     <section class="mb-24">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Operations Metrics Breakdown</h2>
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase text-fuchsia-400">Operations Metrics Breakdown</h2>
             <div class="h-px flex-1 bg-slate-800 ml-4"></div>
         </div>
         <div class="flex flex-col gap-14" id="ops-container"></div>
@@ -187,14 +159,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxq1U8l7Ktl6pTK6_uud0f_AbjplXi0tJ_R_qIf-gZRoxuQ6HbYixxCjZngFrNT-cheow/exec";
         const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
-        
-        const colors = {
-            dermes: 'sky',
-            elyze: 'emerald',
-            reenex: 'rose',
-            evvus: 'indigo',
-            default: 'slate'
-        };
+        const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
 
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
@@ -202,7 +167,6 @@
             return parseFloat(val.toString().replace(/,/g, '')) || 0;
         }
 
-        // Helper for bracket formatting and coloring
         function getBracketHtml(val, sizeClass = "text-base") {
             const num = parseSheetNum(val);
             const colorClass = num >= 0 ? 'text-emerald-500' : 'text-rose-500';
@@ -220,6 +184,7 @@
                 setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
             } catch (error) {
                 console.error("Fetch Error:", error);
+                document.querySelector('#loading-overlay p').innerText = "Google Data Connection Unavailable. Re-check GAS Deployment.";
             } finally {
                 setSyncStatus(false);
             }
@@ -254,20 +219,19 @@
             const replicationData = { item: nodesItem, style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
             const activationData = [
                 { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'Active Traffic', key: 'active_traffic' } },
-                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'Active Purchase', key: 'active_purchase' } }
+                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'Activated Purchase', key: 'active_purchase' } }
             ];
 
-            // Build Replication Card HTML
             const totalRep = parseSheetNum(replicationData.item?.Total);
             const p30Rep = replicationData.item?.Change_P30d;
             const dailyRep = await window.calculateDailyDelta(totalRep, replicationData.style.key);
 
-            const replicationCardHtml = `
+            let replicationCardHtml = `
                 <div class="glass-panel p-8 stat-card border-l-8 ${replicationData.style.border} h-full">
                     <div class="flex justify-between items-start mb-4">
                         <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${replicationData.style.label}</span>
                         <div class="flex flex-col items-end">
-                            <span class="text-[10px] text-slate-500 uppercase font-black leading-none mb-1">Daily Change</span>
+                            <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
                             <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
                                 ${dailyRep >= 0 ? '+' : ''}${dailyRep}
                             </span>
@@ -278,23 +242,19 @@
                         <span class="text-5xl font-black tracking-tighter">${totalRep.toLocaleString()}</span>
                         ${getBracketHtml(p30Rep, 'text-2xl')}
                     </div>
-                    <p class="text-[9px] text-slate-600 mt-2 font-mono uppercase tracking-tighter italic">P30D Rolling Metric</p>
-                </div>
-            `;
+                </div>`;
 
-            // Build Activation Cards HTML
             let activationCardsHtml = '';
             for (const entry of activationData) {
                 const totalAct = parseSheetNum(entry.item?.Total);
                 const p30Act = entry.item?.Change_P30d;
                 const dailyAct = await window.calculateDailyDelta(totalAct, entry.style.key);
-                
                 activationCardsHtml += `
                     <div class="glass-panel p-8 stat-card border-l-8 ${entry.style.border}">
                         <div class="flex justify-between items-start mb-4">
                             <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${entry.style.label}</span>
                             <div class="flex flex-col items-end">
-                                <span class="text-[10px] text-slate-500 uppercase font-black leading-none mb-1">Daily Change</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
                                 <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
                                     ${dailyAct >= 0 ? '+' : ''}${dailyAct}
                                 </span>
@@ -305,14 +265,11 @@
                             <span class="text-5xl font-black tracking-tighter">${totalAct.toLocaleString()}</span>
                             ${getBracketHtml(p30Act, 'text-2xl')}
                         </div>
-                        <p class="text-[9px] text-slate-600 mt-2 font-mono uppercase tracking-tighter italic">P30D Rolling Metric</p>
-                    </div>
-                `;
+                    </div>`;
             }
 
             container.innerHTML = `
                 <div class="flex flex-col lg:flex-row gap-8">
-                    <!-- Replication Group -->
                     <div class="lg:w-1/3 flex flex-col">
                         <div class="mb-4 flex items-center gap-3">
                             <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">REPLICATION</h3>
@@ -320,18 +277,14 @@
                         </div>
                         ${replicationCardHtml}
                     </div>
-                    <!-- Activation Group -->
                     <div class="lg:w-2/3 flex flex-col">
                         <div class="mb-4 flex items-center gap-3">
                             <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">ACTIVATION</h3>
                             <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            ${activationCardsHtml}
-                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">${activationCardsHtml}</div>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
         function renderIdentities(identitiesData) {
@@ -342,17 +295,10 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/20 transition-colors">
                         <td class="p-6 font-bold text-xl text-sky-400">${name}</td>
-                        <td class="p-6 text-center font-mono text-xl">
-                            ${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta)}
-                        </td>
-                        <td class="p-6 text-center font-mono text-xl">
-                            ${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta)}
-                        </td>
-                        <td class="p-6 text-center font-mono text-xl">
-                            ${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta)}
-                        </td>
-                    </tr>
-                `;
+                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta)}</td>
+                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta)}</td>
+                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta)}</td>
+                    </tr>`;
             });
         }
 
@@ -367,51 +313,55 @@
                 let brandHtml = `
                     <div class="space-y-6">
                         <div class="flex items-center gap-4 p-5 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-2xl">
-                            <span class="w-2 h-8 bg-${brandColor}-500 rounded-full"></span>
                             <h3 class="text-xl font-black uppercase tracking-widest text-${brandColor}-400">${brand} Network</h3>
                         </div>
                         <div class="glass-panel overflow-hidden border border-slate-800/50">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1500px]">
+                                <table class="w-full text-left kpi-table min-w-[1600px]">
                                     <thead>
                                         <tr class="bg-slate-900/60 text-slate-100">
                                             <th rowspan="2" class="px-2 text-center bg-slate-950/40">Location</th>
                                             <th colspan="2" class="text-center bg-emerald-500/10 text-emerald-400 border-l border-white/10">Customer Base</th>
                                             <th colspan="3" class="text-center bg-sky-500/10 text-sky-400 border-l border-white/10">Summary Metrics</th>
-                                            <th colspan="2" class="text-center bg-indigo-500/10 text-indigo-400 border-l border-white/10">Pillar: Paid Trial Giftcard</th>
-                                            <th colspan="3" class="text-center bg-violet-500/10 text-violet-400 border-l border-white/10">Pillar: Birthday Giftcard</th>
+                                            <th colspan="5" class="text-center bg-indigo-500/10 text-indigo-400 border-l border-white/10">Pillar: Paid Trial Giftcard</th>
+                                            <th colspan="6" class="text-center bg-violet-500/10 text-violet-400 border-l border-white/10">Pillar: Birthday Giftcard</th>
                                         </tr>
                                         <tr class="bg-slate-900/40">
                                             <th class="border-l border-white/10">ACB Reference</th><th>ICB Reference</th>
-                                            <th class="border-l border-white/10">Nodes (Change)</th><th>Traffic (Change)</th><th>Purchase (Change)</th>
-                                            <th class="border-l border-white/10">Head (Entitled)</th><th>Tail (Booking/Show/Sign/Amount)</th>
-                                            <th class="border-l border-white/10">Head (Entitled)</th><th>Head (Redeem)</th><th>Tail (Booking/Show/Sign/Amount)</th>
+                                            <th class="border-l border-white/10">Nodes</th><th>Traffic</th><th>Purchase</th>
+                                            <!-- Pillar PT (5 Cols) -->
+                                            <th class="border-l border-white/10 bg-indigo-900/20">Head (Entitled)</th>
+                                            <th class="bg-indigo-900/20 text-[7px]">Tail (Booking)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Show)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Sign)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Amount)</th>
+                                            <!-- Pillar Bday (6 Cols) -->
+                                            <th class="border-l border-white/10 bg-violet-900/20">Head (Entitled)</th><th class="bg-violet-900/20">Head (Redeem)</th>
+                                            <th class="bg-violet-900/20 text-[7px]">Tail (Booking)</th><th class="bg-violet-900/20 text-[7px]">Tail (Show)</th><th class="bg-violet-900/20 text-[7px]">Tail (Sign)</th><th class="bg-violet-900/20 text-[7px]">Tail (Amount)</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-800/30">
-                `;
+                                    <tbody class="divide-y divide-slate-800/30">`;
+
                 opsData.filter(d => d.Brand === brand).forEach(d => {
                     brandHtml += `
                         <tr class="hover:bg-white/[0.02]">
-                            <td class="px-2 font-bold text-slate-200 text-[11px] text-left">${d.Floor}</td>
+                            <td class="px-2 font-bold text-slate-200 text-[11px] text-left italic">${d.Floor}</td>
                             <td class="text-sky-400 font-bold border-l border-white/5 bg-sky-500/5">${parseSheetNum(d.ACB_Ref).toLocaleString()}</td>
                             <td class="text-indigo-400 font-bold bg-indigo-500/5">${parseSheetNum(d.ICB_Ref).toLocaleString()}</td>
-                            <td class="border-l border-white/10 font-bold">
-                                ${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[10px]')}
-                            </td>
-                            <td class="font-bold">
-                                ${parseSheetNum(d.Traffic).toLocaleString()} ${getBracketHtml(d.Traffic_Delta, 'text-[10px]')}
-                            </td>
-                            <td class="font-bold">
-                                ${parseSheetNum(d.Purchase).toLocaleString()} ${getBracketHtml(d.Purchase_Delta, 'text-[10px]')}
-                            </td>
+                            <td class="border-l border-white/10 font-bold">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[9px]')}</td>
+                            <td class="font-bold">${parseSheetNum(d.Traffic).toLocaleString()} ${getBracketHtml(d.Traffic_Delta, 'text-[9px]')}</td>
+                            <td class="font-bold">${parseSheetNum(d.Purchase).toLocaleString()} ${getBracketHtml(d.Purchase_Delta, 'text-[9px]')}</td>
+                            <!-- PT Pillar -->
                             <td class="border-l border-white/5 bg-indigo-500/5 text-indigo-300 font-bold">${d.PT_Eligible || '-'}</td>
-                            <td class="bg-indigo-500/5 text-slate-400 text-[10px]">${d.PT_Tail || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400">${d.PT_Book || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400">${d.PT_Show || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400 font-bold">${d.PT_Sign || '-'}</td>
+                            <td class="bg-indigo-500/5 text-emerald-400 font-bold">${d.PT_Amount || '-'}</td>
+                            <!-- Bday Pillar -->
                             <td class="border-l border-white/5 bg-violet-500/5 text-violet-300 font-bold">${d.Bday_Eligible || '-'}</td>
                             <td class="bg-violet-500/5 text-violet-400 font-bold">${d.Bday_Redeem || '-'}</td>
-                            <td class="bg-violet-500/5 text-slate-400 text-[10px]">${d.Bday_Tail || '-'}</td>
-                        </tr>
-                    `;
+                            <td class="bg-violet-500/5 text-slate-400">${d.Bday_Book || '-'}</td>
+                            <td class="bg-violet-500/5 text-slate-400">${d.Bday_Show || '-'}</td>
+                            <td class="bg-violet-500/5 text-slate-400 font-bold">${d.Bday_Sign || '-'}</td>
+                            <td class="bg-violet-500/5 text-emerald-400 font-bold">${d.Bday_Amount || '-'}</td>
+                        </tr>`;
                 });
                 brandHtml += `</tbody></table></div></div></div>`;
                 container.innerHTML += brandHtml;
