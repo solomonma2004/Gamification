@@ -29,7 +29,7 @@
         .petal { position: absolute; background: linear-gradient(135deg, #ffdbed 0%, #ffb7d5 100%); border-radius: 150% 0 150% 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translate(0, -20px) rotate(0deg) scale(1); } 100% { transform: translate(100px, 110vh) rotate(720deg) scale(0.6); } }
 
-        /* Banner 容器：使用新 URL 並確保填滿感 */
+        /* Banner 容器：使用新海報 URL */
         .banner-container {
             width: 100%;
             background: #fff;
@@ -44,7 +44,7 @@
             max-width: 1200px;
             height: auto;
             display: block;
-            object-fit: cover; /* 確保 Banner 更有衝擊力 */
+            object-fit: cover; 
         }
 
         .prize-float-badge {
@@ -143,7 +143,7 @@
             <span class="text-2xl">💎</span>
             <div class="text-sm font-bold leading-tight">Ultherapy 療程 <span class="text-amber-400 font-black">$32,888</span></div>
         </div>
-        <img src="https://i.postimg.cc/3wTdmxRf/IMG-9958.jpg" class="banner-img" alt="NeoDerm Spring Draw">
+        <img src="https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/6e0bbb57-4917-479d-85c1-bebb94b81f8e.jpeg" class="banner-img" alt="NeoDerm Spring Draw">
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-8 relative z-10">
@@ -408,7 +408,7 @@
                 document.getElementById('sub-msg').classList.remove('hidden');
                 setTimeout(() => location.reload(), 2000);
             } catch (e) {
-                alert("存檔失敗，請確認網路連線。");
+                alert("存檔失敗，請檢查網路連線。");
                 btn.disabled = false;
             }
         };
