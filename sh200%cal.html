@@ -1,417 +1,371 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neoderm 200% 銷售計劃 (通用計算機)</title>
-    <!-- Tailwind CSS for Styling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Momentum Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React and ReactDOM CDNs -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX compilation in browser -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase Integration for Daily Tracking -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db;
+        let auth;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'distribution-node-dashboard';
+
+        // Initialize Firebase securely
+        try {
+            const firebaseConfig = JSON.parse(__firebase_config);
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            window.db = db;
+        } catch (e) {
+            console.error("Firebase Init Failed:", e);
+        }
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Auth Failed:", e);
+            }
+        };
+
+        // Failsafe Init: Don't let Firebase errors hang the entire UI
+        window.initDashboard = async () => {
+            try {
+                // Set a 3-second timeout for the secure connection
+                await Promise.race([
+                    initAuth(),
+                    new Promise(res => setTimeout(res, 3000))
+                ]);
+            } finally {
+                // Always fetch data even if auth timed out
+                fetchData();
+            }
+        };
+
+        // Snapshot logic vs Yesterday
+        window.calculateDailyDelta = async (currentTotal, metricKey) => {
+            if (!auth || !auth.currentUser) return 0;
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots');
+                const snap = await getDocs(colRef);
+                
+                const allRecords = snap.docs
+                    .map(d => d.data())
+                    .filter(d => d.metric === metricKey)
+                    .sort((a, b) => b.timestamp - a.timestamp);
+                
+                const todayStr = new Date().toDateString();
+                const yesterdayRecord = allRecords.find(d => new Date(d.timestamp).toDateString() !== todayStr);
+                const todayRecordExists = allRecords.some(d => d.timestamp && new Date(d.timestamp).toDateString() === todayStr);
+                
+                if (!todayRecordExists) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots', `${metricKey}_${Date.now()}`), {
+                        metric: metricKey, value: currentTotal, timestamp: Date.now()
+                    });
+                }
+                return yesterdayRecord ? (currentTotal - yesterdayRecord.value) : 0;
+            } catch (e) {
+                return 0;
+            }
+        };
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        :root {
-            --bg-color: #05030a;
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-color); 
-            color: white;
-            -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
-        }
-
-        /* Social Network Background Pattern */
-        .bg-network {
-            background-image: 
-                radial-gradient(circle at center, transparent 0%, var(--bg-color) 100%),
-                url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20 L40 0 M20 20 L0 0 M20 20 L20 40 M20 20 L40 40 M20 20 L0 40' stroke='rgba(168, 85, 247, 0.08)' stroke-width='1'/%3E%3Ccircle cx='20' cy='20' r='1.5' fill='rgba(217, 70, 239, 0.3)'/%3E%3C/svg%3E");
-            background-size: 60px 60px;
-        }
-
-        /* Hide number input spinners */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .animate-shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1.1rem; }
+        .glass-panel { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1rem; }
+        .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
+        .stat-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
+        .kpi-table th { font-size: 8px; letter-spacing: 0.02em; color: #94a3b8; text-transform: uppercase; padding: 6px 2px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; }
+        .kpi-table td { padding: 8px 2px; font-family: 'JetBrains Mono', monospace; font-size: 11px; border: 1px solid rgba(30, 41, 59, 0.3); text-align: center; }
+        #loading-overlay { transition: opacity 0.5s ease; }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="p-4 md:p-8">
 
-    <script type="text/babel">
-        const { useState, useMemo, useCallback, useEffect } = React;
-        
-        // Manual Lucide Icon Mapping for CDN usage
-        const Icon = ({ name, className, size = 24 }) => {
-            const [svg, setSvg] = useState('');
-            useEffect(() => {
-                if (window.lucide) {
-                    const iconNode = window.lucide.icons[name];
-                    if (iconNode) {
-                        const svgString = iconNode.map(tag => {
-                            const [tagName, attrs] = tag;
-                            const attrString = Object.entries(attrs).map(([k, v]) => `${k}="${v}"`).join(' ');
-                            return `<${tagName} ${attrString}></${tagName}>`;
-                        }).join('');
-                        setSvg(svgString);
-                    }
-                }
-            }, [name]);
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6">
+        <div id="loading-spinner" class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase tracking-widest">Initialising Node Network...</p>
+    </div>
 
-            return (
-                <svg 
-                    width={size} 
-                    height={size} 
-                    className={className} 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                    dangerouslySetInnerHTML={{ __html: svg }}
-                />
-            );
-        };
+    <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase">
+                Distribution Node Momentum
+            </h1>
+            <p class="text-slate-400 mt-2 text-lg italic">Real-time Activation & Replication Monitoring</p>
+        </div>
+        <div class="flex gap-4">
+            <button onclick="fetchData()" class="px-6 py-3 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
+                <div id="sync-status" class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                <span id="sync-text" class="text-base font-semibold text-slate-300 uppercase tracking-tight">Live Feed</span>
+            </button>
+            <div class="px-6 py-3 glass-panel font-mono text-slate-300" id="current-time"></div>
+        </div>
+    </header>
 
-        const formatRMB = (val) => new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', maximumFractionDigits: 0 }).format(val);
+    <!-- SECTION 1: Overview -->
+    <section class="mb-12">
+        <div id="overview-container"></div>
+    </section>
 
-        // SignInput 區塊
-        const SignInput = ({ id, label, colorClass, iconName, planning, onUpdate }) => {
-            const item = planning[id] || { signs: 0, ticket: 0 };
-            const subtotal = Number(item.signs || 0) * Number(item.ticket || 0);
+    <!-- SECTION 2: Identity Analysis -->
+    <section class="mb-12">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Identity Analysis</h2>
+            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+        </div>
+        <div class="glass-panel overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <thead>
+                        <tr class="bg-slate-900/50 border-b-2 border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                            <th class="p-6">Shop Category</th>
+                            <th class="p-6 text-center">Total Nodes (Past 30 Days)</th>
+                            <th class="p-6 text-center">Active Traffic (Past 30 Days)</th>
+                            <th class="p-6 text-center">Purchase (Past 30 Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 
-            return (
-                <div className="relative group p-5 md:p-6 glass-panel rounded-3xl transition-all duration-300 hover:border-violet-500/30">
-                    <div className="flex items-center gap-3 mb-5">
-                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${colorClass} bg-opacity-10 shadow-lg`}>
-                            <Icon name={iconName} size={22} className="text-white" />
-                        </div>
-                        <span className="text-base md:text-lg font-bold text-white/90 tracking-wide">{label}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-[11px] md:text-xs text-white/40 font-bold uppercase ml-1 tracking-widest">簽單目標</label>
-                            <input 
-                                type="number" 
-                                inputMode="numeric"
-                                value={item.signs || ''}
-                                onChange={(e) => onUpdate(id, 'signs', e.target.value)}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-4 text-xl text-white font-mono focus:ring-1 focus:ring-violet-400 outline-none transition-all"
-                                placeholder="0"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[11px] md:text-xs text-white/40 font-bold uppercase ml-1 tracking-widest">平均客單價</label>
-                            <input 
-                                type="number" 
-                                inputMode="numeric"
-                                value={item.ticket || ''}
-                                onChange={(e) => onUpdate(id, 'ticket', e.target.value)}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-4 text-xl text-white font-mono focus:ring-1 focus:ring-violet-400 outline-none transition-all"
-                                placeholder="0"
-                            />
-                        </div>
-                    </div>
-                    <div className="mt-5 flex justify-between items-center px-1">
-                        <span className="text-xs text-white/30 font-bold uppercase">分支小計</span>
-                        <span className="text-base md:text-xl font-black text-white/80">{formatRMB(subtotal)}</span>
-                    </div>
-                </div>
-            );
-        };
+    <!-- SECTION 3: Operations -->
+    <section class="mb-24">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Operations Metrics Breakdown</h2>
+            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+        </div>
+        <div class="flex flex-col gap-14" id="ops-container"></div>
+    </section>
 
-        const App = () => {
-            // 手動輸入的基礎目標額
-            const [targetSales, setTargetSales] = useState(400000);
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxq1U8l7Ktl6pTK6_uud0f_AbjplXi0tJ_R_qIf-gZRoxuQ6HbYixxCjZngFrNT-cheow/exec";
+        const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
+        const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
+
+        function parseSheetNum(val) {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            return parseFloat(val.toString().replace(/,/g, '')) || 0;
+        }
+
+        function getBracketHtml(val, sizeClass = "text-base") {
+            const num = parseSheetNum(val);
+            const colorClass = num >= 0 ? 'text-emerald-500' : 'text-rose-500';
+            const sign = num >= 0 ? '+' : '';
+            return `<span class="${colorClass} ${sizeClass} font-bold">(${sign}${num})</span>`;
+        }
+
+        async function fetchData() {
+            setSyncStatus(true);
+            try {
+                const response = await fetch(`${API_URL}?t=${Date.now()}`);
+                const data = await response.json();
+                updateDashboard(data);
+                document.getElementById('loading-overlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                document.querySelector('#loading-overlay p').innerText = "Data Connection Failed. Please check GAS deployment.";
+            } finally {
+                setSyncStatus(false);
+            }
+        }
+
+        function setSyncStatus(isSyncing) {
+            const status = document.getElementById('sync-status');
+            const text = document.getElementById('sync-text');
+            if (isSyncing) {
+                status.classList.add('animate-pulse');
+                text.innerText = "Syncing...";
+            } else {
+                status.classList.remove('animate-pulse');
+                text.innerText = "Live Feed";
+            }
+        }
+
+        async function updateDashboard(data) {
+            await renderOverview(data.overview);
+            renderIdentities(data.identities);
+            renderOperations(data.operations);
+        }
+
+        async function renderOverview(overviewData) {
+            const container = document.getElementById('overview-container');
+            container.innerHTML = '';
             
-            // 滲透率數據狀態
-            const [penetration, setPenetration] = useState({
-                acbBase: 150,
-                acbCount: 40,
-                icbBase: 150,
-                icbCount: 15
+            const nodesItem = overviewData.find(item => item.Metric === "Total Nodes") || overviewData[0];
+            const trafficItem = overviewData.find(item => item.Metric === "Traffic") || overviewData[1];
+            const purchaseItem = overviewData.find(item => item.Metric === "Purchase") || overviewData[2];
+
+            const replicationData = { item: nodesItem, style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
+            const activationData = [
+                { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'Active Traffic', key: 'active_traffic' } },
+                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'Activated Purchase', key: 'active_purchase' } }
+            ];
+
+            const totalRep = parseSheetNum(replicationData.item?.Total);
+            const p30Rep = replicationData.item?.Change_P30d;
+            const dailyRep = await window.calculateDailyDelta(totalRep, replicationData.style.key);
+
+            let replicationCardHtml = `
+                <div class="glass-panel p-8 stat-card border-l-8 ${replicationData.style.border} h-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${replicationData.style.label}</span>
+                        <div class="flex flex-col items-end">
+                            <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
+                            <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
+                                ${dailyRep >= 0 ? '+' : ''}${dailyRep}
+                            </span>
+                            <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-5xl font-black tracking-tighter">${totalRep.toLocaleString()}</span>
+                        ${getBracketHtml(p30Rep, 'text-2xl')}
+                    </div>
+                </div>`;
+
+            let activationCardsHtml = '';
+            for (const entry of activationData) {
+                const totalAct = parseSheetNum(entry.item?.Total);
+                const p30Act = entry.item?.Change_P30d;
+                const dailyAct = await window.calculateDailyDelta(totalAct, entry.style.key);
+                activationCardsHtml += `
+                    <div class="glass-panel p-8 stat-card border-l-8 ${entry.style.border}">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${entry.style.label}</span>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
+                                <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-sm">
+                                    ${dailyAct >= 0 ? '+' : ''}${dailyAct}
+                                </span>
+                                <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-5xl font-black tracking-tighter">${totalAct.toLocaleString()}</span>
+                            ${getBracketHtml(p30Act, 'text-2xl')}
+                        </div>
+                    </div>`;
+            }
+
+            container.innerHTML = `
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="lg:w-1/3 flex flex-col">
+                        <div class="mb-4 flex items-center gap-3">
+                            <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">REPLICATION</h3>
+                            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div>
+                        </div>
+                        ${replicationCardHtml}
+                    </div>
+                    <div class="lg:w-2/3 flex flex-col">
+                        <div class="mb-4 flex items-center gap-3">
+                            <h3 class="text-sky-400 text-xl font-black uppercase tracking-[0.4em]">ACTIVATION</h3>
+                            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">${activationCardsHtml}</div>
+                    </div>
+                </div>`;
+        }
+
+        function renderIdentities(identitiesData) {
+            const tbody = document.getElementById('identities-body');
+            tbody.innerHTML = '';
+            identitiesData.forEach(row => {
+                const name = row['Shop Category'] || row.Identity || 'N/A';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/20 transition-colors">
+                        <td class="p-6 font-bold text-xl text-sky-400">${name}</td>
+                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta)}</td>
+                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta)}</td>
+                        <td class="p-6 text-center font-mono text-xl">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta)}</td>
+                    </tr>`;
             });
+        }
 
-            // 規劃狀態
-            const [planning, setPlanning] = useState({
-                upsell: { signs: 0, ticket: 6000 },
-                birthday: { signs: 0, ticket: 4500 },
-                tail: { signs: 0, ticket: 8000 },
-                icb: { signs: 0, ticket: 12000 },
-            });
+        function renderOperations(opsData) {
+            const container = document.getElementById('ops-container');
+            container.innerHTML = '';
+            let brands = [...new Set(opsData.map(d => d.Brand))];
+            brands.sort((a, b) => preferredBrandOrder.indexOf(a) - preferredBrandOrder.indexOf(b));
 
-            const handleUpdate = useCallback((id, field, value) => {
-                setPlanning(prev => ({
-                    ...prev,
-                    [id]: {
-                        ...prev[id],
-                        [field]: value
-                    }
-                }));
-            }, []);
-
-            // --- 計算邏輯 ---
-            const calcSales = (key) => Number(planning[key]?.signs || 0) * Number(planning[key]?.ticket || 0);
-            const existingSales = calcSales('upsell') + calcSales('birthday');
-            const newSales = calcSales('tail') + calcSales('icb');
-            const totalPlannedGrowth = existingSales + newSales;
-            
-            const originalTarget = Number(targetSales || 0);
-            const superTarget = originalTarget * 2;
-            
-            const isTargetAchieved = superTarget > 0 && totalPlannedGrowth >= superTarget;
-
-            return (
-                <div className="min-h-screen relative">
-                    <div className="fixed inset-0 pointer-events-none -z-10 bg-network"></div>
-                    <div className="fixed inset-0 pointer-events-none -z-10">
-                        <div className="absolute top-[-10%] left-[-5%] w-[70%] h-[50%] bg-violet-600/15 blur-[120px] rounded-full"></div>
-                        <div className="absolute bottom-[-10%] right-[-5%] w-[70%] h-[50%] bg-fuchsia-600/15 blur-[120px] rounded-full"></div>
-                    </div>
-
-                    <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:px-10 md:py-16">
-                        <header className="flex flex-col gap-8 mb-12 md:mb-16">
-                            <div className="text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
-                                <div>
-                                    <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                                        <Icon name="Calculator" size={16} className="text-violet-400" />
-                                        <span className="text-xs font-black text-violet-400 uppercase tracking-[0.5em]">Generic Calculator Engine</span>
-                                    </div>
-                                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter italic leading-tight drop-shadow-lg">
-                                        Neoderm <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400">200% 銷售計算機</span>
-                                    </h1>
-                                </div>
-                            </div>
-                        </header>
-
-                        <div className="animate-in fade-in duration-700">
-                            {/* 基礎設定區塊 (取代原有的治療師選擇與 API 數據) */}
-                            <div className="p-6 md:p-8 glass-panel rounded-3xl md:rounded-[2.5rem] relative overflow-hidden group hover:border-violet-500/30 transition-all mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <div className="relative z-10 w-full md:w-auto">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <Icon name="Target" size={20} className="text-orange-400" />
-                                        <span className="text-sm md:text-base text-white/50 font-bold uppercase tracking-widest">本月 100% 基礎目標額 (Target Sales)</span>
-                                    </div>
-                                    <div className="flex items-center gap-4 w-full">
-                                        <span className="text-2xl md:text-4xl font-black text-white/40">¥</span>
-                                        <input 
-                                            type="number" 
-                                            value={targetSales} 
-                                            onChange={(e) => setTargetSales(e.target.value)}
-                                            className="bg-black/60 border border-white/10 rounded-2xl px-6 py-3 text-3xl md:text-5xl font-black text-white focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500 outline-none w-full md:w-[300px] transition-all"
-                                            placeholder="請輸入目標額"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="relative z-10 text-center md:text-right w-full md:w-auto p-4 bg-white/5 rounded-2xl border border-white/5">
-                                    <div className="text-xs text-white/40 font-bold uppercase tracking-widest mb-1">自動換算 200% 目標</div>
-                                    <div className="text-2xl font-black text-orange-400">{formatRMB(superTarget)}</div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 mb-16 md:mb-24">
-                                {/* 舊客 PILLAR */}
-                                <section className="space-y-8">
-                                    <div className="flex items-center gap-4 px-2">
-                                        <div className="h-6 w-1.5 bg-violet-500 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.8)]"></div>
-                                        <h2 className="text-3xl font-black italic tracking-tight flex items-center gap-3">
-                                            內部轉化 <span className="text-sm font-medium text-violet-400 uppercase tracking-widest not-italic">Existing Pillar</span>
-                                        </h2>
-                                    </div>
-                                    <SignInput id="upsell" label="追加簽單 (UP-SELL)" colorClass="from-violet-500 to-violet-400" iconName="GitMerge" planning={planning} onUpdate={handleUpdate} />
-                                    <SignInput id="birthday" label="生日簽單 (BIRTHDAY)" colorClass="from-violet-400 to-violet-300" iconName="Gift" planning={planning} onUpdate={handleUpdate} />
-                                    <div className="px-6 py-2 text-right">
-                                        <span className="text-xs text-white/30 font-bold uppercase mr-4 tracking-widest">內部網絡增長額</span>
-                                        <span className="text-2xl font-black text-violet-400 font-mono">{formatRMB(existingSales)}</span>
-                                    </div>
-                                </section>
-                                
-                                {/* 新客 PILLAR */}
-                                <section className="space-y-8">
-                                    <div className="flex items-center gap-4 px-2">
-                                        <div className="h-6 w-1.5 bg-fuchsia-500 rounded-full shadow-[0_0_10px_rgba(217,70,239,0.8)]"></div>
-                                        <h2 className="text-3xl font-black italic tracking-tight flex items-center gap-3">
-                                            外部裂變 <span className="text-sm font-medium text-fuchsia-400 uppercase tracking-widest not-italic">New Pillar</span>
-                                        </h2>
-                                    </div>
-
-                                    {/* 手動輸入網店數據參考區塊 */}
-                                    <div className="p-8 glass-panel rounded-3xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03]">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <Icon name="Globe" size={24} className="text-fuchsia-400" />
-                                            <span className="text-base md:text-lg font-black text-fuchsia-400 uppercase tracking-widest">客人開店滲透率 (自訂)</span>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            {/* ACB 滲透率輸入 */}
-                                            <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
-                                                <span className="text-sm text-white/50 font-bold uppercase block mb-3 tracking-widest">ACB 網店狀況</span>
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <div className="flex-1">
-                                                        <label className="text-[10px] text-white/30 uppercase mb-1 block">連線數</label>
-                                                        <input 
-                                                            type="number" 
-                                                            value={penetration.acbCount} 
-                                                            onChange={(e) => setPenetration({...penetration, acbCount: Number(e.target.value)})} 
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xl font-black text-white outline-none focus:border-fuchsia-500 transition-colors" 
-                                                        />
-                                                    </div>
-                                                    <span className="text-white/20 text-2xl font-light mt-4">/</span>
-                                                    <div className="flex-1">
-                                                        <label className="text-[10px] text-white/30 uppercase mb-1 block">總基數</label>
-                                                        <input 
-                                                            type="number" 
-                                                            value={penetration.acbBase} 
-                                                            onChange={(e) => setPenetration({...penetration, acbBase: Number(e.target.value)})} 
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xl font-bold text-white/50 outline-none focus:border-fuchsia-500 transition-colors" 
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="text-sm font-black text-fuchsia-300 tracking-wider flex justify-between items-center">
-                                                    <span>滲透率:</span>
-                                                    <span className="text-xl">{penetration.acbBase > 0 ? ((penetration.acbCount / penetration.acbBase) * 100).toFixed(1) : "0"}%</span>
-                                                </div>
-                                            </div>
-                                            
-                                            {/* ICB 滲透率輸入 */}
-                                            <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
-                                                <span className="text-sm text-white/50 font-bold uppercase block mb-3 tracking-widest">ICB 網店狀況</span>
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <div className="flex-1">
-                                                        <label className="text-[10px] text-white/30 uppercase mb-1 block">連線數</label>
-                                                        <input 
-                                                            type="number" 
-                                                            value={penetration.icbCount} 
-                                                            onChange={(e) => setPenetration({...penetration, icbCount: Number(e.target.value)})} 
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xl font-black text-white outline-none focus:border-fuchsia-500 transition-colors" 
-                                                        />
-                                                    </div>
-                                                    <span className="text-white/20 text-2xl font-light mt-4">/</span>
-                                                    <div className="flex-1">
-                                                        <label className="text-[10px] text-white/30 uppercase mb-1 block">總基數</label>
-                                                        <input 
-                                                            type="number" 
-                                                            value={penetration.icbBase} 
-                                                            onChange={(e) => setPenetration({...penetration, icbBase: Number(e.target.value)})} 
-                                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xl font-bold text-white/50 outline-none focus:border-fuchsia-500 transition-colors" 
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="text-sm font-black text-fuchsia-300 tracking-wider flex justify-between items-center">
-                                                    <span>滲透率:</span>
-                                                    <span className="text-xl">{penetration.icbBase > 0 ? ((penetration.icbCount / penetration.icbBase) * 100).toFixed(1) : "0"}%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <SignInput id="tail" label="龍尾 (TAIL)" colorClass="from-fuchsia-500 to-fuchsia-400" iconName="Activity" planning={planning} onUpdate={handleUpdate} />
-                                    <SignInput id="icb" label="ICB 簽單 (ICB SIGN)" colorClass="from-fuchsia-400 to-pink-400" iconName="Zap" planning={planning} onUpdate={handleUpdate} />
-                                    <div className="px-6 py-2 text-right">
-                                        <span className="text-xs text-white/30 font-bold uppercase mr-4 tracking-widest">外部網絡增長額</span>
-                                        <span className="text-2xl font-black text-fuchsia-400 font-mono">{formatRMB(newSales)}</span>
-                                    </div>
-                                </section>
-                            </div>
-
-                            {/* Impact Summary Section */}
-                            <div className="relative group rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl">
-                                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none"></div>
-                                <div className="glass-panel p-8 md:p-16 relative">
-                                    {/* Badge */}
-                                    <div className="absolute top-0 right-8 md:right-16 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2 rounded-b-2xl flex items-center gap-2 shadow-xl">
-                                        <Icon name="Flame" size={16} className="text-white" />
-                                        <span className="text-xs font-black uppercase tracking-tighter">200% Super Target</span>
-                                    </div>
-
-                                    <div className="flex flex-col xl:flex-row items-center gap-10 xl:gap-16 mt-4 md:mt-0">
-                                        <div className="flex-1 w-full min-w-0 text-center xl:text-left">
-                                            <span className="text-xs text-white/30 font-black uppercase tracking-[0.5em] block mb-6">預估規劃總增長額 (P1+P2)</span>
-                                            <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[5rem] xl:text-[5.5rem] font-black text-white leading-none mb-10 tracking-tighter tabular-nums drop-shadow-2xl break-words">
-                                                {formatRMB(totalPlannedGrowth)}
-                                            </div>
-                                            
-                                            <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start">
-                                                <div className="px-8 py-5 bg-orange-500/10 rounded-2xl border border-orange-500/10 flex-1 max-w-[300px] backdrop-blur-xl">
-                                                    <span className="text-xs text-orange-400 block mb-2 font-bold uppercase tracking-widest">200% 目標額</span>
-                                                    <span className="text-2xl font-black text-orange-400 truncate block">{formatRMB(superTarget)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col gap-8 items-center xl:items-end w-full xl:w-auto xl:min-w-[340px] flex-shrink-0">
-                                            <div className="text-center xl:text-right">
-                                                <div className="text-7xl md:text-8xl lg:text-[5.5rem] font-black text-white mb-3 tabular-nums tracking-tighter leading-none">
-                                                    {originalTarget > 0 ? ((totalPlannedGrowth / originalTarget) * 100).toFixed(1) : 0}%
-                                                </div>
-                                                <div className="text-sm text-white/30 font-black uppercase tracking-[0.2em]">模擬達成率 (對標 200%)</div>
-                                            </div>
-
-                                            <div className={`w-full py-6 px-10 rounded-3xl text-center text-lg font-black tracking-[0.2em] uppercase border transition-all duration-500 shadow-2xl ${isTargetAchieved ? 'bg-emerald-500 text-black border-emerald-400' : 'bg-white/5 text-white/40 border-white/10'}`}>
-                                                {isTargetAchieved ? (
-                                                    <div className="flex items-center justify-center gap-3">
-                                                        <Icon name="ShieldCheck" size={24} /> 200% 目標已鎖定
-                                                    </div>
-                                                ) : (
-                                                    `尚欠 ${formatRMB(Math.max(0, superTarget - totalPlannedGrowth))}`
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-16 h-4 w-full bg-white/5 rounded-full overflow-hidden p-1 border border-white/5">
-                                        <div 
-                                            className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 rounded-full transition-all duration-1000 ease-out relative" 
-                                            style={{ width: `${superTarget > 0 ? Math.min(100, (totalPlannedGrowth / superTarget) * 100) : 0}%` }}
-                                        >
-                                            <div className="absolute top-0 right-0 h-full w-8 bg-white/20 blur-md animate-pulse"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            brands.forEach(brand => {
+                const brandColor = colors[brand.toLowerCase()] || colors.default;
+                let brandHtml = `
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4 p-5 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-2xl">
+                            <h3 class="text-xl font-black uppercase tracking-widest text-${brandColor}-400">${brand} Network</h3>
                         </div>
-                        
-                        <footer className="text-center pb-12 mt-20">
-                            <span className="text-xs font-black uppercase tracking-[0.6em] text-violet-400/30">Neo Derm Generic Engine &copy; 2024</span>
-                        </footer>
-                    </div>
-                </div>
-            );
-        };
+                        <div class="glass-panel overflow-hidden border border-slate-800/50">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left kpi-table min-w-[1600px]">
+                                    <thead>
+                                        <tr class="bg-slate-900/60 text-slate-100">
+                                            <th rowspan="2" class="px-2 text-center bg-slate-950/40">Location</th>
+                                            <th colspan="2" class="text-center bg-emerald-500/10 text-emerald-400 border-l border-white/10">Base</th>
+                                            <th colspan="3" class="text-center bg-sky-500/10 text-sky-400 border-l border-white/10">Summary</th>
+                                            <th colspan="5" class="text-center bg-indigo-500/10 text-indigo-400 border-l border-white/10">Pillar: Paid Trial Giftcard</th>
+                                            <th colspan="6" class="text-center bg-violet-500/10 text-violet-400 border-l border-white/10">Pillar: Birthday Giftcard</th>
+                                        </tr>
+                                        <tr class="bg-slate-900/40">
+                                            <th class="border-l border-white/10">ACB Ref</th><th>ICB Ref</th>
+                                            <th class="border-l border-white/10">Nodes</th><th>Traffic</th><th>Purchase</th>
+                                            <!-- Pillar PT (5 Cols) -->
+                                            <th class="border-l border-white/10 bg-indigo-900/20">Head (Entitled)</th>
+                                            <th class="bg-indigo-900/20">Tail (Book)</th><th class="bg-indigo-900/20">Tail (Show)</th><th class="bg-indigo-900/20">Tail (Sign)</th><th class="bg-indigo-900/20">Tail (Amt)</th>
+                                            <!-- Pillar Bday (6 Cols) -->
+                                            <th class="border-l border-white/10 bg-violet-900/20">Head (Entitled)</th><th class="bg-violet-900/20">Head (Redeem)</th>
+                                            <th class="bg-violet-900/20">Tail (Book)</th><th class="bg-violet-900/20">Tail (Show)</th><th class="bg-violet-900/20">Tail (Sign)</th><th class="bg-violet-900/20">Tail (Amt)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-800/30">`;
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+                opsData.filter(d => d.Brand === brand).forEach(d => {
+                    brandHtml += `
+                        <tr class="hover:bg-white/[0.02]">
+                            <td class="px-2 font-bold text-slate-200 text-[11px] text-left">${d.Floor}</td>
+                            <td class="text-sky-400 font-bold border-l border-white/5 bg-sky-500/5">${parseSheetNum(d.ACB_Ref).toLocaleString()}</td>
+                            <td class="text-indigo-400 font-bold bg-indigo-500/5">${parseSheetNum(d.ICB_Ref).toLocaleString()}</td>
+                            <td class="border-l border-white/10 font-bold">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[9px]')}</td>
+                            <td class="font-bold">${parseSheetNum(d.Traffic).toLocaleString()} ${getBracketHtml(d.Traffic_Delta, 'text-[9px]')}</td>
+                            <td class="font-bold">${parseSheetNum(d.Purchase).toLocaleString()} ${getBracketHtml(d.Purchase_Delta, 'text-[9px]')}</td>
+                            <!-- PT Pillar -->
+                            <td class="border-l border-white/5 bg-indigo-500/5 text-indigo-300 font-bold">${d.PT_Eligible || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400 font-mono">${d.PT_Book || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400 font-mono">${d.PT_Show || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400 font-mono">${d.PT_Sign || '-'}</td>
+                            <td class="bg-indigo-500/5 text-slate-400 font-mono">${d.PT_Amount || '-'}</td>
+                            <!-- Bday Pillar -->
+                            <td class="border-l border-white/5 bg-violet-500/5 text-violet-300 font-bold">${d.Bday_Eligible || '-'}</td>
+                            <td class="bg-violet-500/5 text-violet-400 font-bold">${d.Bday_Redeem || '-'}</td>
+                            <td class="bg-violet-500/5 text-slate-400 font-mono">${d.Bday_Book || '-'}</td>
+                            <td class="bg-violet-500/5 text-slate-400 font-mono">${d.Bday_Show || '-'}</td>
+                            <td class="bg-violet-500/5 text-slate-400 font-mono">${d.Bday_Sign || '-'}</td>
+                            <td class="bg-violet-500/5 text-slate-400 font-mono">${d.Bday_Amount || '-'}</td>
+                        </tr>`;
+                });
+                brandHtml += `</tbody></table></div></div></div>`;
+                container.innerHTML += brandHtml;
+            });
+        }
+
+        window.onload = () => {
+            if (window.initDashboard) window.initDashboard();
+            setInterval(() => document.getElementById('current-time').innerText = new Date().toLocaleString(), 1000);
+        };
     </script>
 </body>
 </html>
