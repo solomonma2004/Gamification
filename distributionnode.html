@@ -121,6 +121,10 @@
 
     <!-- SECTION 1: Overview -->
     <section class="mb-12">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="text-2xl font-bold text-white tracking-tight uppercase">Distribution Node Overview</h2>
+            <div class="h-px flex-1 bg-slate-800 ml-4"></div>
+        </div>
         <div id="overview-container"></div>
     </section>
 
@@ -137,8 +141,8 @@
                         <tr class="bg-slate-900/50 border-b-2 border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                             <th class="p-6">Shop Category</th>
                             <th class="p-6 text-center">Total Nodes (Past 30 Days)</th>
-                            <th class="p-6 text-center">Active Traffic (Past 30 Days)</th>
-                            <th class="p-6 text-center">Purchase (Past 30 Days)</th>
+                            <th class="p-6 text-center">activated (traffic) (Past 30 Days)</th>
+                            <th class="p-6 text-center">activated (purchase) (Past 30 Days)</th>
                         </tr>
                     </thead>
                     <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
@@ -218,8 +222,8 @@
 
             const replicationData = { item: nodesItem, style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
             const activationData = [
-                { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'Active Traffic', key: 'active_traffic' } },
-                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'Activated Purchase', key: 'active_purchase' } }
+                { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'activated (traffic)', key: 'active_traffic' } },
+                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'activated (purchase)', key: 'active_purchase' } }
             ];
 
             const totalRep = parseSheetNum(replicationData.item?.Total);
@@ -228,7 +232,7 @@
 
             let replicationCardHtml = `
                 <div class="glass-panel p-8 stat-card border-l-8 ${replicationData.style.border} h-full">
-                    <div class="flex justify-between items-start mb-4">
+                    <div class="flex justify-between items-start mb-6">
                         <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${replicationData.style.label}</span>
                         <div class="flex flex-col items-end">
                             <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
@@ -238,9 +242,14 @@
                             <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
                         </div>
                     </div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-5xl font-black tracking-tighter">${totalRep.toLocaleString()}</span>
-                        ${getBracketHtml(p30Rep, 'text-2xl')}
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-baseline gap-3">
+                            <span class="text-5xl font-black tracking-tighter">${totalRep.toLocaleString()}</span>
+                            ${getBracketHtml(p30Rep, 'text-2xl')}
+                        </div>
+                        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 w-fit">
+                            <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">30 days rolling change</span>
+                        </div>
                     </div>
                 </div>`;
 
@@ -251,7 +260,7 @@
                 const dailyAct = await window.calculateDailyDelta(totalAct, entry.style.key);
                 activationCardsHtml += `
                     <div class="glass-panel p-8 stat-card border-l-8 ${entry.style.border}">
-                        <div class="flex justify-between items-start mb-4">
+                        <div class="flex justify-between items-start mb-6">
                             <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">${entry.style.label}</span>
                             <div class="flex flex-col items-end">
                                 <span class="text-[10px] text-slate-500 uppercase font-black mb-1">Daily Change</span>
@@ -261,9 +270,14 @@
                                 <span class="text-[8px] text-slate-600 font-medium uppercase tracking-tighter mt-0.5">vs Yesterday</span>
                             </div>
                         </div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-5xl font-black tracking-tighter">${totalAct.toLocaleString()}</span>
-                            ${getBracketHtml(p30Act, 'text-2xl')}
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-baseline gap-3">
+                                <span class="text-5xl font-black tracking-tighter">${totalAct.toLocaleString()}</span>
+                                ${getBracketHtml(p30Act, 'text-2xl')}
+                            </div>
+                            <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 w-fit">
+                                <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">30 days rolling change</span>
+                            </div>
                         </div>
                     </div>`;
             }
@@ -313,11 +327,12 @@
                 let brandHtml = `
                     <div class="space-y-6">
                         <div class="flex items-center gap-4 p-5 bg-${brandColor}-500/10 border border-${brandColor}-500/20 rounded-2xl">
+                            <span class="w-2 h-8 bg-${brandColor}-500 rounded-full"></span>
                             <h3 class="text-xl font-black uppercase tracking-widest text-${brandColor}-400">${brand} Network</h3>
                         </div>
                         <div class="glass-panel overflow-hidden border border-slate-800/50">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1600px]">
+                                <table class="w-full text-left kpi-table min-w-[1500px]">
                                     <thead>
                                         <tr class="bg-slate-900/60 text-slate-100">
                                             <th rowspan="2" class="px-2 text-center bg-slate-950/40">Location</th>
@@ -328,7 +343,7 @@
                                         </tr>
                                         <tr class="bg-slate-900/40">
                                             <th class="border-l border-white/10">ACB Reference</th><th>ICB Reference</th>
-                                            <th class="border-l border-white/10">Nodes</th><th>Traffic</th><th>Purchase</th>
+                                            <th class="border-l border-white/10">Nodes</th><th>activated (traffic)</th><th>activated (purchase)</th>
                                             <!-- Pillar PT (5 Cols) -->
                                             <th class="border-l border-white/10 bg-indigo-900/20">Head (Entitled)</th>
                                             <th class="bg-indigo-900/20 text-[7px]">Tail (Booking)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Show)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Sign)</th><th class="bg-indigo-900/20 text-[7px]">Tail (Amount)</th>
