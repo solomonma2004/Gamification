@@ -78,21 +78,17 @@
         .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
         .stat-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
         
-        /* UPDATED: Bigger Header Sizes */
         .kpi-table th { font-size: 14px; letter-spacing: 0.05em; color: #cbd5e1; text-transform: uppercase; padding: 14px 4px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
         .kpi-table td { padding: 6px 4px; font-family: 'Inter', sans-serif; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         #loading-overlay { transition: opacity 0.5s ease; }
         
-        /* High Impact Condensed Styles */
         .stacked-cell { display: flex; flex-direction: column; gap: 0.5px; }
         .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin-top: 4px; }
         
-        /* UPDATED: Bigger Mini Labels */
         .mini-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 900; line-height: 1; opacity: 1; }
         .grid-item { background: rgba(255, 255, 255, 0.07); padding: 5px 2px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.03); }
         
-        /* Text Size Boosts */
         .data-value-base { font-size: 16px; font-weight: 900; letter-spacing: -0.03em; }
         .data-value-lg { font-size: 22px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
         .data-value-xl { font-size: 32px; font-weight: 900; letter-spacing: -0.08em; line-height: 1; }
@@ -118,7 +114,7 @@
         <div class="flex gap-4">
             <button onclick="fetchData()" class="px-5 py-2 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
                 <div id="sync-status" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                <span id="sync-text" class="text-sm font-black text-slate-200 uppercase tracking-widest">Live Feed</span>
+                <span id="sync-text" class="text-sm font-black text-slate-200 uppercase tracking-tight">Live Feed</span>
             </button>
             <div class="px-5 py-2 glass-panel font-mono text-slate-300 font-bold text-sm" id="current-time"></div>
         </div>
@@ -156,15 +152,26 @@
         </div>
     </section>
 
-    <!-- SECTION 3: OPERATIONS -->
+    <!-- SECTION 3: MKT PILLAR BREAKDOWN -->
+    <section class="mb-12">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-emerald-400">MKT Pillar Break down</h2>
+            <div class="h-1 flex-1 bg-gradient-to-r from-emerald-900/30 to-transparent ml-4"></div>
+        </div>
+        <div id="mkt-pillar-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Data from overview tab injected here -->
+        </div>
+    </section>
+
+    <!-- SECTION 4: OPERATION EXECUTION BREAKDOWN -->
     <section class="mb-20">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-fuchsia-400">Metrics Breakdown</h2>
+            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-fuchsia-400">Operation Execution Breakdown</h2>
             
-            <div class="flex items-center glass-panel p-1.5 border border-white/10 overflow-hidden shadow-2xl scale-100">
+            <div class="flex items-center glass-panel p-1 border border-white/10 overflow-hidden shadow-2xl scale-100">
                 <button onclick="setBrandFilter('All')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-All">All</button>
                 <button onclick="setBrandFilter('Dermes')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest active" id="filter-Dermes">Dermes</button>
-                <button onclick="setBrandFilter('Elyze')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Elyze">Elyze</button>
+                <button onclick="setBrandFilter('Elyze')" class="filter-tab px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Elyze">Elyze</button>
                 <button onclick="setBrandFilter('Reenex')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Reenex">Reenex</button>
                 <button onclick="setBrandFilter('Evvus')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Evvus">Evvus</button>
             </div>
@@ -183,7 +190,8 @@
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
             if (!val) return 0;
-            return parseFloat(val.toString().replace(/,/g, '')) || 0;
+            const cleaned = val.toString().replace(/,/g, '').replace(/[^\d.-]/g, '');
+            return parseFloat(cleaned) || 0;
         }
 
         function getBracketHtml(val, sizeClass = "text-base") {
@@ -231,6 +239,7 @@
         async function updateDashboard(data) {
             await renderOverview(data.overview);
             renderIdentities(data.identities);
+            renderMKTPillars(data.overview); // Changed: Pull from overview tab
             renderOperations(data.operations);
         }
 
@@ -319,6 +328,74 @@
             });
         }
 
+        function renderMKTPillars(overviewData) {
+            const container = document.getElementById('mkt-pillar-container');
+            
+            const getVal = (m) => parseSheetNum(overviewData.find(i => i.Metric === m)?.Total);
+
+            const createPillarHtml = (title, color, headLabel, headVal, tailStats) => `
+                <div class="glass-panel p-8 border-l-8 border-${color}-500 shadow-2xl relative overflow-hidden group">
+                    <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                        <h4 class="text-2xl font-black uppercase italic tracking-widest text-${color}-400">${title}</h4>
+                        <span class="px-3 py-1 bg-${color}-500/10 text-${color}-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-${color}-500/20">Overall Aggregate</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-end mb-8 px-2">
+                        <div class="flex flex-col">
+                            <span class="mini-label text-${color}-400/80 mb-1">${headLabel}</span>
+                            <span class="text-6xl font-black text-white tracking-tighter tabular-nums leading-none">${headVal.toLocaleString()}</span>
+                        </div>
+                        <div class="flex flex-col items-end opacity-40">
+                             <span class="mini-label">Unique Global Reach</span>
+                             <span class="text-sm font-black uppercase tracking-tighter">De-duplicated Hub Data</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <span class="mini-label text-white/40 tracking-widest italic flex items-center gap-2">
+                            tail (customer funnel) <div class="h-px flex-1 bg-white/5"></div>
+                        </span>
+                        <div class="grid grid-cols-4 gap-2">
+                            ${tailStats.map(s => `
+                                <div class="grid-item flex flex-col items-center py-6 ${s.label === '$' ? 'bg-emerald-500/10 border-emerald-500/20' : ''}">
+                                    <span class="mini-label mb-2 text-slate-400 font-black">${s.label}</span>
+                                    <span class="text-3xl font-black ${s.label === '$' ? 'text-emerald-400' : 'text-white'} tabular-nums">${s.val.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const ptHtml = createPillarHtml(
+                "Paid Trial giftcard", 
+                "indigo", 
+                "HEAD (Entitled)", 
+                getVal("PT Overall Head"), 
+                [
+                    { label: "Book", val: getVal("PT Overall Book") },
+                    { label: "Show", val: getVal("PT Overall Show") },
+                    { label: "Sign", val: getVal("PT Overall Sign") },
+                    { label: "$", val: getVal("PT Overall $") }
+                ]
+            );
+
+            const bdayHtml = createPillarHtml(
+                "bday giftcard", 
+                "violet", 
+                "HEAD (Ent + Redm)", 
+                getVal("Bday Overall Head"), 
+                [
+                    { label: "Book", val: getVal("Bday Overall Book") },
+                    { label: "Show", val: getVal("Bday Overall Show") },
+                    { label: "Sign", val: getVal("Bday Overall Sign") },
+                    { label: "$", val: getVal("Bday Overall $") }
+                ]
+            );
+
+            container.innerHTML = ptHtml + bdayHtml;
+        }
+
         function renderOperations(opsData) {
             const container = document.getElementById('ops-container');
             container.innerHTML = '';
@@ -348,7 +425,7 @@
                                         <tr>
                                             <th class="border-r border-slate-800">A / I Ref</th>
                                             <th>Nodes (Δ)</th>
-                                            <th class="bg-sky-500/10">Node/HC</th>
+                                            <th class="bg-sky-500/10 tracking-tight">Node/HC</th>
                                             <th class="border-r border-slate-800">HC</th>
                                             <th>activated (traffic)</th>
                                             <th class="border-r border-slate-800">activated (purchase)</th>
@@ -399,7 +476,7 @@
                                         <span class="font-black text-indigo-300 text-2xl">${d.PT_Eligible || '-'}</span>
                                     </div>
                                     <div class="flex flex-col px-1 pt-1">
-                                        <span class="mini-label text-white/40 text-[9px] mb-1 tracking-widest italic">tail (funnel)</span>
+                                        <span class="mini-label text-white/40 text-[9px] mb-1 tracking-widest italic uppercase font-black">tail (funnel)</span>
                                         <div class="mini-grid">
                                             <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-base text-white">${d.PT_Book || '-'}</span></div>
                                             <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-base text-white">${d.PT_Show || '-'}</span></div>
@@ -414,11 +491,11 @@
                             <td class="p-1 bg-violet-500/[0.04]">
                                 <div class="stacked-cell">
                                     <div class="flex justify-between items-center px-1 pb-1 border-b border-white/10">
-                                        <div class="flex flex-col items-start leading-none"><span class="mini-label text-violet-400">Ent</span><span class="text-violet-300 font-black text-2xl">${d.Bday_Eligible || '-'}</span></div>
-                                        <div class="flex flex-col items-end leading-none"><span class="mini-label text-violet-500">Red</span><span class="text-violet-400 font-black text-2xl">${d.Bday_Redeem || '-'}</span></div>
+                                        <div class="flex flex-col items-start leading-none"><span class="mini-label text-violet-400 font-black uppercase">Ent</span><span class="text-violet-300 font-black text-2xl">${d.Bday_Eligible || '-'}</span></div>
+                                        <div class="flex flex-col items-end leading-none"><span class="mini-label text-violet-500 font-black uppercase">Red</span><span class="text-violet-400 font-black text-2xl">${d.Bday_Redeem || '-'}</span></div>
                                     </div>
                                     <div class="flex flex-col px-1 pt-1">
-                                        <span class="mini-label text-white/40 text-[9px] mb-1 tracking-widest italic">tail (funnel)</span>
+                                        <span class="mini-label text-white/40 text-[9px] mb-1 tracking-widest italic uppercase font-black">tail (funnel)</span>
                                         <div class="mini-grid">
                                             <div class="grid-item flex flex-col items-center"><span class="mini-label">Book</span><span class="font-black text-base text-white">${d.Bday_Book || '-'}</span></div>
                                             <div class="grid-item flex flex-col items-center"><span class="mini-label">Show</span><span class="font-black text-base text-white">${d.Bday_Show || '-'}</span></div>
