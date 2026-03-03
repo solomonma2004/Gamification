@@ -51,7 +51,7 @@
         };
 
         window.calculateDailyDelta = async (currentTotal, metricKey) => {
-            if (!auth?.currentUser || !db) return 0;
+            if (!auth?.currentUser || !db) return "(+0)";
             try {
                 const fetchPromise = (async () => {
                     const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'daily_snapshots');
@@ -65,43 +65,46 @@
                             metric: metricKey, value: currentTotal, timestamp: Date.now()
                         });
                     }
-                    return yesterdayRecord ? (currentTotal - yesterdayRecord.value) : 0;
+                    const diff = yesterdayRecord ? (currentTotal - yesterdayRecord.value) : 0;
+                    const sign = diff >= 0 ? '+' : '';
+                    return `(${sign}${diff})`;
                 })();
-                return await Promise.race([fetchPromise, new Promise(res => setTimeout(() => res(0), 1500))]);
-            } catch (e) { return 0; }
+                return await Promise.race([fetchPromise, new Promise(res => setTimeout(() => res("(+0)"), 1500))]);
+            } catch (e) { return "(+0)"; }
         };
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1rem; }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1rem; overflow-x: hidden; }
         .glass-panel { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1rem; }
         .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
         .stat-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
         
-        .kpi-table th { font-size: 13px; letter-spacing: 0.05em; color: #cbd5e1; text-transform: uppercase; padding: 12px 4px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
-        .kpi-table td { padding: 6px 4px; font-family: 'Inter', sans-serif; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
+        .kpi-table th { font-size: 13px; letter-spacing: 0.05em; color: #cbd5e1; text-transform: uppercase; padding: 14px 4px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
+        .kpi-table td { padding: 8px 4px; font-family: 'Inter', sans-serif; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        #loading-overlay { transition: opacity 0.5s ease; }
         
-        .stacked-cell { display: flex; flex-direction: column; gap: 0.5px; }
-        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin-top: 4px; }
+        .stacked-cell { display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; height: 100%; width: 100%; }
+        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin-top: 4px; width: 100%; }
         
-        .mini-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 900; line-height: 1; opacity: 1; }
-        .grid-item { background: rgba(255, 255, 255, 0.07); padding: 5px 2px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.03); }
+        .mini-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 900; line-height: 1; opacity: 1; text-align: center; }
+        .grid-item { background: rgba(255, 255, 255, 0.07); padding: 6px 2px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.03); display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
-        .data-value-base { font-size: 16px; font-weight: 900; letter-spacing: -0.03em; }
-        .data-value-lg { font-size: 22px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
-        .data-value-xl { font-size: 30px; font-weight: 900; letter-spacing: -0.08em; line-height: 1; }
+        .data-value-lg { font-size: 26px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; text-align: center; }
+        .data-value-xl { font-size: 34px; font-weight: 900; letter-spacing: -0.08em; line-height: 1; text-align: center; }
         
         .filter-tab { transition: all 0.3s ease; cursor: pointer; border: 1px solid transparent; }
         .filter-tab.active { background: rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.6); color: #fff; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); transform: scale(1.05); }
+
+        .floor-tab { transition: all 0.2s ease; cursor: pointer; }
+        .floor-tab.active { background: rgba(56, 189, 248, 0.3); border-color: rgba(56, 189, 248, 0.5); color: #fff; }
     </style>
 </head>
 <body class="p-2 md:p-6">
 
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6 text-center">
         <div id="loading-spinner" class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase tracking-widest font-black">Syncing Node Network...</p>
+        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase tracking-widest font-black">Syncing Node Momentum...</p>
     </div>
 
     <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -129,7 +132,7 @@
         <div id="overview-container"></div>
     </section>
 
-    <!-- SECTION 2: IDENTITY -->
+    <!-- SECTION 2: IDENTITY ANALYSIS -->
     <section class="mb-10">
         <div class="flex items-center gap-3 mb-4">
             <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic text-sky-400">Identity Analysis</h2>
@@ -139,11 +142,11 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[1000px] kpi-table">
                     <thead>
-                        <tr class="bg-slate-900/80 border-b-2 border-slate-800 text-slate-400 uppercase">
-                            <th class="p-6">Shop Category</th>
+                        <tr class="bg-slate-900/80 border-b-2 border-slate-800 text-slate-400 uppercase font-black">
+                            <th class="p-6 text-center">Shop Category</th>
                             <th class="p-6 text-center text-sky-400">Total Nodes (Δ)</th>
-                            <th class="p-6 text-center text-emerald-400">activated (traffic) (Δ)</th>
-                            <th class="p-6 text-center text-rose-400">activated (purchase) (Δ)</th>
+                            <th class="p-6 text-center text-emerald-400">Active traffic (Δ)</th>
+                            <th class="p-6 text-center text-rose-400">Active purchase (Δ)</th>
                         </tr>
                     </thead>
                     <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
@@ -155,7 +158,7 @@
     <!-- SECTION 3: MKT PILLAR BREAKDOWN -->
     <section class="mb-12">
         <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-emerald-400">MKT Pillar Break down</h2>
+            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-emerald-400">MKT Pillar Breakdown</h2>
             <div class="h-1 flex-1 bg-gradient-to-r from-emerald-900/30 to-transparent ml-4"></div>
         </div>
         <div id="mkt-pillar-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
@@ -166,12 +169,12 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-fuchsia-400">Operation Execution Breakdown</h2>
             
-            <div class="flex items-center glass-panel p-1 border border-white/10 overflow-hidden shadow-2xl scale-100">
-                <button onclick="setBrandFilter('All')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-All">All</button>
-                <button onclick="setBrandFilter('Dermes')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest active" id="filter-Dermes">Dermes</button>
-                <button onclick="setBrandFilter('Elyze')" class="filter-tab px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Elyze">Elyze</button>
-                <button onclick="setBrandFilter('Reenex')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Reenex">Reenex</button>
-                <button onclick="setBrandFilter('Evvus')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="filter-Evvus">Evvus</button>
+            <div class="flex items-center glass-panel p-1 border border-white/10 overflow-hidden shadow-2xl">
+                <button onclick="setOpsBrandFilter('All')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="ops-filter-All">All</button>
+                <button onclick="setOpsBrandFilter('Dermes')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest active" id="ops-filter-Dermes">Dermes</button>
+                <button onclick="setOpsBrandFilter('Elyze')" class="filter-tab px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest" id="ops-filter-Elyze">Elyze</button>
+                <button onclick="setBrandFilter('Reenex')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="ops-filter-Reenex">Reenex</button>
+                <button onclick="setOpsBrandFilter('Evvus')" class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="ops-filter-Evvus">Evvus</button>
             </div>
         </div>
         <div class="flex flex-col gap-8" id="ops-container"></div>
@@ -179,20 +182,39 @@
 
     <!-- SECTION 5: THERAPIST PERFORMANCE BREAKDOWN -->
     <section class="mb-24">
-        <div class="flex items-center gap-3 mb-8">
-            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-sky-400">Therapist Performance Breakdown</h2>
-            <div class="h-1 flex-1 bg-gradient-to-r from-sky-900/30 to-transparent ml-4"></div>
+        <div class="flex flex-col gap-6 mb-8">
+            <div class="flex items-center gap-3">
+                <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-sky-400">Therapist Performance Breakdown</h2>
+                <div class="h-1 flex-1 bg-gradient-to-r from-sky-900/30 to-transparent ml-4"></div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- THERAPIST BRAND FILTER -->
+                <div class="flex items-center glass-panel p-1 border border-white/10 overflow-hidden shadow-xl w-fit">
+                    <button onclick="setTherapistBrand('Dermes')" class="filter-tab px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest active" id="t-brand-Dermes">Dermes</button>
+                    <button onclick="setTherapistBrand('Elyze')" class="filter-tab px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="t-brand-Elyze">Elyze</button>
+                    <button onclick="setTherapistBrand('Reenex')" class="filter-tab px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="t-brand-Reenex">Reenex</button>
+                    <button onclick="setTherapistBrand('Evvus')" class="filter-tab px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest" id="t-brand-Evvus">Evvus</button>
+                </div>
+
+                <!-- THERAPIST FLOOR FILTER (CONTAINER) -->
+                <div id="floor-filter-container" class="flex flex-wrap items-center gap-2">
+                    <!-- Dynamic floors injected here -->
+                </div>
+            </div>
         </div>
-        <div id="therapist-container" class="flex flex-col gap-10"></div>
+        <div id="therapist-container"></div>
     </section>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxq1U8l7Ktl6pTK6_uud0f_AbjplXi0tJ_R_qIf-gZRoxuQ6HbYixxCjZngFrNT-cheow/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycby4TpKlr891WusEz5Hh3MmXFYsaUWSD00zC3MMj1a3T5Aj1f9VAJ3282ey6mwLfXbpcJA/exec";
         const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
         const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
         
         let lastData = null;
-        let currentFilter = 'Dermes';
+        let opsFilterBrand = 'Dermes';
+        let therapistFilterBrand = 'Dermes';
+        let therapistFilterFloor = null;
 
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
@@ -208,14 +230,24 @@
             return `<span class="${colorClass} ${sizeClass} font-black italic tabular-nums tracking-tighter">(${sign}${num})</span>`;
         }
 
-        function setBrandFilter(brand) {
-            currentFilter = brand;
-            document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`filter-${brand}`).classList.add('active');
-            if (lastData) {
-                renderOperations(lastData.operations);
-                renderTherapists(lastData.therapists);
-            }
+        function setOpsBrandFilter(brand) {
+            opsFilterBrand = brand;
+            document.querySelectorAll('[id^="ops-filter-"]').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`ops-filter-${brand}`).classList.add('active');
+            if (lastData) renderOperations(lastData.operations);
+        }
+
+        function setTherapistBrand(brand) {
+            therapistFilterBrand = brand;
+            therapistFilterFloor = null; // Reset floor to auto-select first
+            document.querySelectorAll('[id^="t-brand-"]').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`t-brand-${brand}`).classList.add('active');
+            if (lastData) renderTherapists(lastData.Therapists || lastData.therapists || []);
+        }
+
+        function setTherapistFloor(floor) {
+            therapistFilterFloor = floor;
+            if (lastData) renderTherapists(lastData.Therapists || lastData.therapists || []);
         }
 
         async function fetchData() {
@@ -251,78 +283,63 @@
             renderIdentities(data.identities);
             renderMKTPillars(data.overview); 
             renderOperations(data.operations);
-            renderTherapists(data.therapists || []);
+            renderTherapists(data.Therapists || data.therapists || []);
         }
 
         async function renderOverview(overviewData) {
             const container = document.getElementById('overview-container');
             container.innerHTML = '';
-            
-            const nodesItem = overviewData.find(item => item.Metric === "Total Nodes") || overviewData[0];
-            const trafficItem = overviewData.find(item => item.Metric === "Traffic") || overviewData[1];
-            const purchaseItem = overviewData.find(item => item.Metric === "Purchase") || overviewData[2];
-            const getSub = (key) => parseSheetNum(overviewData.find(item => item.Metric === key)?.Total);
+            const getVal = (k) => parseSheetNum(overviewData.find(i => i.Metric === k)?.Total);
+            const getDelta = (k) => parseSheetNum(overviewData.find(i => i.Metric === k)?.Change_P30d);
 
-            const replicationData = { item: nodesItem, style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
+            const replicationData = { 
+                val: getVal("Total Nodes"), delta: getDelta("Total Nodes"),
+                style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } 
+            };
+            
             const activationData = [
-                { item: trafficItem, style: { border: 'border-l-emerald-500', label: 'activated (traffic)', key: 'active_traffic' }, head: getSub("Traffic Head"), tail: getSub("Traffic Tail") },
-                { item: purchaseItem, style: { border: 'border-l-rose-500', label: 'activated (purchase)', key: 'active_purchase' }, head: getSub("Purchase Head"), tail: getSub("Purchase Tail") }
+                { val: getVal("Traffic"), delta: getDelta("Traffic"), style: { border: 'border-l-emerald-500', label: 'Active traffic', key: 'active_traffic' }, head: getVal("Traffic Head"), tail: getVal("Traffic Tail") },
+                { val: getVal("Purchase"), delta: getDelta("Purchase"), style: { border: 'border-l-rose-500', label: 'Active purchase', key: 'active_purchase' }, head: getVal("Purchase Head"), tail: getVal("Purchase Tail") }
             ];
 
-            const dailyRep = await window.calculateDailyDelta(parseSheetNum(nodesItem?.Total), replicationData.style.key);
+            const dailyRep = await window.calculateDailyDelta(replicationData.val, replicationData.style.key);
 
             let replicationCardHtml = `
                 <div class="glass-panel p-6 stat-card border-l-8 ${replicationData.style.border} h-full relative overflow-hidden">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-slate-400 text-[12px] font-black uppercase tracking-[0.2em]">${replicationData.style.label}</span>
-                        <div class="flex flex-col items-end leading-none">
-                            <span class="text-[9px] text-slate-500 uppercase font-black">Daily Δ</span>
-                            <span class="${dailyRep >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black text-base tabular-nums">${dailyRep >= 0 ? '+' : ''}${dailyRep}</span>
+                    <div class="flex flex-col items-center justify-center">
+                        <span class="text-slate-400 text-[12px] font-black uppercase mb-4">${replicationData.style.label}</span>
+                        <span class="text-6xl font-black tracking-tighter tabular-nums mb-2">${replicationData.val.toLocaleString()}</span>
+                        <div class="flex items-center gap-2">
+                            ${getBracketHtml(replicationData.delta, 'text-2xl')}
+                            <span class="text-[9px] text-slate-500 uppercase font-black">30d Rolling Change</span>
                         </div>
-                    </div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-5xl font-black tracking-tighter tabular-nums">${parseSheetNum(nodesItem?.Total).toLocaleString()}</span>
-                        <div class="flex flex-col leading-none">
-                            ${getBracketHtml(nodesItem?.Change_P30d, 'text-xl')}
-                            <span class="text-[8px] text-slate-500 font-black uppercase tracking-tight mt-1">30d Rolling Change</span>
+                        <div class="mt-4 flex flex-col items-center">
+                            <span class="text-[10px] text-slate-500 uppercase font-black">Daily Δ</span>
+                            <span class="text-emerald-400 font-black text-xl tabular-nums">${dailyRep}</span>
                         </div>
                     </div>
                 </div>`;
 
             let activationCardsHtml = '';
             for (const entry of activationData) {
-                const dailyAct = await window.calculateDailyDelta(parseSheetNum(entry.item?.Total), entry.style.key);
+                const dailyAct = await window.calculateDailyDelta(entry.val, entry.style.key);
                 activationCardsHtml += `
                     <div class="glass-panel p-6 stat-card border-l-8 ${entry.style.border} relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-slate-400 text-[12px] font-black uppercase tracking-[0.2em]">${entry.style.label}</span>
-                            <div class="flex flex-col items-end leading-none">
-                                <span class="text-[9px] text-slate-500 uppercase font-black">Daily Δ</span>
-                                <span class="${dailyAct >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black text-base tabular-nums">${dailyAct >= 0 ? '+' : ''}${dailyAct}</span>
+                        <div class="flex flex-col items-center justify-center">
+                            <span class="text-slate-400 text-[12px] font-black uppercase mb-4">${entry.style.label}</span>
+                            <span class="text-6xl font-black tracking-tighter tabular-nums mb-2">${entry.val.toLocaleString()}</span>
+                            <div class="flex items-center gap-2 mb-6">
+                                ${getBracketHtml(entry.delta, 'text-2xl')}
+                                <span class="text-[9px] text-slate-500 uppercase font-black">30d Rolling Change</span>
                             </div>
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="flex items-baseline gap-2">
-                                <span class="text-5xl font-black tracking-tighter tabular-nums">${parseSheetNum(entry.item?.Total).toLocaleString()}</span>
-                                <div class="flex flex-col leading-none">
-                                    ${getBracketHtml(entry.item?.Change_P30d, 'text-xl')}
-                                    <span class="text-[8px] text-slate-500 font-black uppercase tracking-tight mt-1">30d Rolling Change</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 mt-4 border-t border-white/5 pt-3">
-                                <div class="flex flex-col"><span class="text-[10px] text-slate-500 font-black uppercase tracking-tighter">HEAD</span><span class="text-2xl font-black text-white tabular-nums">${entry.head.toLocaleString()}</span></div>
-                                <div class="w-px h-6 bg-white/10"></div>
-                                <div class="flex flex-col"><span class="text-[10px] text-slate-500 font-black uppercase tracking-tighter">tail</span><span class="text-2xl font-black text-white tabular-nums">${entry.tail.toLocaleString()}</span></div>
+                            <div class="grid grid-cols-2 gap-8 border-t border-white/5 pt-4 w-full">
+                                <div class="flex flex-col items-center"><span class="text-[10px] text-slate-500 font-black uppercase">Head (Owner)</span><span class="text-3xl font-black text-white tabular-nums">${(entry.head || 0).toLocaleString()}</span></div>
+                                <div class="flex flex-col items-center"><span class="text-[10px] text-slate-500 font-black uppercase">Tail (Customer)</span><span class="text-3xl font-black text-white tabular-nums">${(entry.tail || 0).toLocaleString()}</span></div>
                             </div>
                         </div>
                     </div>`;
             }
-
-            container.innerHTML = `
-                <div class="flex flex-col lg:flex-row gap-4">
-                    <div class="lg:w-1/3 flex flex-col"><div class="mb-2 flex items-center gap-2"><h3 class="text-sky-400 text-[12px] font-black uppercase tracking-[0.4em]">REPLICATION</h3><div class="h-px flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div>${replicationCardHtml}</div>
-                    <div class="lg:w-2/3 flex flex-col"><div class="mb-2 flex items-center gap-2"><h3 class="text-sky-400 text-[12px] font-black uppercase tracking-[0.4em]">ACTIVATION</h3><div class="h-px flex-1 bg-gradient-to-r from-sky-500/50 to-transparent"></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4">${activationCardsHtml}</div></div>
-                </div>`;
+            container.innerHTML = `<div class="flex flex-col lg:flex-row gap-4"><div class="lg:w-1/3 flex flex-col">${replicationCardHtml}</div><div class="lg:w-2/3 flex flex-col"><div class="grid grid-cols-1 md:grid-cols-2 gap-4">${activationCardsHtml}</div></div></div>`;
         }
 
         function renderIdentities(identitiesData) {
@@ -331,10 +348,10 @@
             identitiesData.forEach(row => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/40 transition-colors">
-                        <td class="p-4 font-black text-2xl text-white uppercase italic tracking-tighter">${row['Shop Category'] || row.Identity}</td>
-                        <td class="p-4 text-center mono text-3xl font-black tabular-nums tracking-tighter text-sky-400">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-lg')}</td>
-                        <td class="p-4 text-center mono text-3xl font-black tabular-nums tracking-tighter text-emerald-400">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-lg')}</td>
-                        <td class="p-4 text-center mono text-3xl font-black tabular-nums tracking-tighter text-rose-400">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-lg')}</td>
+                        <td class="p-4 font-black text-3xl text-white uppercase italic tracking-tighter text-center">${row['Shop Category'] || row.Identity}</td>
+                        <td class="p-4 text-center mono text-4xl font-black tabular-nums tracking-tighter text-sky-400">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-2xl')}</td>
+                        <td class="p-4 text-center mono text-4xl font-black tabular-nums tracking-tighter text-emerald-400">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-2xl')}</td>
+                        <td class="p-4 text-center mono text-4xl font-black tabular-nums tracking-tighter text-rose-400">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-2xl')}</td>
                     </tr>`;
             });
         }
@@ -342,52 +359,42 @@
         function renderMKTPillars(overviewData) {
             const container = document.getElementById('mkt-pillar-container');
             const getVal = (m) => parseSheetNum(overviewData.find(i => i.Metric === m)?.Total);
-            const bdayEnt = getVal("Bday Overall Head Ent");
-            const bdayRed = getVal("Bday Overall Head Redm");
             
-            const bdayHtml = `
-                <div class="glass-panel p-8 border-l-8 border-violet-500 shadow-2xl relative overflow-hidden group">
+            const ptHtml = `
+                <div class="glass-panel p-8 border-l-8 border-indigo-500 shadow-2xl">
                     <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                        <h4 class="text-2xl font-black uppercase italic tracking-widest text-violet-400">bday giftcard</h4>
-                        <span class="px-3 py-1 bg-violet-500/10 text-violet-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-violet-500/20">Overall Aggregate</span>
+                        <h4 class="text-2xl font-black uppercase italic text-indigo-400">Paid Trial giftcard</h4>
                     </div>
-                    <div class="flex justify-between items-end mb-8 px-2">
-                        <div class="flex items-center gap-12">
-                            <div class="flex flex-col"><span class="mini-label text-violet-400/80 mb-1 tracking-tighter">HEAD (Entitled)</span><span class="text-6xl font-black text-white tracking-tighter tabular-nums leading-none">${bdayEnt.toLocaleString()}</span></div>
-                            <div class="w-px h-12 bg-white/10"></div>
-                            <div class="flex flex-col"><span class="mini-label text-violet-400/80 mb-1 tracking-tighter">HEAD (Redeem)</span><span class="text-6xl font-black text-white tracking-tighter tabular-nums leading-none">${bdayRed.toLocaleString()}</span></div>
-                        </div>
+                    <div class="flex justify-center items-center gap-16 mb-8">
+                        <div class="flex flex-col items-center"><span class="mini-label text-indigo-400/80 mb-1">HEAD (Entitled)</span><span class="text-7xl font-black text-white tabular-nums">${getVal("PT Overall Head").toLocaleString()}</span></div>
+                        <div class="w-px h-16 bg-white/10 mx-4"></div>
+                        <div class="flex flex-col items-center"><span class="mini-label text-indigo-400/80 mb-1">HEAD (Share)</span><span class="text-7xl font-black text-white tabular-nums">${getVal("PT Overall Share") || 0}</span></div>
                     </div>
-                    <div class="space-y-2">
-                        <span class="mini-label text-white/40 tracking-widest italic flex items-center gap-2">tail (customer funnel) <div class="h-px flex-1 bg-white/5"></div></span>
-                        <div class="grid grid-cols-4 gap-2">
-                            ${[{label:"Book",val:getVal("Bday Overall Book")},{label:"Show",val:getVal("Bday Overall Show")},{label:"Sign",val:getVal("Bday Overall Sign")},{label:"$",val:getVal("Bday Overall $")}].map(s=>`
-                                <div class="grid-item flex flex-col items-center py-6 ${s.label==='$'?'bg-emerald-500/10':''}">
-                                    <span class="mini-label mb-2 text-slate-400 font-black">${s.label}</span>
-                                    <span class="text-3xl font-black ${s.label==='$'?'text-emerald-400':'text-white'} tabular-nums">${s.val.toLocaleString()}</span>
-                                </div>`).join('')}
-                        </div>
+                    <div class="grid grid-cols-4 gap-3">
+                        ${[{l:"Book",v:getVal("PT Overall Book")},{l:"MTD Book",v:getVal("PT Overall MTD Book")},{l:"Show",v:getVal("PT Overall Show")},{l:"Amount",v:getVal("PT Overall $")}].map(s=>`
+                            <div class="grid-item py-8 ${s.l==='Amount'?'bg-emerald-500/15':''}">
+                                <span class="mini-label mb-3 text-slate-400 font-black text-sm">${s.l}</span>
+                                <span class="text-4xl font-black ${s.l==='Amount'?'text-emerald-400':'text-white'} tabular-nums">${s.v.toLocaleString()}</span>
+                            </div>`).join('')}
                     </div>
                 </div>`;
 
-            const ptHtml = `
-                <div class="glass-panel p-8 border-l-8 border-indigo-500 shadow-2xl relative overflow-hidden group">
+            const bdayHtml = `
+                <div class="glass-panel p-8 border-l-8 border-violet-500 shadow-2xl">
                     <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                        <h4 class="text-2xl font-black uppercase italic tracking-widest text-indigo-400">Paid Trial giftcard</h4>
-                        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-500/20">Overall Aggregate</span>
+                        <h4 class="text-2xl font-black uppercase italic text-violet-400">bday giftcard</h4>
                     </div>
-                    <div class="flex justify-between items-end mb-8 px-2">
-                        <div class="flex flex-col"><span class="mini-label text-indigo-400/80 mb-1">HEAD (Entitled)</span><span class="text-6xl font-black text-white tracking-tighter tabular-nums leading-none">${getVal("PT Overall Head").toLocaleString()}</span></div>
+                    <div class="flex justify-center items-center gap-16 mb-8">
+                        <div class="flex flex-col items-center"><span class="mini-label text-violet-400/80 mb-1">HEAD (Entitled)</span><span class="text-7xl font-black text-white tabular-nums">${getVal("Bday Overall Head Ent").toLocaleString()}</span></div>
+                        <div class="w-px h-16 bg-white/10 mx-4"></div>
+                        <div class="flex flex-col items-center"><span class="mini-label text-violet-400/80 mb-1">HEAD (Redeemed)</span><span class="text-7xl font-black text-white tabular-nums">${getVal("Bday Overall Head Redm").toLocaleString()}</span></div>
                     </div>
-                    <div class="space-y-2">
-                        <span class="mini-label text-white/40 tracking-widest italic flex items-center gap-2">tail (customer funnel) <div class="h-px flex-1 bg-white/5"></div></span>
-                        <div class="grid grid-cols-4 gap-2">
-                            ${[{label:"Book",val:getVal("PT Overall Book")},{label:"Show",val:getVal("PT Overall Show")},{label:"Sign",val:getVal("PT Overall Sign")},{label:"$",val:getVal("PT Overall $")}].map(s=>`
-                                <div class="grid-item flex flex-col items-center py-6 ${s.label==='$'?'bg-emerald-500/10':''}">
-                                    <span class="mini-label mb-2 text-slate-400 font-black">${s.label}</span>
-                                    <span class="text-3xl font-black ${s.label==='$'?'text-emerald-400':'text-white'} tabular-nums">${s.val.toLocaleString()}</span>
-                                </div>`).join('')}
-                        </div>
+                    <div class="grid grid-cols-4 gap-3">
+                        ${[{l:"Book",v:getVal("Bday Overall Book")},{l:"Show",v:getVal("Bday Overall Show")},{l:"Sign",v:getVal("Bday Overall Sign")},{l:"Amount",v:getVal("Bday Overall $")}].map(s=>`
+                            <div class="grid-item py-8 ${s.l==='Amount'?'bg-emerald-500/15':''}">
+                                <span class="mini-label mb-3 text-slate-400 font-black text-sm">${s.l}</span>
+                                <span class="text-4xl font-black ${s.l==='Amount'?'text-emerald-400':'text-white'} tabular-nums text-center">${s.v.toLocaleString()}</span>
+                            </div>`).join('')}
                     </div>
                 </div>`;
             container.innerHTML = ptHtml + bdayHtml;
@@ -396,12 +403,13 @@
         function renderOperations(opsData) {
             const container = document.getElementById('ops-container');
             container.innerHTML = '';
-            let brands = [...new Set(opsData.map(d => d.Brand))];
-            brands.sort((a, b) => preferredBrandOrder.indexOf(a) - preferredBrandOrder.indexOf(b));
-            if (currentFilter !== 'All') brands = brands.filter(b => b === currentFilter);
+            let brands = opsFilterBrand === 'All' ? preferredBrandOrder : [opsFilterBrand];
 
             brands.forEach(brand => {
                 const brandColor = colors[brand.toLowerCase()] || colors.default;
+                const brandData = opsData.filter(d => d.Brand === brand);
+                if (!brandData.length) return;
+
                 let brandHtml = `
                     <div class="space-y-2">
                         <div class="flex items-center gap-3 p-3 bg-${brandColor}-500/15 border border-${brandColor}-500/30 rounded-xl shadow-lg">
@@ -409,64 +417,52 @@
                         </div>
                         <div class="glass-panel overflow-hidden border border-white/10">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1650px] table-fixed">
+                                <table class="w-full text-left kpi-table min-w-[1700px] table-fixed">
                                     <thead>
                                         <tr>
-                                            <th rowspan="2" class="w-[140px] border-r border-slate-800 bg-slate-950/70">Location</th>
-                                            <th rowspan="2" class="w-[80px] border-r border-slate-800 bg-slate-950/70">HC</th>
-                                            <th class="w-[120px] border-b border-slate-800 text-emerald-400">Base</th>
-                                            <th colspan="2" class="w-[260px] border-b border-slate-800 text-sky-400">REPLICATION</th>
-                                            <th colspan="4" class="w-[600px] border-b border-slate-800 text-rose-400">ACTIVATION</th>
-                                            <th class="w-[225px] border-b border-slate-800 text-indigo-400 italic">Paid Trial</th>
-                                            <th class="w-[225px] border-b border-slate-800 text-violet-400 italic">Birthday</th>
+                                            <th rowspan="2" class="w-[160px] border-r border-slate-800 bg-slate-950/70">Location</th>
+                                            <th rowspan="2" class="w-[100px] border-r border-slate-800 bg-slate-950/70 text-center">HC</th>
+                                            <th class="w-[140px] border-b border-slate-800 text-emerald-400 uppercase font-black">Base</th>
+                                            <th colspan="2" class="w-[320px] border-b border-slate-800 text-sky-400 uppercase tracking-widest">REPLICATION</th>
+                                            <th colspan="4" class="w-[600px] border-b border-slate-800 text-rose-400 uppercase tracking-widest font-black text-center">ACTIVATION</th>
+                                            <th class="w-[280px] border-b border-slate-800 text-indigo-400 italic font-black">Paid Trial</th>
+                                            <th class="w-[280px] border-b border-slate-800 text-violet-400 italic font-black text-center">Birthday</th>
                                         </tr>
                                         <tr>
-                                            <th class="border-r border-slate-800 italic">A / I Ref</th>
-                                            <th class="w-[140px]">node (Δ)</th>
-                                            <th class="w-[120px] bg-sky-500/10">node /HC</th>
-                                            <th class="w-[160px]">activated traffic</th>
-                                            <th class="w-[140px] bg-emerald-500/10 font-bold">act traffic/HC</th>
-                                            <th class="w-[160px]">activated purchase</th>
-                                            <th class="w-[140px] border-r border-slate-800 bg-rose-500/10 font-bold">act purchase/HC</th>
-                                            <th class="border-r border-slate-800">H/T-Funnel</th>
-                                            <th>H/T-Funnel</th>
+                                            <th class="border-r border-slate-800 italic text-center">A / I Ref</th>
+                                            <th class="w-[160px] text-center">node (Δ)</th>
+                                            <th class="w-[160px] bg-sky-500/10 font-black text-center">node /HC</th>
+                                            <th class="w-[150px] text-center">Active traffic</th>
+                                            <th class="w-[150px] bg-emerald-500/10 font-black text-center">Active Traffic/HC</th>
+                                            <th class="w-[150px] text-center">Active purchase</th>
+                                            <th class="w-[150px] border-r border-slate-800 bg-rose-500/10 font-black text-center">Active Purchase/HC</th>
+                                            <th class="border-r border-slate-800 text-center font-black">Head (Ent/Share) / Tail</th>
+                                            <th class="text-center font-black uppercase">Head (Ent/Red) / Tail</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-800/60">`;
 
-                opsData.filter(d => d.Brand === brand).forEach(d => {
+                brandData.forEach(d => {
                     const hc = parseSheetNum(d.HC);
-                    const nodeCount = parseSheetNum(d.Nodes);
                     const totalTrf = parseSheetNum(d.Traffic_Head) + parseSheetNum(d.Traffic_Tail);
                     const totalPur = parseSheetNum(d.Purchase_Head) + parseSheetNum(d.Purchase_Tail);
-                    
-                    const ratio = hc > 0 ? (nodeCount / hc).toFixed(1) : '-';
+                    const ratio = hc > 0 ? (parseSheetNum(d.Nodes) / hc).toFixed(1) : '-';
                     const trfRatio = hc > 0 ? (totalTrf / hc).toFixed(1) : '-';
                     const purRatio = hc > 0 ? (totalPur / hc).toFixed(1) : '-';
 
                     brandHtml += `
                         <tr class="hover:bg-white/[0.05] transition-colors">
-                            <td class="p-1.5 font-black text-slate-100 border-r border-slate-800 text-lg uppercase italic text-left pl-4">${d.Floor}</td>
-                            <td class="p-1.5 text-slate-400 border-r border-slate-800 tabular-nums font-black text-3xl">${hc > 0 ? hc.toLocaleString() : '-'}</td>
-                            <td class="p-1.5 border-r border-slate-800"><div class="stacked-cell"><span class="text-sky-300 font-black text-sm">A: ${parseSheetNum(d.ACB_Ref).toLocaleString()}</span><span class="text-indigo-400 font-black text-sm">I: ${parseSheetNum(d.ICB_Ref).toLocaleString()}</span></div></td>
-                            <td class="p-1.5 font-black data-value-lg mono">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[12px]')}</td>
-                            <td class="p-1.5 text-sky-300 font-black data-value-xl bg-sky-500/5">${ratio}</td>
-                            <td class="p-1.5">
-                                <div class="stacked-cell">
-                                    <div class="flex justify-between items-center font-black text-white text-xl"><span>${parseSheetNum(d.Traffic_Head).toLocaleString()}</span></div>
-                                    <div class="flex justify-between items-center font-black text-emerald-400 text-xl"><span>${parseSheetNum(d.Traffic_Tail).toLocaleString()}</span></div>
-                                </div>
-                            </td>
-                            <td class="p-1.5 text-emerald-400 font-black data-value-xl bg-emerald-500/5">${trfRatio}</td>
-                            <td class="p-1.5">
-                                <div class="stacked-cell">
-                                    <div class="flex justify-between items-center font-black text-white text-xl"><span>${parseSheetNum(d.Purchase_Head).toLocaleString()}</span></div>
-                                    <div class="flex justify-between items-center font-black text-rose-400 text-xl"><span>${parseSheetNum(d.Purchase_Tail).toLocaleString()}</span></div>
-                                </div>
-                            </td>
-                            <td class="p-1.5 text-rose-400 font-black data-value-xl bg-rose-500/5 border-r border-slate-800">${purRatio}</td>
-                            <td class="p-1 border-r border-slate-800 bg-indigo-500/[0.04]"><div class="stacked-cell"><div class="flex justify-between items-center px-1 pb-1 border-b border-white/10"><span class="mini-label text-indigo-400 font-black uppercase">HEAD</span><span class="font-black text-indigo-300 text-2xl">${d.PT_Eligible || '-'}</span></div><div class="flex flex-col px-1 pt-1"><div class="mini-grid">${[{l:"Book",v:d.PT_Book},{l:"Show",v:d.PT_Show},{l:"Sign",v:d.PT_Sign},{l:"$",v:d.PT_Amount}].map(x=>`<div class="grid-item flex flex-col items-center"><span class="mini-label">${x.l}</span><span class="font-black text-base ${x.l==='$'?'text-emerald-400':''}">${x.v || '-'}</span></div>`).join('')}</div></div></div></td>
-                            <td class="p-1 bg-violet-500/[0.04]"><div class="stacked-cell"><div class="flex justify-between items-center px-1 pb-1 border-b border-white/10"><div class="flex flex-col items-start leading-none"><span class="mini-label text-violet-400 font-black uppercase">Ent</span><span class="text-violet-300 font-black text-2xl">${d.Bday_Eligible || '-'}</span></div><div class="flex flex-col items-end leading-none"><span class="mini-label text-violet-500 font-black uppercase">Red</span><span class="text-violet-400 font-black text-2xl">${d.Bday_Redeem || '-'}</span></div></div><div class="flex flex-col px-1 pt-1"><div class="mini-grid">${[{l:"Book",v:d.Bday_Book},{l:"Show",v:d.Bday_Show},{l:"Sign",v:d.Bday_Sign},{l:"$",v:d.Bday_Amount}].map(x=>`<div class="grid-item flex flex-col items-center"><span class="mini-label">${x.l}</span><span class="font-black text-base ${x.l==='$'?'text-emerald-400':''}">${x.v || '-'}</span></div>`).join('')}</div></div></div></td>
+                            <td class="p-1.5 font-black text-slate-100 border-r border-slate-800 text-lg uppercase italic text-left pl-6">${d.Floor}</td>
+                            <td class="p-1.5 text-slate-400 border-r border-slate-800 tabular-nums font-black text-4xl text-center">${hc > 0 ? hc.toLocaleString() : '-'}</td>
+                            <td class="p-1.5 border-r border-slate-800"><div class="stacked-cell"><span class="text-sky-300 font-black text-lg">A: ${parseSheetNum(d.ACB_Ref).toLocaleString()}</span><span class="text-indigo-400 font-black text-lg">I: ${parseSheetNum(d.ICB_Ref).toLocaleString()}</span></div></td>
+                            <td class="p-1.5 font-black data-value-lg mono text-white text-center">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-lg')}</td>
+                            <td class="p-1.5 text-sky-300 font-black data-value-xl bg-sky-500/10 text-center">${ratio}</td>
+                            <td class="p-1.5"><div class="stacked-cell"><div class="flex justify-between w-full px-4 text-white text-2xl uppercase italic"><span>Head</span><span>${parseSheetNum(d.Traffic_Head).toLocaleString()}</span></div><div class="flex justify-between w-full px-4 text-emerald-400 text-2xl uppercase italic"><span>Tail</span><span>${parseSheetNum(d.Traffic_Tail).toLocaleString()}</span></div></div></td>
+                            <td class="p-1.5 text-emerald-400 font-black data-value-xl bg-emerald-500/10 text-center">${trfRatio}</td>
+                            <td class="p-1.5"><div class="stacked-cell"><div class="flex justify-between w-full px-4 text-white text-2xl uppercase italic"><span>Head</span><span>${parseSheetNum(d.Purchase_Head).toLocaleString()}</span></div><div class="flex justify-between w-full px-4 text-rose-400 text-2xl uppercase italic"><span>Tail</span><span>${parseSheetNum(d.Purchase_Tail).toLocaleString()}</span></div></div></td>
+                            <td class="p-1.5 text-rose-400 font-black data-value-xl bg-rose-500/10 border-r border-slate-800 text-center">${purRatio}</td>
+                            <td class="p-1 border-r border-slate-800 bg-indigo-500/[0.04]"><div class="stacked-cell text-center"><div class="flex justify-center items-center border-b border-white/10 pb-1 w-full gap-4"><div class="flex flex-col"><span class="mini-label text-indigo-400 text-[9px]">Ent</span><span class="font-black text-indigo-300 text-2xl">${d.PT_Eligible || '-'}</span></div><div class="flex flex-col"><span class="mini-label text-indigo-400 text-[9px]">Share</span><span class="font-black text-indigo-300 text-2xl">${d.PT_Share || 0}</span></div></div><div class="mini-grid px-1">${[{l:"Book",v:d.PT_Book},{l:"MTD",v:d.PT_MTD_Book},{l:"Show",v:d.PT_Show},{l:"$",v:d.PT_Amount}].map(x=>`<div class="grid-item"><span class="mini-label font-black text-[9px]">${x.l}</span><span class="font-black text-xl ${x.l==='$'?'text-emerald-400':''}">${x.v || '-'}</span></div>`).join('')}</div></div></td>
+                            <td class="p-1 bg-violet-500/[0.04]"><div class="stacked-cell text-center"><div class="flex justify-between border-b border-white/10 pb-1 px-1 w-full"><div class="flex flex-col items-center"><span class="mini-label text-violet-400 text-[9px]">Entitled</span><span class="text-violet-300 font-black text-2xl text-center">${d.Bday_Eligible || '-'}</span></div><div class="flex flex-col items-center"><span class="mini-label text-violet-400 text-[9px]">Redeemed</span><span class="text-violet-400 font-black text-2xl text-center">${d.Bday_Redeem || '-'}</span></div></div><div class="mini-grid px-1">${[{l:"Book",v:d.Bday_Book},{l:"Show",v:d.Bday_Show},{l:"Sign",v:d.Bday_Sign},{l:"Amount",v:d.Bday_Amount}].map(x=>`<div class="grid-item"><span class="mini-label font-black text-[9px]">${x.l}</span><span class="font-black text-xl ${x.l==='Amount'?'text-emerald-400':''}">${x.v || '-'}</span></div>`).join('')}</div></div></td>
                         </tr>`;
                 });
                 container.innerHTML += brandHtml + `</tbody></table></div></div></div>`;
@@ -475,84 +471,102 @@
 
         function renderTherapists(tData) {
             const container = document.getElementById('therapist-container');
-            container.innerHTML = '';
+            const floorContainer = document.getElementById('floor-filter-container');
             
-            let brands = [...new Set(tData.map(d => d.Brand))];
-            brands.sort((a, b) => preferredBrandOrder.indexOf(a) - preferredBrandOrder.indexOf(b));
-            if (currentFilter !== 'All') brands = brands.filter(b => b === currentFilter);
+            if (!tData || tData.length === 0) {
+                container.innerHTML = `<div class="p-16 text-center glass-panel border border-white/10 text-slate-500 font-black uppercase tracking-widest italic text-xl">Waiting for "Therapists" tab data...</div>`;
+                return;
+            }
 
-            brands.forEach(brand => {
-                const brandColor = colors[brand.toLowerCase()] || colors.default;
-                let floors = [...new Set(tData.filter(t => t.Brand === brand).map(t => t.Floor))];
-                
-                let brandSection = `<div class="space-y-6">`;
-                
-                floors.forEach(floor => {
-                    let therapistsInFloor = tData.filter(t => t.Brand === brand && t.Floor === floor);
-                    brandSection += `
-                        <div class="glass-panel border-l-4 border-${brandColor}-500/50 overflow-hidden">
-                            <div class="bg-white/5 px-5 py-2 flex justify-between items-center border-b border-white/10">
-                                <span class="text-sm font-black uppercase italic tracking-widest text-${brandColor}-300">${brand} &bull; ${floor}</span>
-                                <span class="text-[10px] font-black text-slate-500 uppercase">${therapistsInFloor.length} Active Nodes</span>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1850px] table-fixed">
-                                    <thead>
-                                        <tr class="text-[11px] font-black text-slate-500 uppercase border-b border-white/5">
-                                            <th class="p-3 pl-5 w-[180px] text-left">Individual Therapist</th>
-                                            <th class="p-3 text-center w-[100px]">Nodes</th>
-                                            <th class="p-3 text-center w-[200px] text-emerald-400/80">act traffic [H/t]</th>
-                                            <th class="p-3 text-center w-[200px] text-rose-400/80">act purchase [H/t]</th>
-                                            <th class="p-3 text-center w-[250px] text-indigo-400/80">Paid Trial (H/t)</th>
-                                            <th class="p-3 text-center w-[250px] text-violet-400/80">Birthday (H/t)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-white/[0.03]">`;
-                    
-                    therapistsInFloor.forEach(t => {
-                        brandSection += `
-                            <tr class="hover:bg-white/[0.02]">
-                                <td class="p-3 pl-5 font-black text-slate-200 uppercase italic tracking-tight text-base text-left">${t.Therapist}</td>
-                                <td class="p-3 text-center font-black text-white text-xl">${parseSheetNum(t.Nodes).toLocaleString()}</td>
-                                <td class="p-3 text-center">
-                                    <div class="flex items-center justify-center gap-6">
-                                        <div class="flex flex-col leading-none"><span class="text-[9px] opacity-40 font-black">H</span><span class="font-black text-white text-xl">${parseSheetNum(t.Traffic_Head)}</span></div>
-                                        <div class="flex flex-col leading-none"><span class="text-[9px] opacity-40 font-black">t</span><span class="font-black text-emerald-400 text-xl">${parseSheetNum(t.Traffic_Tail)}</span></div>
-                                    </div>
-                                </td>
-                                <td class="p-3 text-center">
-                                    <div class="flex items-center justify-center gap-6">
-                                        <div class="flex flex-col leading-none"><span class="text-[9px] opacity-40 font-black">H</span><span class="font-black text-white text-xl">${parseSheetNum(t.Purchase_Head)}</span></div>
-                                        <div class="flex flex-col leading-none"><span class="text-[9px] opacity-40 font-black">t</span><span class="font-black text-rose-400 text-xl">${parseSheetNum(t.Purchase_Tail)}</span></div>
-                                    </div>
-                                </td>
-                                <!-- Paid Trial Column -->
-                                <td class="p-2 border-l border-white/5">
-                                    <div class="flex items-center gap-4 px-2">
-                                        <div class="flex flex-col items-center"><span class="mini-label text-[8px]">Ent</span><span class="font-black text-indigo-300 text-lg">${t.PT_Eligible || '-'}</span></div>
-                                        <div class="mini-grid grid-cols-4 flex-1">
-                                            ${[{l:"B",v:t.PT_Book},{l:"S",v:t.PT_Show},{l:"G",v:t.PT_Sign},{l:"$",v:t.PT_Amount}].map(x=>`<div class="grid-item flex flex-col items-center"><span class="text-[7px] font-black opacity-60">${x.l}</span><span class="font-black text-xs ${x.l==='$'?'text-emerald-400':''}">${x.v || '-'}</span></div>`).join('')}
-                                        </div>
-                                    </div>
-                                </td>
-                                <!-- Birthday Column -->
-                                <td class="p-2 border-l border-white/5">
-                                    <div class="flex items-center gap-4 px-2">
-                                        <div class="flex flex-col items-center"><span class="mini-label text-[8px]">E/R</span><span class="font-black text-violet-300 text-lg">${t.Bday_Eligible || '0'}/${t.Bday_Redeem || '0'}</span></div>
-                                        <div class="mini-grid grid-cols-4 flex-1">
-                                            ${[{l:"B",v:t.Bday_Book},{l:"S",v:t.Bday_Show},{l:"G",v:t.Bday_Sign},{l:"$",v:t.Bday_Amount}].map(x=>`<div class="grid-item flex flex-col items-center"><span class="text-[7px] font-black opacity-60">${x.l}</span><span class="font-black text-xs ${x.l==='$'?'text-emerald-400':''}">${x.v || '-'}</span></div>`).join('')}
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>`;
-                    });
-                    
-                    brandSection += `</tbody></table></div></div>`;
-                });
-                
-                brandSection += `</div>`;
-                container.innerHTML += brandSection;
-            });
+            // 1. Get Floors for current brand
+            const uniqueFloors = [...new Set(tData.filter(t => t.Brand === therapistFilterBrand).map(t => t.Floor))].sort();
+            
+            // 2. Default to one floor first if null
+            if (!therapistFilterFloor && uniqueFloors.length > 0) {
+                therapistFilterFloor = uniqueFloors[0];
+            }
+
+            // 3. Render Floor Filters
+            floorContainer.innerHTML = uniqueFloors.map(f => `
+                <button onclick="setTherapistFloor('${f}')" 
+                        class="floor-tab px-4 py-2 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-widest ${f === therapistFilterFloor ? 'active' : 'bg-white/5'}">
+                    ${f}
+                </button>
+            `).join('');
+
+            // 4. Filter and Render Rows
+            const filteredData = tData.filter(t => t.Brand === therapistFilterBrand && t.Floor === therapistFilterFloor);
+            const brandColor = colors[therapistFilterBrand.toLowerCase()] || colors.default;
+
+            container.innerHTML = `
+                <div class="glass-panel border-l-4 border-${brandColor}-500/50 overflow-hidden shadow-2xl">
+                    <div class="bg-white/5 px-6 py-3 flex justify-between items-center border-b border-white/10">
+                        <span class="text-lg font-black uppercase italic tracking-widest text-${brandColor}-300">${therapistFilterBrand} &bull; ${therapistFilterFloor}</span>
+                        <span class="text-[11px] font-black text-slate-500 uppercase tracking-tighter">${filteredData.length} Active Node Identities</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left kpi-table min-w-[1850px] table-fixed">
+                            <thead>
+                                <tr class="text-[12px] font-black text-slate-400 uppercase border-b border-white/5 bg-slate-900/40">
+                                    <th class="p-3 pl-8 w-[250px] text-left">Identity (Therapist)</th>
+                                    <th class="p-3 text-center w-[160px]">Nodes (Δ)</th>
+                                    <th class="p-3 text-center w-[230px] text-emerald-400 uppercase tracking-wider">Active Traffic [Head/Tail]</th>
+                                    <th class="p-3 text-center w-[230px] text-rose-400 uppercase tracking-wider">Active Purchase [Head/Tail]</th>
+                                    <th class="p-3 text-center w-[300px] text-indigo-400 uppercase italic">Paid Trial (Head/Tail)</th>
+                                    <th class="p-3 text-center w-[300px] text-violet-400 uppercase italic">Birthday (Head/Tail)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/[0.03]">
+                                ${filteredData.map(t => {
+                                    const nVal = parseSheetNum(t.Nodes);
+                                    const nDelta = parseSheetNum(t.Nodes_Delta);
+                                    return `
+                                    <tr class="hover:bg-white/[0.06] transition-colors">
+                                        <td class="p-3 pl-8 font-black text-slate-200 uppercase italic text-2xl text-left">${t.Therapist}</td>
+                                        <td class="p-3 text-center font-black text-white text-4xl tabular-nums">
+                                            ${nVal.toLocaleString()} 
+                                            <span class="text-lg ${nDelta >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-black italic">(${nDelta >= 0 ? '+' : ''}${nDelta})</span>
+                                        </td>
+                                        <td class="p-3 text-center">
+                                            <div class="stacked-cell font-black">
+                                                <div class="flex justify-between w-full px-6 text-white text-3xl uppercase italic"><span>Head</span><span>${parseSheetNum(t.Traffic_Head)}</span></div>
+                                                <div class="flex justify-between w-full px-6 text-emerald-400 text-3xl uppercase italic"><span>Tail</span><span>${parseSheetNum(t.Traffic_Tail)}</span></div>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 text-center">
+                                            <div class="stacked-cell font-black">
+                                                <div class="flex justify-between w-full px-6 text-white text-3xl uppercase italic"><span>Head</span><span>${parseSheetNum(t.Purchase_Head)}</span></div>
+                                                <div class="flex justify-between w-full px-6 text-rose-400 text-3xl uppercase italic"><span>Tail</span><span>${parseSheetNum(t.Purchase_Tail)}</span></div>
+                                            </div>
+                                        </td>
+                                        <td class="p-2 border-l border-white/5 bg-indigo-500/[0.02]">
+                                            <div class="flex items-center gap-6 px-2 justify-center font-black">
+                                                <div class="flex flex-col items-center justify-center text-center">
+                                                    <div class="flex flex-col"><span class="mini-label text-[10px] text-indigo-400">Entitled</span><span class="text-indigo-300 text-3xl tabular-nums">${t.PT_Eligible || '-'}</span></div>
+                                                    <div class="flex flex-col mt-2"><span class="mini-label text-[10px] text-indigo-400">Share</span><span class="text-indigo-300 text-3xl tabular-nums">${t.PT_Share || 0}</span></div>
+                                                </div>
+                                                <div class="mini-grid grid-cols-4 flex-1">
+                                                    ${[{l:"Book",v:t.PT_Book},{l:"MTD",v:t.PT_MTD_Book},{l:"Show",v:t.PT_Show},{l:"$",v:t.PT_Amount}].map(x=>`<div class="grid-item"><span class="mini-label text-[11px] font-black uppercase">${x.l}</span><span class="font-black text-2xl ${x.l==='$'?'text-emerald-400':''} text-center tabular-nums">${x.v || '-'}</span></div>`).join('')}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="p-2 border-l border-white/5 bg-violet-500/[0.02]">
+                                            <div class="flex items-center gap-6 px-2 justify-center font-black">
+                                                <div class="flex flex-col items-center justify-center text-center">
+                                                    <div class="flex flex-col mb-2"><span class="mini-label text-[10px] text-violet-400 uppercase">Entitled</span><span class="text-violet-300 text-2xl tabular-nums">${t.Bday_Eligible || '0'}</span></div>
+                                                    <div class="flex flex-col"><span class="mini-label text-[10px] text-violet-500 uppercase">Redeemed</span><span class="text-violet-400 text-2xl tabular-nums">${t.Bday_Redeem || '0'}</span></div>
+                                                </div>
+                                                <div class="mini-grid grid-cols-4 flex-1">
+                                                    ${[{l:"Book",v:t.Bday_Book},{l:"Show",v:t.Bday_Show},{l:"Sign",v:t.Bday_Sign},{l:"Amount",v:t.Bday_Amount}].map(x=>`<div class="grid-item"><span class="mini-label text-[11px] font-black uppercase">${x.l}</span><span class="font-black text-2xl ${x.l==='Amount'?'text-emerald-400':''} text-center tabular-nums">${x.v || '-'}</span></div>`).join('')}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
         }
 
         window.onload = () => { if (window.initDashboard) window.initDashboard(); setInterval(() => { const timeEl = document.getElementById('current-time'); if (timeEl) timeEl.innerText = new Date().toLocaleString(); }, 1000); };
