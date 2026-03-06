@@ -5,22 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Node Momentum Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase Integration for Daily Tracking -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        let db;
         let auth;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'distribution-node-dashboard';
 
         try {
             const firebaseConfig = JSON.parse(__firebase_config);
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
-            db = getFirestore(app);
-            window.db = db;
         } catch (e) {
             console.error("Firebase Configuration Missing or Invalid:", e);
         }
@@ -38,178 +32,185 @@
         };
 
         window.initDashboard = async () => {
-            const timeout = new Promise(res => setTimeout(() => {
-                console.warn("Sync taking too long, entering failsafe mode...");
-                res();
-            }, 4000));
-
-            try {
-                await Promise.race([initAuth(), timeout]);
-            } finally {
-                fetchData();
-            }
-        };
-
-        window.calculateDailyDelta = async (currentTotal, metricKey, networkMode) => {
-            if (!auth?.currentUser || !db) return "(+0)";
-            try {
-                const now = new Date();
-                const todayStr = now.toISOString().split('T')[0];
-                const baselineDocId = `baseline_${networkMode}_${metricKey}_${todayStr}`;
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'daily_baselines', baselineDocId);
-                
-                const docSnap = await getDoc(docRef);
-                
-                let baselineValue;
-                if (!docSnap.exists()) {
-                    baselineValue = currentTotal;
-                    await setDoc(docRef, {
-                        metric: metricKey,
-                        network: networkMode,
-                        value: currentTotal,
-                        timestamp: Date.now(),
-                        date: todayStr
-                    });
-                } else {
-                    baselineValue = docSnap.data().value;
-                }
-
-                const diff = currentTotal - baselineValue;
-                const sign = diff >= 0 ? '+' : '';
-                return `(${sign}${diff})`;
-            } catch (e) { 
-                console.error("Delta Error:", e);
-                return "(+0)"; 
-            }
+            await initAuth();
+            fetchData();
         };
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 1rem; overflow-x: hidden; }
-        .glass-panel { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1rem; }
-        .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
-        .stat-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 0.95rem; overflow-x: hidden; }
+        .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 0.75rem; }
+        .stat-card { transition: transform 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); }
         
-        .kpi-table th { font-size: 13px; letter-spacing: 0.05em; color: #cbd5e1; text-transform: uppercase; padding: 14px 4px; border: 1px solid #1e293b; line-height: 1.1; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
-        .kpi-table td { padding: 8px 4px; font-family: 'Inter', sans-serif; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
+        .kpi-table th { font-size: 10px; letter-spacing: 0.05em; color: #94a3b8; text-transform: uppercase; padding: 8px 4px; border: 1px solid #1e293b; line-height: 1; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
+        .kpi-table td { padding: 4px 2px; font-family: 'Inter', sans-serif; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
-        .stacked-cell { display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; height: 100%; width: 100%; }
-        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin-top: 4px; width: 100%; }
+        .stacked-cell { display: flex; flex-direction: column; gap: 1px; align-items: center; justify-content: center; width: 100%; }
+        .mini-grid { display: grid; gap: 1px; width: 100%; }
         
-        .mini-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 900; line-height: 1; opacity: 1; text-align: center; }
-        .grid-item { background: rgba(255, 255, 255, 0.07); padding: 6px 2px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.03); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .mini-label { font-size: 8px; color: #64748b; text-transform: uppercase; font-weight: 900; line-height: 1; text-align: center; white-space: nowrap; letter-spacing: 0.02em; }
+        .grid-item { background: rgba(255, 255, 255, 0.04); padding: 4px 2px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
-        .data-value-lg { font-size: 26px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; text-align: center; }
-        .data-value-xl { font-size: 34px; font-weight: 900; letter-spacing: -0.08em; line-height: 1; text-align: center; }
+        .data-value-lg { font-size: 20px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+        .data-value-xl { font-size: 24px; font-weight: 900; letter-spacing: -0.08em; line-height: 1; }
         
-        .filter-tab { transition: all 0.3s ease; cursor: pointer; border: 1px solid transparent; }
-        .filter-tab.active { background: rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.6); color: #fff; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); transform: scale(1.05); }
+        .filter-tab { transition: all 0.2s ease; cursor: pointer; border: 1px solid transparent; }
+        .filter-tab.active { background: rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.6); color: #fff; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
 
         .floor-tab { transition: all 0.2s ease; cursor: pointer; }
         .floor-tab.active { background: rgba(56, 189, 248, 0.3); border-color: rgba(56, 189, 248, 0.5); color: #fff; }
 
-        .network-toggle { background: rgba(15, 23, 42, 0.8); border: 2px solid rgba(255, 255, 255, 0.05); padding: 4px; border-radius: 100px; display: flex; gap: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .network-btn { padding: 8px 24px; border-radius: 100px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); color: #64748b; }
-        .network-btn.active { background: white; color: #020617; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transform: scale(1.02); }
-        .network-btn.active.sh { background: #10b981; color: white; box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+        .network-toggle { background: rgba(15, 23, 42, 0.8); border: 2px solid rgba(255, 255, 255, 0.05); padding: 3px; border-radius: 100px; display: flex; gap: 2px; }
+        .network-btn { padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 900; text-transform: uppercase; transition: all 0.3s ease; color: #64748b; }
+        .network-btn.active { background: white; color: #020617; }
+        .network-btn.active.sh { background: #10b981; color: white; }
+
+        .modal-backdrop { background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); }
+        .lead-row:nth-child(even) { background: rgba(255,255,255,0.01); }
+
+        .section-tag { font-size: 8px; font-weight: 900; letter-spacing: 0.1em; padding: 1px 4px; border-radius: 3px; display: inline-block; line-height: 1; }
+        .head-tag { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
+        .tail-tag { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2); }
+
+        .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.3em; color: #475569; display: flex; align-items: center; gap: 8px; width: 100%; }
+        .section-label::before, .section-label::after { content: ""; height: 1px; flex-grow: 1; background: rgba(255,255,255,0.05); }
+
+        .sort-header { cursor: pointer; transition: background 0.2s ease; position: relative; }
+        .sort-header:hover { background: rgba(255, 255, 255, 0.05) !important; }
+        .sort-indicator { font-size: 10px; margin-left: 4px; opacity: 0.5; vertical-align: middle; }
+        .sort-active { color: white !important; }
+        .sort-active .sort-indicator { opacity: 1; color: #38bdf8; }
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="p-2 md:p-4">
 
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6 text-center">
-        <div id="loading-spinner" class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-sky-400 font-mono text-lg animate-pulse uppercase tracking-widest font-black">Syncing Node Momentum...</p>
+        <div id="loading-spinner" class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sky-400 font-mono text-sm animate-pulse uppercase tracking-widest font-black">Syncing Systems...</p>
     </div>
 
-    <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div class="flex flex-col gap-2">
-            <h1 class="text-4xl font-black tracking-tighter bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase italic leading-none">
-                Node Momentum
-            </h1>
-            <p class="text-slate-400 mt-1 text-sm font-black tracking-widest uppercase opacity-70">Activation & Replication Intelligence</p>
+    <!-- LEAD DETAIL MODAL -->
+    <div id="lead-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 modal-backdrop" onclick="closeLeadModal()"></div>
+        <div class="glass-panel w-full max-w-2xl max-h-[85vh] overflow-hidden border border-white/10 shadow-2xl relative flex flex-col">
+            <div class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
+                <div class="flex flex-col gap-0.5">
+                    <h3 id="modal-therapist-name" class="text-xl font-black text-white uppercase italic leading-none">Therapist Name</h3>
+                    <div class="flex items-center gap-2">
+                        <p id="modal-brand-name" class="text-slate-400 text-[9px] font-black uppercase tracking-widest">Brand</p>
+                        <span class="text-slate-700">•</span>
+                        <p id="modal-center-name" class="text-slate-400 text-[9px] font-black uppercase tracking-widest">Center</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end">
+                    <p id="modal-lead-type" class="text-sky-400 text-[9px] font-black uppercase tracking-widest mb-1">Lead Analysis</p>
+                    <button onclick="closeLeadModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white font-black text-lg">&times;</button>
+                </div>
+            </div>
+            <div class="p-0 overflow-y-auto flex-1">
+                <table class="w-full text-left">
+                    <thead class="sticky top-0 bg-slate-950 shadow-sm border-b border-white/5">
+                        <tr class="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                            <th class="p-3 pl-6">MMC CODE</th>
+                            <th class="p-3 text-center">TECH</th>
+                            <th class="p-3 text-center">SEGMENT</th>
+                            <th class="p-3 text-center">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lead-modal-body" class="divide-y divide-white/[0.02]"></tbody>
+                </table>
+                <div id="modal-empty-state" class="hidden py-16 text-center">
+                    <p class="text-slate-500 font-black uppercase text-xs italic">No Lead records found matching criteria</p>
+                </div>
+            </div>
+            <div class="p-3 bg-slate-900/80 border-t border-white/5 flex justify-between items-center">
+                <span id="modal-count" class="text-[10px] font-black text-slate-400 uppercase">0 Leads Listed</span>
+                <button onclick="closeLeadModal()" class="px-4 py-1.5 bg-sky-500 text-slate-950 font-black uppercase text-[10px] rounded transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-black tracking-tighter bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase italic leading-none">Node Momentum</h1>
+            <p class="text-slate-500 text-[10px] font-black tracking-widest uppercase opacity-80">Activation & Replication Intelligence</p>
         </div>
 
-        <div class="network-toggle">
-            <button onclick="setNetworkMode('HK')" id="net-btn-HK" class="network-btn active">HK Network</button>
-            <button onclick="setNetworkMode('SH')" id="net-btn-SH" class="network-btn">SH Network</button>
-        </div>
-
-        <div class="flex gap-4">
-            <button onclick="fetchData()" class="px-5 py-2 glass-panel hover:bg-white/5 transition-colors flex items-center gap-3">
-                <div id="sync-status" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                <span id="sync-text" class="text-sm font-black text-slate-200 uppercase tracking-widest">Live Feed</span>
+        <div class="flex items-center gap-4">
+            <div class="network-toggle">
+                <button onclick="setNetworkMode('HK')" id="net-btn-HK" class="network-btn active">HK Network</button>
+                <button onclick="setNetworkMode('SH')" id="net-btn-SH" class="network-btn">SH Network</button>
+            </div>
+            <button onclick="fetchData()" class="px-4 py-2 glass-panel hover:bg-white/5 transition-colors flex items-center gap-2">
+                <div id="sync-status" class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <span id="sync-text" class="text-[10px] font-black text-slate-200 uppercase tracking-widest">Live Feed</span>
             </button>
-            <div class="px-5 py-2 glass-panel font-mono text-slate-300 font-bold text-sm" id="current-time"></div>
+            <div class="px-4 py-2 glass-panel font-mono text-slate-400 font-bold text-[10px]" id="current-time"></div>
         </div>
     </header>
 
     <!-- SECTION 1: OVERVIEW -->
-    <section class="mb-10">
-        <div class="flex items-center gap-3 mb-4">
-            <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic">Overview</h2>
-            <div class="h-0.5 flex-1 bg-gradient-to-r from-slate-800 to-transparent ml-2"></div>
+    <section class="mb-8">
+        <div class="flex items-center gap-2 mb-3">
+            <h2 class="text-lg font-black text-white tracking-tighter uppercase italic">Overview</h2>
+            <div class="h-px flex-1 bg-slate-800"></div>
         </div>
         <div id="overview-container"></div>
     </section>
 
     <!-- SECTION 2: IDENTITY ANALYSIS -->
-    <section class="mb-10">
-        <div class="flex items-center gap-3 mb-4">
-            <h2 class="text-2xl font-black text-white tracking-tighter uppercase italic text-sky-400">Identity Analysis</h2>
-            <div class="h-0.5 flex-1 bg-gradient-to-r from-sky-900/30 to-transparent ml-2"></div>
+    <section class="mb-8">
+        <div class="flex items-center gap-2 mb-3">
+            <h2 class="text-lg font-black text-sky-400 tracking-tighter uppercase italic">Identity Analysis</h2>
+            <div class="h-px flex-1 bg-sky-900/30"></div>
         </div>
-        <div class="glass-panel overflow-hidden border border-white/10 shadow-xl">
+        <div class="glass-panel overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[1000px] kpi-table">
+                <table class="w-full text-left kpi-table">
                     <thead>
-                        <tr class="bg-slate-900/80 border-b-2 border-slate-800 text-slate-400 uppercase font-black">
-                            <th class="p-6 text-center">Shop Category</th>
-                            <th class="p-6 text-center text-sky-400">Total Nodes (Δ)</th>
-                            <th class="p-6 text-center text-emerald-400">Active traffic (Δ)</th>
-                            <th class="p-6 text-center text-rose-400">Active purchase (Δ)</th>
+                        <tr class="bg-slate-900/80 text-slate-400 uppercase font-black">
+                            <th class="p-4 text-center">Shop Category</th>
+                            <th class="p-4 text-center text-sky-400">Total Nodes</th>
+                            <th class="p-4 text-center text-emerald-400">Active traffic</th>
+                            <th class="p-4 text-center text-rose-400">Active purchase</th>
                         </tr>
                     </thead>
-                    <tbody id="identities-body" class="divide-y divide-slate-800/50"></tbody>
+                    <tbody id="identities-body" class="divide-y divide-slate-800/40"></tbody>
                 </table>
             </div>
         </div>
     </section>
 
     <!-- SECTION 3: MKT PILLAR BREAKDOWN -->
-    <section class="mb-12">
-        <div class="flex items-center gap-3 mb-6">
-            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-emerald-400">MKT Pillar Breakdown</h2>
-            <div class="h-1 flex-1 bg-gradient-to-r from-emerald-900/30 to-transparent ml-4"></div>
+    <section class="mb-8">
+        <div class="flex items-center gap-2 mb-6">
+            <h2 class="text-lg font-black text-emerald-400 tracking-tighter uppercase italic">MKT Pillar Breakdown</h2>
+            <div class="h-px flex-1 bg-emerald-900/30"></div>
         </div>
-        <div id="mkt-pillar-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
+        <div id="mkt-pillar-container" class="flex flex-col gap-10"></div>
     </section>
 
     <!-- SECTION 4: OPERATION EXECUTION BREAKDOWN -->
     <section class="mb-16">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-fuchsia-400">Operation Execution Breakdown</h2>
-            
-            <div id="ops-brand-filter-container" class="flex items-center glass-panel p-1 border border-white/10 overflow-hidden shadow-2xl">
-                <!-- Dynamic brand buttons -->
-            </div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <h2 class="text-lg font-black text-fuchsia-400 tracking-tighter uppercase italic">Operation Execution Breakdown</h2>
+            <div id="ops-brand-filter-container" class="flex items-center glass-panel p-0.5 border-white/10 overflow-hidden shadow-xl scale-90"></div>
         </div>
         <div class="flex flex-col gap-8" id="ops-container"></div>
     </section>
 
     <!-- SECTION 5: THERAPIST PERFORMANCE BREAKDOWN -->
     <section class="mb-24">
-        <div class="flex flex-col gap-6 mb-8">
-            <div class="flex items-center gap-3">
-                <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic text-sky-400">Therapist Performance Breakdown</h2>
-                <div class="h-1 flex-1 bg-gradient-to-r from-sky-900/30 to-transparent ml-4"></div>
+        <div class="flex flex-col gap-6 mb-4">
+            <div class="flex items-center gap-2">
+                <h2 class="text-lg font-black text-sky-400 tracking-tighter uppercase italic">Therapist Performance Breakdown</h2>
+                <div class="h-px flex-1 bg-sky-900/30"></div>
             </div>
-            
-            <div class="flex flex-col md:flex-row gap-6">
-                <div id="t-brand-filter-container" class="flex items-center glass-panel p-1 border border-white/10 overflow-hidden shadow-xl w-fit">
-                    <!-- Dynamic brand buttons -->
-                </div>
-                <div id="floor-filter-container" class="flex flex-wrap items-center gap-2"></div>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div id="t-brand-filter-container" class="flex items-center glass-panel p-0.5 border-white/10 overflow-hidden scale-90"></div>
+                <div id="floor-filter-container" class="flex flex-wrap items-center gap-1.5"></div>
             </div>
         </div>
         <div id="therapist-container"></div>
@@ -224,9 +225,13 @@
         let networkMode = 'HK'; 
         let opsFilterBrand = null;
         let therapistFilterBrand = null;
-        let therapistFilterFloor = null;
+        let therapistFilterFloor = 'All'; 
+        let bdayFilter = 'Overall'; 
+        let ptFilter = 'Overall'; 
 
-        // Core Dashboard Logic
+        let opsSort = { key: null, direction: 'desc' };
+        let therapistSort = { key: null, direction: 'desc' };
+
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
             if (!val) return 0;
@@ -234,11 +239,11 @@
             return parseFloat(cleaned) || 0;
         }
 
-        function getBracketHtml(val, sizeClass = "text-base") {
+        function getBracketHtml(val, sizeClass = "text-sm") {
             const num = parseSheetNum(val);
             const colorClass = num >= 0 ? 'text-emerald-500' : 'text-rose-500';
             const sign = num >= 0 ? '+' : '';
-            return `<span class="${colorClass} ${sizeClass} font-black italic tabular-nums tracking-tighter">(${sign}${num})</span>`;
+            return `<span class="${colorClass} ${sizeClass} font-black italic tabular-nums">(${sign}${num})</span>`;
         }
 
         function setNetworkMode(mode) {
@@ -250,49 +255,133 @@
                     if (mode === 'SH') btn.classList.add('sh');
                 }
             });
-            
-            // Reset filters to null to force auto-selection from new data
             opsFilterBrand = null;
             therapistFilterBrand = null;
-            therapistFilterFloor = null;
-            
+            therapistFilterFloor = 'All';
+            opsSort = { key: null, direction: 'desc' };
+            therapistSort = { key: null, direction: 'desc' };
             if (lastData) updateDashboard(lastData);
         }
 
-        // Helper to get data slice based on current network mode
+        function setBdayFilter(type) {
+            bdayFilter = type;
+            if (lastData) renderMKTPillars(getSlice(lastData, 'overview'));
+        }
+
+        function setPTFilter(type) {
+            ptFilter = type;
+            if (lastData) renderMKTPillars(getSlice(lastData, 'overview'));
+        }
+
+        function handleSort(type, key) {
+            if (type === 'ops') {
+                if (opsSort.key === key) {
+                    opsSort.direction = opsSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    opsSort.key = key;
+                    opsSort.direction = 'desc';
+                }
+                renderOperations(getSlice(lastData, 'operations'));
+            } else if (type === 'therapist') {
+                if (therapistSort.key === key) {
+                    therapistSort.direction = therapistSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    therapistSort.key = key;
+                    therapistSort.direction = 'desc';
+                }
+                renderTherapists(getSlice(lastData, 'therapists'));
+            }
+        }
+
+        function getSortData(data, config) {
+            if (!config.key) return data;
+            return [...data].sort((a, b) => {
+                let valA, valB;
+                if (config.key === 'Total_Traffic') {
+                    valA = parseSheetNum(a.Traffic_Head) + parseSheetNum(a.Traffic_Tail);
+                    valB = parseSheetNum(b.Traffic_Head) + parseSheetNum(b.Traffic_Tail);
+                } else if (config.key === 'Total_Purchase') {
+                    valA = parseSheetNum(a.Purchase_Head) + parseSheetNum(a.Purchase_Tail);
+                    valB = parseSheetNum(b.Purchase_Head) + parseSheetNum(b.Purchase_Tail);
+                } else {
+                    valA = a[config.key];
+                    valB = b[config.key];
+                    if (!isNaN(parseSheetNum(valA)) && typeof valA !== 'boolean') {
+                        valA = parseSheetNum(valA);
+                        valB = parseSheetNum(valB);
+                    }
+                }
+                if (valA < valB) return config.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return config.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function getSortIcon(currentKey, key, direction) {
+            if (currentKey !== key) return '<span class="sort-indicator">↕</span>';
+            return direction === 'asc' ? '<span class="sort-indicator text-white">↑</span>' : '<span class="sort-indicator text-white">↓</span>';
+        }
+
         function getSlice(data, type) {
             const prefix = networkMode === 'SH' ? 'SH_' : '';
             if (type === 'overview') return data[prefix + 'overview'] || [];
             if (type === 'identities') return data[prefix + 'identities'] || [];
             if (type === 'operations') return data[prefix + 'operations'] || [];
-            if (type === 'therapists') {
-                // Check multiple keys in case of naming inconsistencies in SH script
-                return data[prefix + 'Therapists'] || data[prefix + 'therapists'] || data[prefix + 'Identities'] || data[prefix + 'identities'] || [];
-            }
+            if (type === 'therapists') return data[prefix + 'Therapists'] || data[prefix + 'therapists'] || data[prefix + 'Identities'] || data[prefix + 'identities'] || [];
+            if (type === 'raw') return data['gift_card_raw'] || [];
             return [];
         }
 
-        function setOpsBrandFilter(brand) {
-            opsFilterBrand = brand;
-            if (lastData) {
-                renderOperations(getSlice(lastData, 'operations'));
+        function setOpsBrandFilter(brand) { opsFilterBrand = brand; if (lastData) renderOperations(getSlice(lastData, 'operations')); }
+        function setTherapistBrand(brand) { therapistFilterBrand = brand; therapistFilterFloor = 'All'; if (lastData) renderTherapists(getSlice(lastData, 'therapists')); }
+        function setTherapistFloor(floor) { therapistFilterFloor = floor; if (lastData) renderTherapists(getSlice(lastData, 'therapists')); }
+
+        function openLeadModal(brand, floor, therapist, type) {
+            const modal = document.getElementById('lead-modal');
+            const tbody = document.getElementById('lead-modal-body');
+            const titleEl = document.getElementById('modal-therapist-name');
+            const brandEl = document.getElementById('modal-brand-name');
+            const centerEl = document.getElementById('modal-center-name');
+            const typeEl = document.getElementById('modal-lead-type');
+            const emptyEl = document.getElementById('modal-empty-state');
+            const countEl = document.getElementById('modal-count');
+
+            titleEl.innerText = therapist;
+            brandEl.innerText = brand;
+            centerEl.innerText = floor;
+            typeEl.innerText = `${type} Lead Insight`;
+            tbody.innerHTML = '';
+            
+            const rawData = getSlice(lastData, 'raw');
+            let leads = rawData.filter(d => {
+                const bMatch = String(d.Brand || '').toLowerCase() === String(brand).toLowerCase();
+                const cMatch = (floor === 'All') ? true : String(d.Center || '').toLowerCase() === String(floor).toLowerCase();
+                const tMatch = String(d.Therapist || '').toLowerCase().includes(String(therapist).toLowerCase());
+                return bMatch && cMatch && tMatch;
+            });
+            
+            if (type === 'Shared') { leads = leads.filter(d => d.click_share_dt && String(d.click_share_dt).trim() !== ''); }
+
+            if (leads.length === 0) {
+                emptyEl.classList.remove('hidden');
+                countEl.innerText = `0 Leads Found`;
+            } else {
+                emptyEl.classList.add('hidden');
+                countEl.innerText = `${leads.length} Records Found`;
+                leads.forEach(l => {
+                    const isRedeemed = l.shop_GC_redeem_dt && String(l.shop_GC_redeem_dt).trim() !== '';
+                    const isShared = l.click_share_dt && String(l.click_share_dt).trim() !== '';
+                    let statusLabel = '<span class="text-slate-600 text-[9px] font-black uppercase">Entitled</span>';
+                    if (isRedeemed) statusLabel = '<span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[8px] font-black uppercase rounded border border-indigo-500/20">Redeemed</span>';
+                    else if (isShared) statusLabel = '<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase rounded border border-emerald-500/20">Shared</span>';
+                    tbody.innerHTML += `<tr class="lead-row hover:bg-white/5 transition-colors"><td class="p-3 pl-6 font-mono text-xs text-sky-100">${l.mmc_code || '---'}</td><td class="p-3 text-center"><span class="text-[9px] font-black text-slate-400 uppercase">${l.gift_card_type || '---'}</span></td><td class="p-3 text-center"><span class="text-[9px] font-black text-slate-500 uppercase">${l.csr_segment_cat || '---'}</span></td><td class="p-3 text-center">${statusLabel}</td></tr>`;
+                });
             }
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
-        function setTherapistBrand(brand) {
-            therapistFilterBrand = brand;
-            therapistFilterFloor = null;
-            if (lastData) {
-                renderTherapists(getSlice(lastData, 'therapists'));
-            }
-        }
-
-        function setTherapistFloor(floor) {
-            therapistFilterFloor = floor;
-            if (lastData) {
-                renderTherapists(getSlice(lastData, 'therapists'));
-            }
-        }
+        function closeLeadModal() { document.getElementById('lead-modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
 
         async function fetchData() {
             setSyncStatus(true);
@@ -313,13 +402,7 @@
         function setSyncStatus(isSyncing) {
             const status = document.getElementById('sync-status');
             const text = document.getElementById('sync-text');
-            if (isSyncing) {
-                status.classList.add('animate-pulse');
-                text.innerText = "Syncing...";
-            } else {
-                status.classList.remove('animate-pulse');
-                text.innerText = "Live Feed";
-            }
+            if (isSyncing) { status.classList.add('animate-pulse'); text.innerText = "Syncing..."; } else { status.classList.remove('animate-pulse'); text.innerText = "Live Feed"; }
         }
 
         async function updateDashboard(data) {
@@ -335,312 +418,94 @@
             container.innerHTML = '';
             const getVal = (k) => parseSheetNum(overviewData.find(i => i.Metric === k)?.Total);
             const getDelta = (k) => parseSheetNum(overviewData.find(i => i.Metric === k)?.Change_P30d);
-
-            const replicationData = { val: getVal("Total Nodes"), delta: getDelta("Total Nodes"), style: { border: 'border-l-sky-500', label: 'Total Nodes', key: 'total_nodes' } };
-            const activationData = [
-                { val: getVal("Traffic"), delta: getDelta("Traffic"), style: { border: 'border-l-emerald-500', label: 'Active traffic', key: 'active_traffic' }, head: getVal("Traffic Head"), tail: getVal("Traffic Tail") },
-                { val: getVal("Purchase"), delta: getDelta("Purchase"), style: { border: 'border-l-rose-500', label: 'Active purchase', key: 'active_purchase' }, head: getVal("Purchase Head"), tail: getVal("Purchase Tail") }
+            const rep = { val: getVal("Total Nodes"), delta: getDelta("Total Nodes"), style: { border: 'border-l-sky-500', label: 'Total Nodes' } };
+            const act = [
+                { val: getVal("Traffic"), delta: getDelta("Traffic"), style: { border: 'border-l-emerald-500', label: 'Active traffic' }, head: getVal("Traffic Head"), tail: getVal("Traffic Tail") },
+                { val: getVal("Purchase"), delta: getDelta("Purchase"), style: { border: 'border-l-rose-500', label: 'Active purchase' }, head: getVal("Purchase Head"), tail: getVal("Purchase Tail") }
             ];
-
-            const dailyRep = await window.calculateDailyDelta(replicationData.val, replicationData.style.key, networkMode);
-
-            let replicationCardHtml = `
-                <div class="glass-panel p-6 stat-card border-l-8 ${replicationData.style.border} h-full relative overflow-hidden">
-                    <div class="flex flex-col items-center justify-center text-center">
-                        <span class="text-slate-400 text-[12px] font-black uppercase mb-4 w-full text-center">${replicationData.style.label}</span>
-                        <span class="text-7xl font-black tracking-tighter tabular-nums mb-2 leading-none text-center">${replicationData.val.toLocaleString()}</span>
-                        <div class="flex items-center justify-center gap-2">
-                            ${getBracketHtml(replicationData.delta, 'text-2xl')}
-                            <span class="text-[9px] text-slate-500 font-black uppercase tracking-tight">30d Rolling Change</span>
-                        </div>
-                        <div class="mt-6 flex flex-col items-center justify-center">
-                            <span class="text-[11px] text-slate-500 uppercase font-black mb-1 italic">Today's Performance (Δ vs Day Start)</span>
-                            <span class="text-emerald-400 font-black text-3xl tabular-nums leading-none">${dailyRep}</span>
-                        </div>
-                    </div>
-                </div>`;
-
-            let activationCardsHtml = '';
-            for (const entry of activationData) {
-                const dailyAct = await window.calculateDailyDelta(entry.val, entry.style.key, networkMode);
-                activationCardsHtml += `
-                    <div class="glass-panel p-6 stat-card border-l-8 ${entry.style.border} relative overflow-hidden">
-                        <div class="flex flex-col items-center justify-center text-center">
-                            <span class="text-slate-400 text-[12px] font-black uppercase mb-4 w-full text-center">${entry.style.label}</span>
-                            <span class="text-7xl font-black tracking-tighter tabular-nums mb-2 leading-none text-center">${entry.val.toLocaleString()}</span>
-                            <div class="flex items-center justify-center gap-2 mb-6">
-                                ${getBracketHtml(entry.delta, 'text-2xl')}
-                                <span class="text-[9px] text-slate-500 font-black uppercase tracking-tight">30d Rolling Change</span>
-                            </div>
-                            <div class="flex items-center justify-center gap-8 mb-6">
-                                <div class="flex flex-col items-center"><span class="text-[10px] text-slate-500 font-black uppercase mb-1">Today Δ</span><span class="text-emerald-400 font-black text-3xl tabular-nums leading-none text-center">${dailyAct}</span></div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-8 border-t border-white/5 pt-6 w-full">
-                                <div class="flex flex-col items-center justify-center text-center"><span class="text-[10px] text-slate-500 font-black uppercase">Head (Owner)</span><span class="text-3xl font-black text-white tabular-nums text-center">${(entry.head || 0).toLocaleString()}</span></div>
-                                <div class="flex flex-col items-center justify-center text-center"><span class="text-[10px] text-slate-500 font-black uppercase">Tail (Customer)</span><span class="text-3xl font-black text-white tabular-nums text-center">${(entry.tail || 0).toLocaleString()}</span></div>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-            container.innerHTML = `<div class="flex flex-col lg:flex-row gap-4"><div class="lg:w-1/3 flex flex-col">${replicationCardHtml}</div><div class="lg:w-2/3 flex flex-col"><div class="grid grid-cols-1 md:grid-cols-2 gap-4">${activationCardsHtml}</div></div></div>`;
+            let html = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-3"><div class="glass-panel p-4 stat-card border-l-4 ${rep.style.border} text-center"><span class="text-slate-500 text-[10px] font-black uppercase mb-2 block">${rep.style.label}</span><span class="text-5xl font-black tabular-nums block">${rep.val.toLocaleString()}</span><div class="mt-2">${getBracketHtml(rep.delta)}</div></div>`;
+            act.forEach(e => {
+                html += `<div class="glass-panel p-4 stat-card border-l-4 ${e.style.border} text-center"><span class="text-slate-500 text-[10px] font-black uppercase mb-2 block">${e.style.label}</span><span class="text-5xl font-black tabular-nums block">${e.val.toLocaleString()}</span><div class="mt-2 mb-4">${getBracketHtml(e.delta)}</div><div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3"><div class="text-center"><span class="mini-label">Head</span><div class="font-black text-white text-lg">${(e.head || 0).toLocaleString()}</div></div><div class="text-center"><span class="mini-label">Tail</span><div class="font-black text-white text-lg">${(e.tail || 0).toLocaleString()}</div></div></div></div>`;
+            });
+            container.innerHTML = html + `</div>`;
         }
 
         function renderIdentities(identitiesData) {
             const tbody = document.getElementById('identities-body');
-            tbody.innerHTML = '';
-            identitiesData.forEach(row => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/40 transition-colors">
-                        <td class="p-4 font-black text-3xl text-white uppercase italic tracking-tighter text-center">${row['Shop Category'] || row.Identity}</td>
-                        <td class="p-4 text-center mono text-4xl font-black tabular-nums tracking-tighter text-sky-400">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-2xl')}</td>
-                        <td class="p-4 text-center mono text-4xl font-black tabular-nums tracking-tighter text-emerald-400">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-2xl')}</td>
-                        <td class="p-4 text-center mono text-4xl font-black tabular-nums tracking-tighter text-rose-400">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-2xl')}</td>
-                    </tr>`;
-            });
+            tbody.innerHTML = identitiesData.map(row => `<tr><td class="p-3 font-black text-lg text-white uppercase italic tracking-tighter text-center">${row['Shop Category'] || row.Identity}</td><td class="p-3 text-center mono text-2xl font-black text-sky-400">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-xs')}</td><td class="p-3 text-center mono text-2xl font-black text-emerald-400">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-xs')}</td><td class="p-3 text-center mono text-2xl font-black text-rose-400">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-xs')}</td></tr>`).join('');
         }
 
         function renderMKTPillars(overviewData) {
             const container = document.getElementById('mkt-pillar-container');
+            container.innerHTML = '';
             const getVal = (m) => parseSheetNum(overviewData.find(i => i.Metric === m)?.Total);
-            
-            const ptHtml = `
-                <div class="glass-panel p-8 border-l-8 border-indigo-500 shadow-2xl relative overflow-hidden group">
-                    <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                        <h4 class="text-2xl font-black uppercase italic text-indigo-400">Paid Trial giftcard</h4>
-                        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-500/20 text-center">Overall Aggregate</span>
-                    </div>
-                    <div class="flex justify-center items-center gap-16 mb-8">
-                        <div class="flex flex-col items-center justify-center"><span class="mini-label text-indigo-400/80 mb-1">HEAD (Entitled)</span><span class="text-7xl font-black text-white tracking-tighter tabular-nums leading-none text-center">${getVal("PT Overall Head").toLocaleString()}</span></div>
-                        <div class="w-px h-16 bg-white/10 mx-4"></div>
-                        <div class="flex flex-col items-center justify-center"><span class="mini-label text-indigo-400/80 mb-1">HEAD (Share)</span><span class="text-7xl font-black text-white tracking-tighter tabular-nums leading-none text-center">${getVal("PT Overall Share") || 0}</span></div>
-                    </div>
-                    <div class="grid grid-cols-4 gap-3">
-                        ${[{l:"Book",v:getVal("PT Overall Book")},{l:"MTD Book",v:getVal("PT Overall MTD Book")},{l:"Show",v:getVal("PT Overall Show")},{l:"Amount",v:getVal("PT Overall $")}].map(s=>`
-                            <div class="grid-item py-8 ${s.l==='Amount'?'bg-emerald-500/15 border-emerald-500/30':'bg-white/5'}">
-                                <span class="mini-label mb-3 text-slate-400 font-black text-sm uppercase text-center">${s.l}</span>
-                                <span class="text-4xl font-black ${s.l==='Amount'?'text-emerald-400':'text-white'} tabular-nums text-center w-full">${s.v.toLocaleString()}</span>
-                            </div>`).join('')}
-                    </div>
-                </div>`;
+            const renderPTBlock = (optionType, color, hideHead = false) => {
+                const prefix = `PT ${optionType}`;
+                return `<div class="glass-panel p-6 border-l-4 border-${color}-500 group bg-slate-900/20 h-full"><div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3"><div class="flex flex-col"><h4 class="text-xl font-black uppercase italic text-${color}-400">PAID TRIAL ANALYSIS</h4><p class="text-[9px] font-black text-slate-500 uppercase mt-1">Viewing: ${optionType}</p></div><div class="flex items-center glass-panel p-0.5 border-white/5 overflow-hidden scale-90">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setPTFilter('${f}')" class="filter-tab px-3 py-1 rounded-md text-[9px] font-black uppercase ${ptFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div>${!hideHead ? `<div class="mb-6"><div class="section-label mb-4">HEAD</div><div class="flex justify-around items-center"><div class="text-center"><span class="mini-label">ENTITLED</span><div class="text-4xl font-black text-white">${getVal("PT Overall Head").toLocaleString()}</div></div><div class="text-center"><span class="mini-label">TRAFFIC</span><div class="text-4xl font-black text-white">${getVal("PT Overall Traffic") || 0}</div></div><div class="text-center"><span class="mini-label">SHARE</span><div class="text-4xl font-black text-white">${getVal("PT Overall Share") || 0}</div></div></div></div>` : ''}<div><div class="section-label mb-4">TAIL</div><div class="grid grid-cols-5 gap-2">${[{l:"Redeem",v:getVal(prefix + " Redeem")},{l:"Book",v:getVal(prefix + " Book")},{l:"MTD Book",v:getVal(prefix + " MTD Book")},{l:"Show",v:getVal(prefix + " Show")},{l:"Amount",v:getVal(prefix + " $")}].map(s=>`<div class="grid-item py-3 ${s.l==='Amount'?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}"><span class="mini-label mb-1 opacity-70">${s.l}</span><span class="text-lg font-black ${s.l==='Amount'?'text-emerald-400':'text-white'}">${s.v.toLocaleString()}</span></div>`).join('')}</div></div></div>`;
+            };
+            const renderBdaySplitBlock = (optionType, color) => {
+                const prefix = `Bday ${optionType}`;
+                const getCombined = (label, m, isAmount = false, isLarge = false) => {
+                    const total = getVal(prefix + " ACB " + m) + getVal(prefix + " ICB " + m);
+                    return `<div class="flex-1 text-center bg-slate-950/40 p-2 rounded-lg border border-white/5 min-w-[100px] ${isAmount ? 'bg-emerald-500/10 border-emerald-500/10' : ''}"><span class="mini-label opacity-60 mb-1">${label}</span><div class="${isLarge ? 'text-4xl' : 'text-xl'} font-black ${isAmount ? 'text-emerald-400' : 'text-white'}">${total.toLocaleString()}</div><div class="flex justify-center gap-2 mt-1 opacity-40"><span class="text-[7px] font-bold">A:${getVal(prefix + " ACB " + m)}</span><span class="text-[7px] font-bold">I:${getVal(prefix + " ICB " + m)}</span></div></div>`;
+                };
+                return `<div class="glass-panel p-6 border-l-4 border-${color}-500 bg-slate-900/20 h-full"><div class="flex justify-between items-center mb-6 border-b border-white/5 pb-3"><div class="flex flex-col"><h4 class="text-xl font-black italic text-${color}-400">BIRTHDAY ANALYSIS</h4><p class="text-[9px] font-black text-slate-500 uppercase mt-1">Viewing: ${optionType}</p></div><div class="flex items-center glass-panel p-0.5 border-white/5 overflow-hidden scale-90">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setBdayFilter('${f}')" class="filter-tab px-3 py-1 rounded-md text-[9px] font-black uppercase ${bdayFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div><div class="mb-6"><div class="section-label mb-4">HEAD</div><div class="flex flex-wrap gap-1.5">${getCombined("Entitled", "Head", false, true)}${getCombined("Traffic", "Traffic", false, true)}${getCombined("Redeem", "Redm", false, true)}${getCombined("Book", "Book Head")}${getCombined("MTD", "MTD Head")}${getCombined("Show", "Show Head")}${getCombined("Sign", "Sign Head")}${getCombined("Amount", "$ Head", true)}</div></div><div><div class="section-label mb-4">TAIL</div><div class="flex flex-wrap gap-1.5">${[{l:"Redeem",m:"Redeem"},{l:"Book",m:"Book"},{l:"MTD",m:"MTD Book"},{l:"Show",m:"Show"},{l:"Sign",m:"Sign"},{l:"Amount",m:"$",is$:true}].map(s=> getCombined(s.l, s.m, s.is$)).join('')}</div></div></div>`;
+            };
+            container.innerHTML = `<div class="space-y-4"><div class="flex flex-col gap-4">${renderPTBlock(ptFilter, 'indigo')}</div></div><div class="space-y-4 mt-6"><div class="flex flex-col gap-4">${renderBdaySplitBlock(bdayFilter, 'violet')}</div></div>`;
+        }
 
-            const bdayHtml = `
-                <div class="glass-panel p-8 border-l-8 border-violet-500 shadow-2xl relative overflow-hidden group">
-                    <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                        <h4 class="text-2xl font-black uppercase italic text-violet-400">bday giftcard</h4>
-                        <span class="px-3 py-1 bg-violet-500/10 text-violet-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-violet-500/20 text-center">Overall Aggregate</span>
-                    </div>
-                    <div class="flex justify-center items-center gap-16 mb-8">
-                        <div class="flex flex-col items-center justify-center"><span class="mini-label text-violet-400/80 mb-1">HEAD (Entitled)</span><span class="text-7xl font-black text-white tracking-tighter tabular-nums leading-none text-center">${getVal("Bday Overall Head Ent").toLocaleString()}</span></div>
-                        <div class="w-px h-16 bg-white/10 mx-4"></div>
-                        <div class="flex flex-col items-center justify-center"><span class="mini-label text-violet-400/80 mb-1">HEAD (Redeemed)</span><span class="text-7xl font-black text-white tracking-tighter tabular-nums leading-none text-center">${getVal("Bday Overall Head Redm").toLocaleString()}</span></div>
-                    </div>
-                    <div class="grid grid-cols-4 gap-3">
-                        ${[{l:"Book",v:getVal("Bday Overall Book")},{l:"Show",v:getVal("Bday Overall Show")},{l:"Sign",v:getVal("Bday Overall Sign")},{l:"Amount",v:getVal("Bday Overall $")}].map(s=>`
-                            <div class="grid-item py-8 ${s.l==='Amount'?'bg-emerald-500/15 border-emerald-500/30':'bg-white/5'}">
-                                <span class="mini-label mb-3 text-slate-400 font-black text-sm uppercase text-center">${s.l}</span>
-                                <span class="text-4xl font-black ${s.l==='Amount'?'text-emerald-400':'text-white'} tabular-nums text-center w-full">${s.v.toLocaleString()}</span>
-                            </div>`).join('')}
-                    </div>
-                </div>`;
-            container.innerHTML = ptHtml + bdayHtml;
+        function renderTableLeadCell(d, type, brandName, floorName, therapistName = null) {
+            const prefix = type === 'PT' ? 'PT_' : 'Bday_';
+            const therapist = therapistName || d.Therapist || d.Identity;
+            const headActions = type === 'Bday' ? [{l:"Bok", v:d[prefix+'Book_Head']||d[prefix+'Book']},{l:"MTD", v:d[prefix+'MTD_Head']||d[prefix+'MTD_Book']},{l:"Shw", v:d[prefix+'Show_Head']||d[prefix+'Show']},{l:"Sgn", v:d[prefix+'Sign_Head']||d[prefix+'Sign']},{l:"Amt", v:d[prefix+'Amount_Head']||d[prefix+'Amount'], is$: true}] : [];
+            return `<div class="stacked-cell p-0.5"><div class="flex w-full items-center gap-1 px-1"><span class="section-tag head-tag">H</span><div class="flex-1 flex flex-col gap-1"><div class="flex justify-around items-center"><div class="flex flex-col"><span class="mini-label text-[7px] scale-90">Ent</span><button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled')" class="font-black text-sky-400 text-sm hover:text-white leading-none">${d[prefix + 'Eligible'] || '0'}</button></div><div class="flex flex-col"><span class="mini-label text-[7px] scale-90">Trf</span><span class="font-black text-sky-400 text-sm leading-none">${d[prefix + 'Traffic'] || '0'}</span></div><div class="flex flex-col"><span class="mini-label text-[7px] scale-90">${type === 'PT' ? 'Shr' : 'Red'}</span><button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared')` : ''}" class="font-black text-sky-400 text-sm leading-none">${d[prefix + (type === 'PT' ? 'Share' : 'Redeem')] || '0'}</button></div></div>${headActions.length > 0 ? `<div class="grid grid-cols-5 gap-0.5 border-t border-white/5 pt-1">${headActions.map(x => `<div class="grid-item p-0.5 ${x.is$ ? 'bg-sky-500/10 border-sky-500/20' : ''}"><span class="mini-label text-[6px] opacity-40">${x.l}</span><span class="font-black text-[9px] ${x.is$ ? 'text-sky-300' : 'text-slate-300'}">${x.v || '-'}</span></div>`).join('')}</div>` : ''}</div></div><div class="w-full h-px bg-white/5 my-1"></div><div class="flex w-full items-center gap-1 px-1"><span class="section-tag tail-tag">T</span><div class="flex-1 grid grid-cols-5 gap-0.5">${[{l:"Red",v:d[prefix+'Redeem']},{l:"Bok",v:d[prefix+'Book']},{l:"MTD",v:d[prefix+'MTD_Book']},{l:"Shw",v:d[prefix+'Show']},{l:"Amt",v:d[prefix+'Amount'],is$:true}].map(x=>`<div class="grid-item p-0.5 ${x.is$?'bg-emerald-500/10 border-emerald-500/20':''}"><span class="mini-label text-[6px] opacity-40">${x.l}</span><span class="font-black text-[10px] ${x.is$?'text-emerald-400':'text-white'}">${x.v || '-'}</span></div>`).join('')}</div></div></div>`;
         }
 
         function renderOperations(opsData) {
             const container = document.getElementById('ops-container');
-            const brandFilterContainer = document.getElementById('ops-brand-filter-container');
+            const bFilter = document.getElementById('ops-brand-filter-container');
             container.innerHTML = '';
-            
-            // Dynamic Brand Discovery
-            const uniqueBrands = [...new Set(opsData.map(d => d.Brand))].filter(Boolean);
-            if (!opsFilterBrand || !uniqueBrands.includes(opsFilterBrand)) {
-                opsFilterBrand = uniqueBrands.length > 0 ? uniqueBrands[0] : 'All';
-            }
-
-            // Update Brand Filter UI
-            const filterOptions = ['All', ...uniqueBrands];
-            brandFilterContainer.innerHTML = filterOptions.map(b => `
-                <button onclick="setOpsBrandFilter('${b}')" 
-                        class="filter-tab px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest ${opsFilterBrand === b ? 'active' : ''}">
-                    ${b}
-                </button>
-            `).join('');
-
-            let brandsToRender = opsFilterBrand === 'All' ? uniqueBrands : [opsFilterBrand];
-
-            brandsToRender.forEach(brand => {
-                const brandColor = colors[brand.toLowerCase()] || colors.default;
-                const brandData = opsData.filter(d => d.Brand === brand);
-                if (!brandData.length) return;
-
-                let brandHtml = `
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-3 p-3 bg-${brandColor}-500/15 border border-${brandColor}-500/30 rounded-xl shadow-lg">
-                            <div class="w-2 h-8 rounded-full bg-current ${brandColor}"></div>
-                            <h3 class="text-xl font-black uppercase tracking-[0.1em] text-${brandColor}-300 text-center">${brand} Network</h3>
-                        </div>
-                        <div class="glass-panel overflow-hidden border border-white/10">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left kpi-table min-w-[1700px] table-fixed">
-                                    <thead>
-                                        <tr>
-                                            <th rowspan="2" class="w-[160px] border-r border-slate-800 bg-slate-950/70 text-center">Location</th>
-                                            <th rowspan="2" class="w-[100px] border-r border-slate-800 bg-slate-950/70 text-center">HC</th>
-                                            <th class="w-[140px] border-b border-slate-800 text-emerald-400 uppercase font-black text-center">Base</th>
-                                            <th colspan="2" class="w-[320px] border-b border-slate-800 text-sky-400 uppercase tracking-widest text-center">REPLICATION</th>
-                                            <th colspan="4" class="w-[600px] border-b border-slate-800 text-rose-400 uppercase tracking-widest font-black text-center text-xs">ACTIVATION</th>
-                                            <th class="w-[280px] border-b border-slate-800 text-indigo-400 italic font-black text-center">Paid Trial</th>
-                                            <th class="w-[280px] border-b border-slate-800 text-violet-400 italic font-black text-center text-xs">Birthday</th>
-                                        </tr>
-                                        <tr>
-                                            <th class="border-r border-slate-800 italic text-center">A / I Ref</th>
-                                            <th class="w-[160px] text-center">node (Δ)</th>
-                                            <th class="w-[160px] bg-sky-500/10 font-black text-center">node /HC</th>
-                                            <th class="w-[150px] text-center">Active traffic</th>
-                                            <th class="w-[150px] bg-emerald-500/10 font-black text-center">Active Traffic/HC</th>
-                                            <th class="w-[150px] text-center">Active purchase</th>
-                                            <th class="w-[150px] border-r border-slate-800 bg-rose-500/10 font-black text-center text-xs">Active Purchase/HC</th>
-                                            <th class="border-r border-slate-800 text-center font-black">Head (Ent/Share) / Tail</th>
-                                            <th class="text-center font-black uppercase text-xs">Head (Ent/Red) / Tail</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-800/60">`;
-
-                brandData.forEach(d => {
+            const brands = [...new Set(opsData.map(d => d.Brand))].filter(Boolean);
+            if (!opsFilterBrand || !brands.includes(opsFilterBrand)) { opsFilterBrand = 'All'; }
+            bFilter.innerHTML = ['All', ...brands].map(b => `<button onclick="setOpsBrandFilter('${b}')" class="filter-tab px-4 py-1 rounded-md text-[10px] font-black uppercase ${opsFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
+            (opsFilterBrand === 'All' ? brands : [opsFilterBrand]).forEach(brand => {
+                const color = colors[brand.toLowerCase()] || colors.default;
+                let data = getSortData(opsData.filter(d => d.Brand === brand), opsSort);
+                if (!data.length) return;
+                const getTh = (l, k, w) => `<th class="sort-header ${opsSort.key === k ? 'sort-active' : ''}" style="width: ${w};" onclick="handleSort('ops', '${k}')">${l}${getSortIcon(opsSort.key, k, opsSort.direction)}</th>`;
+                let html = `<div class="space-y-1"><div class="flex items-center gap-2 p-2 bg-${color}-500/10 border border-${color}-500/20 rounded-lg"><div class="w-1.5 h-4 rounded-full bg-${color}-500"></div><h3 class="text-sm font-black uppercase text-${color}-300">${brand}</h3></div><div class="glass-panel overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1700px] table-fixed"><thead><tr>${getTh('Location', 'Floor', '120px')}${getTh('HC', 'HC', '60px')}${getTh('Base', 'ACB_Ref', '100px')}<th colspan="2">REPLICATION</th><th colspan="4">ACTIVATION</th><th class="w-[320px]">Paid Trial Track</th><th class="w-[420px]">Birthday Track</th></tr><tr><th class="italic opacity-40 text-center">A/I Ref</th>${getTh('Nodes (Δ)', 'Nodes', '110px')}${getTh('Node/HC', 'Node_HC', '110px')}${getTh('Trf', 'Total_Traffic', '100px')}${getTh('Trf/HC', 'Trf_HC', '100px')}${getTh('Pur', 'Total_Purchase', '100px')}${getTh('Pur/HC', 'Pur_HC', '100px')}<th class="bg-indigo-500/10 text-center">Tracking (H/T)</th><th class="bg-violet-500/10 text-center">Tracking (H/T)</th></tr></thead><tbody>`;
+                data.forEach(d => {
                     const hc = parseSheetNum(d.HC);
-                    const totalTrf = parseSheetNum(d.Traffic_Head) + parseSheetNum(d.Traffic_Tail);
-                    const totalPur = parseSheetNum(d.Purchase_Head) + parseSheetNum(d.Purchase_Tail);
-                    const ratio = hc > 0 ? (parseSheetNum(d.Nodes) / hc).toFixed(1) : '-';
-                    const trfRatio = hc > 0 ? (totalTrf / hc).toFixed(1) : '-';
-                    const purRatio = hc > 0 ? (totalPur / hc).toFixed(1) : '-';
-
-                    brandHtml += `
-                        <tr class="hover:bg-white/[0.05] transition-colors">
-                            <td class="p-1.5 font-black text-slate-100 border-r border-slate-800 text-lg uppercase italic text-left pl-6">${d.Floor}</td>
-                            <td class="p-1.5 text-slate-400 border-r border-slate-800 tabular-nums font-black text-4xl text-center">${hc > 0 ? hc.toLocaleString() : '-'}</td>
-                            <td class="p-1.5 border-r border-slate-800"><div class="stacked-cell text-center"><span class="text-sky-300 font-black text-lg text-center w-full">A: ${parseSheetNum(d.ACB_Ref).toLocaleString()}</span><span class="text-indigo-400 font-black text-lg text-center w-full">I: ${parseSheetNum(d.ICB_Ref).toLocaleString()}</span></div></td>
-                            <td class="p-1.5 font-black data-value-lg mono text-white text-center">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-lg')}</td>
-                            <td class="p-1.5 text-sky-300 font-black data-value-xl bg-sky-500/10 text-center">${ratio}</td>
-                            <td class="p-1.5"><div class="stacked-cell text-center font-black"><div class="flex justify-between w-full px-4 text-white text-2xl uppercase italic"><span>Head</span><span>${parseSheetNum(d.Traffic_Head).toLocaleString()}</span></div><div class="flex justify-between w-full px-4 text-emerald-400 text-2xl uppercase italic"><span>Tail</span><span>${parseSheetNum(d.Traffic_Tail).toLocaleString()}</span></div></div></td>
-                            <td class="p-1.5 text-emerald-400 font-black data-value-xl bg-emerald-500/10 text-center">${trfRatio}</td>
-                            <td class="p-1.5"><div class="stacked-cell text-center font-black"><div class="flex justify-between w-full px-4 text-white text-2xl uppercase italic"><span>Head</span><span>${parseSheetNum(d.Purchase_Head).toLocaleString()}</span></div><div class="flex justify-between w-full px-4 text-rose-400 text-2xl uppercase italic"><span>Tail</span><span>${parseSheetNum(d.Purchase_Tail).toLocaleString()}</span></div></div></td>
-                            <td class="p-1.5 text-rose-400 font-black data-value-xl bg-rose-500/10 border-r border-slate-800 text-center">${purRatio}</td>
-                            <td class="p-1 border-r border-slate-800 bg-indigo-500/[0.04]"><div class="stacked-cell text-center"><div class="flex justify-center items-center border-b border-white/10 pb-1 w-full gap-4 text-center"><div class="flex flex-col"><span class="mini-label text-indigo-400 font-black">Entitled</span><span class="font-black text-indigo-300 text-2xl text-center">${d.PT_Eligible || '-'}</span></div><div class="flex flex-col"><span class="mini-label text-indigo-400 font-black">Share</span><span class="font-black text-indigo-300 text-2xl text-center">${d.PT_Share || 0}</span></div></div><div class="mini-grid px-1">${[{l:"Book",v:d.PT_Book},{l:"MTD",v:d.PT_MTD_Book},{l:"Show",v:d.PT_Show},{l:"$",v:d.PT_Amount}].map(x=>`<div class="grid-item items-center justify-center"><span class="mini-label font-black uppercase text-[8px] text-center">${x.l}</span><span class="font-black text-xl ${x.l==='$'?'text-emerald-400':''} text-center tabular-nums w-full">${x.v || '-'}</span></div>`).join('')}</div></div></td>
-                            <td class="p-1 bg-violet-500/[0.04]"><div class="stacked-cell text-center"><div class="flex justify-between border-b border-white/10 pb-1 px-1 w-full"><div class="flex flex-col items-center justify-center text-center"><span class="mini-label text-violet-400 text-[9px] uppercase">Entitled</span><span class="text-violet-300 font-black text-2xl text-center tabular-nums">${d.Bday_Eligible || '-'}</span></div><div class="flex flex-col items-center justify-center text-center"><span class="mini-label text-violet-400 text-[9px] uppercase">Redeemed</span><span class="text-violet-400 font-black text-2xl text-center tabular-nums">${d.Bday_Redeem || '-'}</span></div></div><div class="mini-grid px-1">${[{l:"Book",v:d.Bday_Book},{l:"Show",v:d.Bday_Show},{l:"Sign",v:d.Bday_Sign},{l:"$",v:d.Bday_Amount}].map(x=>`<div class="grid-item items-center justify-center"><span class="mini-label font-black uppercase text-[8px] text-center">${x.l}</span><span class="font-black text-xl ${x.l==='$'?'text-emerald-400':''} text-center tabular-nums w-full">${x.v || '-'}</span></div>`).join('')}</div></div></td>
-                        </tr>`;
+                    const ratio = hc > 0 ? (parseSheetNum(d.Nodes)/hc).toFixed(1) : '-';
+                    const trfTotal = parseSheetNum(d.Traffic_Head) + parseSheetNum(d.Traffic_Tail);
+                    const purTotal = parseSheetNum(d.Purchase_Head) + parseSheetNum(d.Purchase_Tail);
+                    html += `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 font-black text-slate-100 text-sm uppercase italic pl-4 text-left">${d.Floor}</td><td class="p-2 font-black text-xl text-center">${hc || '-'}</td><td class="text-center"><div class="stacked-cell text-[10px] font-bold"><span class="text-sky-300">A:${d.ACB_Ref || 0}</span><span class="text-indigo-400">I:${d.ICB_Ref || 0}</span></div></td><td class="font-black text-lg text-center">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[10px]')}</td><td class="bg-sky-500/5 font-black text-xl text-sky-300 text-center">${ratio}</td><td class="text-center"><div class="stacked-cell text-xs"><span class="text-white">H:${d.Traffic_Head || 0}</span><span class="text-emerald-400">T:${d.Traffic_Tail || 0}</span></div></td><td class="bg-emerald-500/5 text-xl font-black text-emerald-400 text-center">${hc > 0 ? (trfTotal/hc).toFixed(1) : '-'}</td><td class="text-center"><div class="stacked-cell text-xs"><span class="text-white">H:${d.Purchase_Head || 0}</span><span class="text-rose-400">T:${d.Purchase_Tail || 0}</span></div></td><td class="bg-rose-500/5 text-xl font-black text-rose-400 text-center">${hc > 0 ? (purTotal/hc).toFixed(1) : '-'}</td><td class="bg-indigo-500/[0.02]">${renderTableLeadCell(d, 'PT', brand, d.Floor)}</td><td class="bg-violet-500/[0.02]">${renderTableLeadCell(d, 'Bday', brand, d.Floor)}</td></tr>`;
                 });
-                container.innerHTML += brandHtml + `</tbody></table></div></div></div>`;
+                container.innerHTML += html + `</tbody></table></div></div></div>`;
             });
         }
 
         function renderTherapists(tData) {
             const container = document.getElementById('therapist-container');
-            const brandFilterContainer = document.getElementById('t-brand-filter-container');
-            const floorFilterContainer = document.getElementById('floor-filter-container');
+            const bFilter = document.getElementById('t-brand-filter-container');
+            const fFilter = document.getElementById('floor-filter-container');
+            if (!tData || tData.length === 0) { container.innerHTML = `<div class="p-12 text-center glass-panel italic">Waiting for systems...</div>`; return; }
+            const brands = [...new Set(tData.map(d => d.Brand))].filter(Boolean);
+            if (!therapistFilterBrand || !brands.includes(therapistFilterBrand)) { therapistFilterBrand = brands[0] || null; }
+            bFilter.innerHTML = brands.map(b => `<button onclick="setTherapistBrand('${b}')" class="filter-tab px-3 py-1 rounded-md text-[10px] font-black uppercase ${therapistFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
             
-            if (!tData || tData.length === 0) {
-                container.innerHTML = `<div class="p-16 text-center glass-panel border border-white/10 text-slate-500 font-black uppercase tracking-widest italic text-xl">Waiting for Identities data for current network...</div>`;
-                return;
-            }
-
-            // Dynamic Brand Discovery
-            const uniqueBrands = [...new Set(tData.map(d => d.Brand))].filter(Boolean);
-            if (!therapistFilterBrand || !uniqueBrands.includes(therapistFilterBrand)) {
-                therapistFilterBrand = uniqueBrands.length > 0 ? uniqueBrands[0] : null;
-            }
-
-            // Update Brand Filter UI
-            brandFilterContainer.innerHTML = uniqueBrands.map(b => `
-                <button onclick="setTherapistBrand('${b}')" 
-                        class="filter-tab px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest ${therapistFilterBrand === b ? 'active' : ''}">
-                    ${b}
-                </button>
-            `).join('');
-
-            // Dynamic Floor Discovery based on Selected Brand
-            const uniqueFloors = [...new Set(tData.filter(t => t.Brand === therapistFilterBrand).map(t => t.Floor))].sort();
-            if (!therapistFilterFloor || !uniqueFloors.includes(therapistFilterFloor)) {
-                therapistFilterFloor = uniqueFloors.length > 0 ? uniqueFloors[0] : null;
-            }
-
-            floorFilterContainer.innerHTML = uniqueFloors.map(f => `
-                <button onclick="setTherapistFloor('${f}')" 
-                        class="floor-tab px-5 py-2 rounded-full border border-white/10 text-[11px] font-black uppercase tracking-widest ${f === therapistFilterFloor ? 'active' : 'bg-white/5'}">
-                    ${f}
-                </button>
-            `).join('');
-
-            const filteredData = tData.filter(t => t.Brand === therapistFilterBrand && t.Floor === therapistFilterFloor);
-            const brandColor = colors[therapistFilterBrand?.toLowerCase()] || colors.default;
-
-            container.innerHTML = `
-                <div class="glass-panel border-l-4 border-${brandColor}-500/50 overflow-hidden shadow-2xl">
-                    <div class="bg-white/5 px-6 py-4 flex justify-between items-center border-b border-white/10 text-center">
-                        <span class="text-xl font-black uppercase italic tracking-widest text-${brandColor}-300">${therapistFilterBrand || 'None'} &bull; ${therapistFilterFloor || 'No Floors Found'}</span>
-                        <span class="text-[12px] font-black text-slate-500 uppercase tracking-tighter">${filteredData.length} Identities active in location</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left kpi-table min-w-[1730px] table-fixed">
-                            <thead>
-                                <tr class="text-[12px] font-black text-slate-400 uppercase border-b border-white/5 bg-slate-900/40 font-black">
-                                    <th class="p-3 pl-8 w-[250px] text-left">Identity (Therapist)</th>
-                                    <th class="p-3 text-center w-[160px]">Nodes (Δ)</th>
-                                    <th class="p-3 text-center w-[230px] text-emerald-400 uppercase tracking-wider text-xs">Active Traffic [Head/Tail]</th>
-                                    <th class="p-3 text-center w-[230px] text-rose-400 uppercase tracking-wider text-xs">Active Purchase [Head/Tail]</th>
-                                    <th class="p-3 text-center w-[350px] text-indigo-400 uppercase italic">Paid Trial (Head/Tail)</th>
-                                    <th class="p-3 text-center w-[350px] text-violet-400 uppercase italic">Birthday (Head/Tail)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/[0.03]">
-                                ${filteredData.map(t => {
-                                    const nVal = parseSheetNum(t.Nodes);
-                                    const nDelta = parseSheetNum(t.Nodes_Delta);
-                                    return `
-                                    <tr class="hover:bg-white/[0.06] transition-colors">
-                                        <td class="p-3 pl-8 font-black text-slate-200 uppercase italic text-2xl text-left">${t.Therapist || t.Identity || 'Unknown'}</td>
-                                        <td class="p-3 text-center font-black text-white text-4xl tabular-nums">
-                                            ${nVal.toLocaleString()} 
-                                            <span class="text-xl ${nDelta >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-black italic">(${nDelta >= 0 ? '+' : ''}${nDelta})</span>
-                                        </td>
-                                        <td class="p-3 text-center">
-                                            <div class="stacked-cell font-black text-center">
-                                                <div class="flex justify-between w-full px-8 text-white text-3xl uppercase italic"><span>Head</span><span>${parseSheetNum(t.Traffic_Head)}</span></div>
-                                                <div class="flex justify-between w-full px-8 text-emerald-400 text-3xl uppercase italic"><span>Tail</span><span>${parseSheetNum(t.Traffic_Tail)}</span></div>
-                                            </div>
-                                        </td>
-                                        <td class="p-3 text-center">
-                                            <div class="stacked-cell font-black text-center">
-                                                <div class="flex justify-between w-full px-8 text-white text-3xl uppercase italic"><span>Head</span><span>${parseSheetNum(t.Purchase_Head)}</span></div>
-                                                <div class="flex justify-between w-full px-8 text-rose-400 text-3xl uppercase italic"><span>Tail</span><span>${parseSheetNum(t.Purchase_Tail)}</span></div>
-                                            </div>
-                                        </td>
-                                        <td class="p-2 border-l border-white/5 bg-indigo-500/[0.02]">
-                                            <div class="flex items-center gap-6 px-4 justify-center font-black">
-                                                <div class="flex flex-col items-center justify-center text-center">
-                                                    <div class="flex flex-col"><span class="mini-label text-[10px] text-indigo-400 uppercase">Entitled</span><span class="text-indigo-300 text-3xl tabular-nums text-center w-full">${t.PT_Eligible || '-'}</span></div>
-                                                    <div class="flex flex-col mt-2"><span class="mini-label text-[10px] text-indigo-400 uppercase">Share</span><span class="text-indigo-300 text-3xl tabular-nums text-center w-full">${t.PT_Share || 0}</span></div>
-                                                </div>
-                                                <div class="mini-grid grid-cols-4 flex-1 h-full">
-                                                    ${[{l:"Book",v:t.PT_Book},{l:"MTD",v:t.PT_MTD_Book},{l:"Show",v:t.PT_Show},{l:"$",v:t.PT_Amount}].map(x=>`<div class="grid-item items-center justify-center"><span class="mini-label text-[10px] font-black uppercase text-slate-500 mb-1 text-center text-[9px]">${x.l}</span><span class="font-black text-2xl ${x.l==='$'?'text-emerald-400':''} text-center tabular-nums w-full">${x.v || '-'}</span></div>`).join('')}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="p-2 border-l border-white/5 bg-violet-500/[0.02]">
-                                            <div class="flex items-center gap-6 px-4 justify-center font-black">
-                                                <div class="flex flex-col items-center justify-center text-center leading-tight">
-                                                    <div class="flex flex-col mb-2"><span class="mini-label text-[10px] text-violet-400 uppercase">Entitled</span><span class="text-violet-300 text-2xl tabular-nums text-center w-full">${t.Bday_Eligible || '0'}</span></div>
-                                                    <div class="flex flex-col"><span class="mini-label text-[10px] text-violet-500 uppercase">Redeemed</span><span class="text-violet-400 text-2xl tabular-nums text-center w-full">${t.Bday_Redeem || '0'}</span></div>
-                                                </div>
-                                                <div class="mini-grid grid-cols-4 flex-1 h-full">
-                                                    ${[{l:"Book",v:t.Bday_Book},{l:"Show",v:t.Bday_Show},{l:"Sign",v:t.Bday_Sign},{l:"$",v:t.Bday_Amount}].map(x=>`<div class="grid-item items-center justify-center"><span class="mini-label text-[10px] font-black uppercase text-slate-500 mb-1 text-center text-[9px]">${x.l}</span><span class="font-black text-2xl ${x.l==='$'?'text-emerald-400':''} text-center tabular-nums w-full">${x.v || '-'}</span></div>`).join('')}
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>`;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>`;
+            // Unique Floors for the Brand + "All"
+            const brandFloors = [...new Set(tData.filter(t => t.Brand === therapistFilterBrand).map(t => t.Floor))].sort();
+            const floors = ['All', ...brandFloors];
+            if (!therapistFilterFloor || !floors.includes(therapistFilterFloor)) { therapistFilterFloor = 'All'; }
+            fFilter.innerHTML = floors.map(f => `<button onclick="setTherapistFloor('${f}')" class="floor-tab px-4 py-1 rounded-full border border-white/5 text-[10px] font-black uppercase ${f === therapistFilterFloor ? 'active' : 'bg-white/5'}">${f}</button>`).join('');
+            
+            let filtered = tData.filter(t => t.Brand === therapistFilterBrand && (therapistFilterFloor === 'All' || t.Floor === therapistFilterFloor));
+            filtered = getSortData(filtered, therapistSort);
+            const color = colors[therapistFilterBrand?.toLowerCase()] || colors.default;
+            const getTh = (l, k, w, c = '') => `<th class="sort-header ${therapistSort.key === k ? 'sort-active' : ''} ${c}" style="width: ${w};" onclick="handleSort('therapist', '${k}')">${l}${getSortIcon(therapistSort.key, k, therapistSort.direction)}</th>`;
+            
+            container.innerHTML = `<div class="glass-panel border-l-4 border-${color}-500/50 overflow-hidden"><div class="bg-white/5 px-4 py-2 flex justify-between items-center border-b border-white/5"><span class="text-sm font-black uppercase italic text-${color}-300">${therapistFilterBrand} &bull; ${therapistFilterFloor}</span><span class="text-[9px] font-black text-slate-500 uppercase">${filtered.length} Leads Tracking</span></div><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1800px] table-fixed"><thead><tr class="text-[9px] font-black text-slate-400 uppercase bg-slate-900/40">${getTh('Identity', 'Therapist', '200px', 'text-left pl-6')}${getTh('Nodes (Δ)', 'Nodes', '120px')}${getTh('Traffic [H/T]', 'Total_Traffic', '180px', 'text-emerald-400')}${getTh('Purchase [H/T]', 'Total_Purchase', '180px', 'text-rose-400')}<th class="w-[450px] text-indigo-400 bg-indigo-500/5">Paid Trial Track</th><th class="w-[550px] text-violet-400 bg-violet-500/5">Birthday Track</th></tr></thead><tbody>` + filtered.map(t => `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 pl-6 font-black text-white text-lg uppercase italic text-left">${t.Therapist || t.Identity}</td><td class="font-black text-2xl text-center">${parseSheetNum(t.Nodes).toLocaleString()} ${getBracketHtml(t.Nodes_Delta, 'text-[10px]')}</td><td><div class="flex justify-around text-xs font-bold text-center"><span class="text-white">H:${t.Traffic_Head || 0}</span><span class="text-emerald-400">T:${t.Traffic_Tail || 0}</span></div></td><td><div class="flex justify-around text-xs font-bold text-center"><span class="text-white">H:${t.Purchase_Head || 0}</span><span class="text-rose-400">T:${t.Purchase_Tail || 0}</span></div></td><td class="bg-indigo-500/[0.01] text-center">${renderTableLeadCell(t, 'PT', therapistFilterBrand, t.Floor, t.Therapist)}</td><td class="bg-violet-500/[0.01] text-center">${renderTableLeadCell(t, 'Bday', therapistFilterBrand, t.Floor, t.Therapist)}</td></tr>`).join('') + `</tbody></table></div></div>`;
         }
 
         window.onload = () => { if (window.initDashboard) window.initDashboard(); setInterval(() => { const timeEl = document.getElementById('current-time'); if (timeEl) timeEl.innerText = new Date().toLocaleString(); }, 1000); };
