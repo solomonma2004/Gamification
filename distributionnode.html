@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,58 +37,43 @@
         };
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; font-size: 0.95rem; overflow-x: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #020617; color: #f8fafc; font-size: 0.95rem; overflow-x: hidden; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 0.75rem; }
-        .stat-card { transition: transform 0.2s ease; }
-        .stat-card:hover { transform: translateY(-2px); }
         
-        .kpi-table th { font-size: 10px; letter-spacing: 0.05em; color: #94a3b8; text-transform: uppercase; padding: 8px 4px; border: 1px solid #1e293b; line-height: 1; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
-        .kpi-table td { padding: 4px 2px; font-family: 'Inter', sans-serif; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
+        .kpi-table th { font-size: 10px; letter-spacing: 0.05em; color: #cbd5e1; text-transform: uppercase; padding: 12px 4px; border: 1px solid #1e293b; line-height: 1.2; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
+        .kpi-table td { padding: 8px 4px; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
         
-        .stacked-cell { display: flex; flex-direction: column; gap: 1px; align-items: center; justify-content: center; width: 100%; }
-        .mini-grid { display: grid; gap: 1px; width: 100%; }
-        
-        .mini-label { font-size: 8px; color: #64748b; text-transform: uppercase; font-weight: 900; line-height: 1; text-align: center; white-space: nowrap; letter-spacing: 0.02em; }
-        .grid-item { background: rgba(255, 255, 255, 0.04); padding: 4px 2px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        .data-value-lg { font-size: 20px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
-        .data-value-xl { font-size: 24px; font-weight: 900; letter-spacing: -0.08em; line-height: 1; }
+        .mini-label { font-size: 9px; color: #cbd5e1; text-transform: uppercase; font-weight: 900; line-height: 1.1; text-align: center; white-space: nowrap; letter-spacing: 0.01em; opacity: 0.95; }
+        .grid-item { background: rgba(255, 255, 255, 0.08); padding: 6px 2px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-height: 52px; }
         
         .filter-tab { transition: all 0.2s ease; cursor: pointer; border: 1px solid transparent; }
-        .filter-tab.active { background: rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.6); color: #fff; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
+        .filter-tab.active { background: rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.6); color: #fff; }
 
-        .floor-tab { transition: all 0.2s ease; cursor: pointer; }
-        .floor-tab.active { background: rgba(56, 189, 248, 0.3); border-color: rgba(56, 189, 248, 0.5); color: #fff; }
-
-        .network-toggle { background: rgba(15, 23, 42, 0.8); border: 2px solid rgba(255, 255, 255, 0.05); padding: 3px; border-radius: 100px; display: flex; gap: 2px; }
-        .network-btn { padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 900; text-transform: uppercase; transition: all 0.3s ease; color: #64748b; }
+        .network-btn { padding: 4px 16px; border-radius: 100px; font-size: 12px; font-weight: 900; text-transform: uppercase; color: #64748b; transition: 0.2s; }
         .network-btn.active { background: white; color: #020617; }
         .network-btn.active.sh { background: #10b981; color: white; }
 
-        .modal-backdrop { background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); }
-        .lead-row:nth-child(even) { background: rgba(255,255,255,0.01); }
+        .section-tag { font-size: 10px; font-weight: 900; padding: 4px 6px; border-radius: 3px; display: inline-block; line-height: 1; text-align: center; min-width: 32px; }
+        .head-tag { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .tail-tag { background: rgba(168, 85, 247, 0.2); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
 
-        .section-tag { font-size: 8px; font-weight: 900; letter-spacing: 0.1em; padding: 1px 4px; border-radius: 3px; display: inline-block; line-height: 1; }
-        .head-tag { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
-        .tail-tag { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2); }
+        .section-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: #94a3b8; display: flex; align-items: center; gap: 8px; width: 100%; }
+        .section-label::before, .section-label::after { content: ""; height: 1px; flex-grow: 1; background: rgba(255,255,255,0.1); }
 
-        .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.3em; color: #475569; display: flex; align-items: center; gap: 8px; width: 100%; }
-        .section-label::before, .section-label::after { content: ""; height: 1px; flex-grow: 1; background: rgba(255,255,255,0.05); }
-
-        .sort-header { cursor: pointer; transition: background 0.2s ease; position: relative; }
-        .sort-header:hover { background: rgba(255, 255, 255, 0.05) !important; }
-        .sort-indicator { font-size: 10px; margin-left: 4px; opacity: 0.5; vertical-align: middle; }
-        .sort-active { color: white !important; }
-        .sort-active .sort-indicator { opacity: 1; color: #38bdf8; }
+        .pending-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.96); display: flex; align-items: center; justify-content: center; z-index: 30; backdrop-filter: blur(1px); border-radius: inherit; border: 1px dashed rgba(244, 63, 94, 0.3); }
+        .pending-text { color: #f43f5e; font-size: 8px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; }
+        .pending-large { font-size: 16px; letter-spacing: 0.2em; color: #f43f5e; font-style: italic; font-weight: 900; }
+        
+        .sort-header { cursor: pointer; }
+        .sort-header:hover { background: rgba(255, 255, 255, 0.08) !important; }
     </style>
 </head>
 <body class="p-2 md:p-4">
 
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6 text-center">
-        <div id="loading-spinner" class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-sky-400 font-mono text-sm animate-pulse uppercase tracking-widest font-black">Syncing Systems...</p>
+        <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sky-400 font-mono text-sm animate-pulse uppercase tracking-widest font-black">Syncing Node Momentum...</p>
     </div>
 
     <!-- LEAD DETAIL MODAL -->
@@ -97,37 +82,34 @@
         <div class="glass-panel w-full max-w-2xl max-h-[85vh] overflow-hidden border border-white/10 shadow-2xl relative flex flex-col">
             <div class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
                 <div class="flex flex-col gap-0.5">
-                    <h3 id="modal-therapist-name" class="text-xl font-black text-white uppercase italic leading-none">Therapist Name</h3>
+                    <h3 id="modal-therapist-name" class="text-xl font-black text-white uppercase italic leading-none">Identity</h3>
                     <div class="flex items-center gap-2">
-                        <p id="modal-brand-name" class="text-slate-400 text-[9px] font-black uppercase tracking-widest">Brand</p>
+                        <p id="modal-brand-name" class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Brand</p>
                         <span class="text-slate-700">•</span>
-                        <p id="modal-center-name" class="text-slate-400 text-[9px] font-black uppercase tracking-widest">Center</p>
+                        <p id="modal-center-name" class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Center</p>
                     </div>
                 </div>
-                <div class="flex flex-col items-end">
-                    <p id="modal-lead-type" class="text-sky-400 text-[9px] font-black uppercase tracking-widest mb-1">Lead Analysis</p>
-                    <button onclick="closeLeadModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white font-black text-lg">&times;</button>
-                </div>
+                <button onclick="closeLeadModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white font-black text-lg">&times;</button>
             </div>
             <div class="p-0 overflow-y-auto flex-1">
                 <table class="w-full text-left">
                     <thead class="sticky top-0 bg-slate-950 shadow-sm border-b border-white/5">
-                        <tr class="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                            <th class="p-3 pl-6">MMC CODE</th>
-                            <th class="p-3 text-center">TECH</th>
-                            <th class="p-3 text-center">SEGMENT</th>
-                            <th class="p-3 text-center">STATUS</th>
+                        <tr class="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            <th class="p-3 pl-6">MMC CODE 唯代碼</th>
+                            <th class="p-3 text-center">TECH 技術</th>
+                            <th class="p-3 text-center">SEGMENT 類別</th>
+                            <th class="p-3 text-center">STATUS 狀態</th>
                         </tr>
                     </thead>
                     <tbody id="lead-modal-body" class="divide-y divide-white/[0.02]"></tbody>
                 </table>
                 <div id="modal-empty-state" class="hidden py-16 text-center">
-                    <p class="text-slate-500 font-black uppercase text-xs italic">No Lead records found matching criteria</p>
+                    <p class="text-slate-500 font-black uppercase text-xs italic">No matching records found</p>
                 </div>
             </div>
             <div class="p-3 bg-slate-900/80 border-t border-white/5 flex justify-between items-center">
-                <span id="modal-count" class="text-[10px] font-black text-slate-400 uppercase">0 Leads Listed</span>
-                <button onclick="closeLeadModal()" class="px-4 py-1.5 bg-sky-500 text-slate-950 font-black uppercase text-[10px] rounded transition-colors">Close</button>
+                <span id="modal-count" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">0 Records Online</span>
+                <button onclick="closeLeadModal()" class="px-5 py-2 bg-sky-500 text-slate-950 font-black uppercase text-[10px] rounded transition-colors">Close 關閉</button>
             </div>
         </div>
     </div>
@@ -135,80 +117,53 @@
     <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div class="flex flex-col gap-1">
             <h1 class="text-3xl font-black tracking-tighter bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent uppercase italic leading-none">Node Momentum</h1>
-            <p class="text-slate-500 text-[10px] font-black tracking-widest uppercase opacity-80">Activation & Replication Intelligence</p>
+            <p class="text-slate-500 text-[10px] font-black tracking-widest uppercase opacity-80">Activation Intelligence 分佈與活化情報</p>
         </div>
 
         <div class="flex items-center gap-4">
-            <div class="network-toggle">
-                <button onclick="setNetworkMode('HK')" id="net-btn-HK" class="network-btn active">HK Network</button>
-                <button onclick="setNetworkMode('SH')" id="net-btn-SH" class="network-btn">SH Network</button>
+            <div class="flex bg-slate-900/80 p-1 border border-white/5 rounded-full">
+                <button onclick="setNetworkMode('HK')" id="net-btn-HK" class="network-btn active">HK 香港</button>
+                <button onclick="setNetworkMode('SH')" id="net-btn-SH" class="network-btn">SH 上海</button>
             </div>
             <button onclick="fetchData()" class="px-4 py-2 glass-panel hover:bg-white/5 transition-colors flex items-center gap-2">
                 <div id="sync-status" class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                <span id="sync-text" class="text-[10px] font-black text-slate-200 uppercase tracking-widest">Live Feed</span>
+                <span class="text-[10px] font-black text-slate-200 uppercase tracking-widest">Live 實時</span>
             </button>
             <div class="px-4 py-2 glass-panel font-mono text-slate-400 font-bold text-[10px]" id="current-time"></div>
         </div>
     </header>
 
-    <!-- SECTION 1: OVERVIEW -->
-    <section class="mb-8">
-        <div class="flex items-center gap-2 mb-3">
-            <h2 class="text-lg font-black text-white tracking-tighter uppercase italic">Overview</h2>
-            <div class="h-px flex-1 bg-slate-800"></div>
-        </div>
+    <!-- OVERVIEW -->
+    <section class="mb-10">
         <div id="overview-container"></div>
     </section>
 
-    <!-- SECTION 2: IDENTITY ANALYSIS -->
-    <section class="mb-8">
-        <div class="flex items-center gap-2 mb-3">
-            <h2 class="text-lg font-black text-sky-400 tracking-tighter uppercase italic">Identity Analysis</h2>
-            <div class="h-px flex-1 bg-sky-900/30"></div>
-        </div>
-        <div class="glass-panel overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left kpi-table">
-                    <thead>
-                        <tr class="bg-slate-900/80 text-slate-400 uppercase font-black">
-                            <th class="p-4 text-center">Shop Category</th>
-                            <th class="p-4 text-center text-sky-400">Total Nodes</th>
-                            <th class="p-4 text-center text-emerald-400">Active traffic</th>
-                            <th class="p-4 text-center text-rose-400">Active purchase</th>
-                        </tr>
-                    </thead>
-                    <tbody id="identities-body" class="divide-y divide-slate-800/40"></tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 3: MKT PILLAR BREAKDOWN -->
-    <section class="mb-8">
-        <div class="flex items-center gap-2 mb-6">
-            <h2 class="text-lg font-black text-emerald-400 tracking-tighter uppercase italic">MKT Pillar Breakdown</h2>
+    <!-- MKT PILLAR BREAKDOWN -->
+    <section class="mb-10">
+        <div class="flex items-center gap-2 mb-4">
+            <h2 class="text-lg font-black text-emerald-400 tracking-tighter uppercase italic">MKT Pillar Breakdown 市場支柱分析</h2>
             <div class="h-px flex-1 bg-emerald-900/30"></div>
         </div>
         <div id="mkt-pillar-container" class="flex flex-col gap-10"></div>
     </section>
 
-    <!-- SECTION 4: OPERATION EXECUTION BREAKDOWN -->
-    <section class="mb-16">
+    <!-- OPERATION EXECUTION -->
+    <section class="mb-12">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <h2 class="text-lg font-black text-fuchsia-400 tracking-tighter uppercase italic">Operation Execution Breakdown</h2>
-            <div id="ops-brand-filter-container" class="flex items-center glass-panel p-0.5 border-white/10 overflow-hidden shadow-xl scale-90"></div>
+            <h2 class="text-lg font-black text-fuchsia-400 tracking-tighter uppercase italic">Operation Execution 營運執行分析</h2>
+            <div id="ops-brand-filter-container" class="flex items-center glass-panel p-0.5 border-white/10 overflow-hidden shadow-xl scale-90 origin-right"></div>
         </div>
-        <div class="flex flex-col gap-8" id="ops-container"></div>
+        <div class="flex flex-col gap-6" id="ops-container"></div>
     </section>
 
-    <!-- SECTION 5: THERAPIST PERFORMANCE BREAKDOWN -->
+    <!-- THERAPIST PERFORMANCE -->
     <section class="mb-24">
-        <div class="flex flex-col gap-6 mb-4">
+        <div class="flex flex-col gap-4 mb-4">
             <div class="flex items-center gap-2">
-                <h2 class="text-lg font-black text-sky-400 tracking-tighter uppercase italic">Therapist Performance Breakdown</h2>
+                <h2 class="text-lg font-black text-sky-400 tracking-tighter uppercase italic">Therapist Performance 個人表現分析</h2>
                 <div class="h-px flex-1 bg-sky-900/30"></div>
             </div>
-            <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
                 <div id="t-brand-filter-container" class="flex items-center glass-panel p-0.5 border-white/10 overflow-hidden scale-90"></div>
                 <div id="floor-filter-container" class="flex flex-wrap items-center gap-1.5"></div>
             </div>
@@ -218,7 +173,6 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwbuwcrc-8OF4-kxSVKUKQmprG15Pu5oWIySG961UXLXmm0F_3izfvUxeuS-VhwYRuWxg/exec";
-        const preferredBrandOrder = ['Dermes', 'Elyze', 'Reenex', 'Evvus'];
         const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
         
         let lastData = null;
@@ -232,6 +186,26 @@
         let opsSort = { key: null, direction: 'desc' };
         let therapistSort = { key: null, direction: 'desc' };
 
+        const labels = {
+            entitled: "符合資格 Entitled",
+            traffic: "流量 Traffic",
+            share: "分享 Share",
+            redeem: "換領 Redeem",
+            book: "預約 Book",
+            mtd: "已到期之預約 MTD Book",
+            show: "出席 Show",
+            sign: "簽約 Sign",
+            amount: "金額 Amount",
+            hc: "人數 HC",
+            nodes: "節點 Nodes",
+            purchase: "購買 Purchase",
+            base: "客底 Base",
+            pt_track: "付費體驗 giftcard",
+            bday_track: "生日 giftcard",
+            head: "龍頭 HEAD",
+            tail: "龍尾 TAIL"
+        };
+
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
             if (!val) return 0;
@@ -239,11 +213,11 @@
             return parseFloat(cleaned) || 0;
         }
 
-        function getBracketHtml(val, sizeClass = "text-sm") {
+        function getBracketHtml(val) {
             const num = parseSheetNum(val);
             const colorClass = num >= 0 ? 'text-emerald-500' : 'text-rose-500';
             const sign = num >= 0 ? '+' : '';
-            return `<span class="${colorClass} ${sizeClass} font-black italic tabular-nums">(${sign}${num})</span>`;
+            return `<span class="${colorClass} text-xs font-black italic">(${sign}${num})</span>`;
         }
 
         function setNetworkMode(mode) {
@@ -255,79 +229,37 @@
                     if (mode === 'SH') btn.classList.add('sh');
                 }
             });
-            opsFilterBrand = null;
+            opsFilterBrand = null; 
             therapistFilterBrand = null;
             therapistFilterFloor = 'All';
-            opsSort = { key: null, direction: 'desc' };
-            therapistSort = { key: null, direction: 'desc' };
             if (lastData) updateDashboard(lastData);
         }
 
-        function setBdayFilter(type) {
-            bdayFilter = type;
-            if (lastData) renderMKTPillars(getSlice(lastData, 'overview'));
-        }
-
-        function setPTFilter(type) {
-            ptFilter = type;
-            if (lastData) renderMKTPillars(getSlice(lastData, 'overview'));
-        }
+        function setBdayFilter(type) { bdayFilter = type; if (lastData) renderMKTPillars(getSlice(lastData, 'overview')); }
+        function setPTFilter(type) { ptFilter = type; if (lastData) renderMKTPillars(getSlice(lastData, 'overview')); }
 
         function handleSort(type, key) {
-            if (type === 'ops') {
-                if (opsSort.key === key) {
-                    opsSort.direction = opsSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    opsSort.key = key;
-                    opsSort.direction = 'desc';
-                }
-                renderOperations(getSlice(lastData, 'operations'));
-            } else if (type === 'therapist') {
-                if (therapistSort.key === key) {
-                    therapistSort.direction = therapistSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    therapistSort.key = key;
-                    therapistSort.direction = 'desc';
-                }
-                renderTherapists(getSlice(lastData, 'therapists'));
-            }
+            const sortRef = type === 'ops' ? opsSort : therapistSort;
+            if (sortRef.key === key) { sortRef.direction = sortRef.direction === 'asc' ? 'desc' : 'asc'; } else { sortRef.key = key; sortRef.direction = 'desc'; }
+            type === 'ops' ? renderOperations(getSlice(lastData, 'operations')) : renderTherapists(getSlice(lastData, 'therapists'));
         }
 
         function getSortData(data, config) {
             if (!config.key) return data;
             return [...data].sort((a, b) => {
-                let valA, valB;
-                if (config.key === 'Total_Traffic') {
-                    valA = parseSheetNum(a.Traffic_Head) + parseSheetNum(a.Traffic_Tail);
-                    valB = parseSheetNum(b.Traffic_Head) + parseSheetNum(b.Traffic_Tail);
-                } else if (config.key === 'Total_Purchase') {
-                    valA = parseSheetNum(a.Purchase_Head) + parseSheetNum(a.Purchase_Tail);
-                    valB = parseSheetNum(b.Purchase_Head) + parseSheetNum(b.Purchase_Tail);
-                } else {
-                    valA = a[config.key];
-                    valB = b[config.key];
-                    if (!isNaN(parseSheetNum(valA)) && typeof valA !== 'boolean') {
-                        valA = parseSheetNum(valA);
-                        valB = parseSheetNum(valB);
-                    }
-                }
-                if (valA < valB) return config.direction === 'asc' ? -1 : 1;
-                if (valA > valB) return config.direction === 'asc' ? 1 : -1;
-                return 0;
+                let valA = (config.key.includes('Total')) ? parseSheetNum(a[config.key.replace('Total_','Head')]) + parseSheetNum(a[config.key.replace('Total_','Tail')]) : a[config.key];
+                let valB = (config.key.includes('Total')) ? parseSheetNum(b[config.key.replace('Total_','Head')]) + parseSheetNum(b[config.key.replace('Total_','Tail')]) : b[config.key];
+                valA = isNaN(parseSheetNum(valA)) ? valA : parseSheetNum(valA);
+                valB = isNaN(parseSheetNum(valB)) ? valB : parseSheetNum(valB);
+                return config.direction === 'asc' ? (valA < valB ? -1 : 1) : (valA > valB ? -1 : 1);
             });
-        }
-
-        function getSortIcon(currentKey, key, direction) {
-            if (currentKey !== key) return '<span class="sort-indicator">↕</span>';
-            return direction === 'asc' ? '<span class="sort-indicator text-white">↑</span>' : '<span class="sort-indicator text-white">↓</span>';
         }
 
         function getSlice(data, type) {
             const prefix = networkMode === 'SH' ? 'SH_' : '';
             if (type === 'overview') return data[prefix + 'overview'] || [];
-            if (type === 'identities') return data[prefix + 'identities'] || [];
             if (type === 'operations') return data[prefix + 'operations'] || [];
-            if (type === 'therapists') return data[prefix + 'Therapists'] || data[prefix + 'therapists'] || data[prefix + 'Identities'] || data[prefix + 'identities'] || [];
+            if (type === 'therapists') return data[prefix + 'Therapists'] || data[prefix + 'therapists'] || [];
             if (type === 'raw') return data['gift_card_raw'] || [];
             return [];
         }
@@ -342,14 +274,12 @@
             const titleEl = document.getElementById('modal-therapist-name');
             const brandEl = document.getElementById('modal-brand-name');
             const centerEl = document.getElementById('modal-center-name');
-            const typeEl = document.getElementById('modal-lead-type');
             const emptyEl = document.getElementById('modal-empty-state');
             const countEl = document.getElementById('modal-count');
 
             titleEl.innerText = therapist;
             brandEl.innerText = brand;
             centerEl.innerText = floor;
-            typeEl.innerText = `${type} Lead Insight`;
             tbody.innerHTML = '';
             
             const rawData = getSlice(lastData, 'raw');
@@ -364,17 +294,17 @@
 
             if (leads.length === 0) {
                 emptyEl.classList.remove('hidden');
-                countEl.innerText = `0 Leads Found`;
+                countEl.innerText = `0 Records Found`;
             } else {
                 emptyEl.classList.add('hidden');
-                countEl.innerText = `${leads.length} Records Found`;
+                countEl.innerText = `${leads.length} Active Records`;
                 leads.forEach(l => {
                     const isRedeemed = l.shop_GC_redeem_dt && String(l.shop_GC_redeem_dt).trim() !== '';
                     const isShared = l.click_share_dt && String(l.click_share_dt).trim() !== '';
-                    let statusLabel = '<span class="text-slate-600 text-[9px] font-black uppercase">Entitled</span>';
-                    if (isRedeemed) statusLabel = '<span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[8px] font-black uppercase rounded border border-indigo-500/20">Redeemed</span>';
-                    else if (isShared) statusLabel = '<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase rounded border border-emerald-500/20">Shared</span>';
-                    tbody.innerHTML += `<tr class="lead-row hover:bg-white/5 transition-colors"><td class="p-3 pl-6 font-mono text-xs text-sky-100">${l.mmc_code || '---'}</td><td class="p-3 text-center"><span class="text-[9px] font-black text-slate-400 uppercase">${l.gift_card_type || '---'}</span></td><td class="p-3 text-center"><span class="text-[9px] font-black text-slate-500 uppercase">${l.csr_segment_cat || '---'}</span></td><td class="p-3 text-center">${statusLabel}</td></tr>`;
+                    let statusLabel = '<span class="text-slate-600 text-[10px] font-black uppercase">Entitled 符合資格</span>';
+                    if (isRedeemed) statusLabel = '<span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase rounded border border-indigo-500/20">Redeemed 已換領</span>';
+                    else if (isShared) statusLabel = '<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase rounded border border-emerald-500/20">Shared 已分享</span>';
+                    tbody.innerHTML += `<tr class="lead-row hover:bg-white/5 transition-colors"><td class="p-3 pl-6 font-mono text-sm text-sky-100">${l.mmc_code || '---'}</td><td class="p-3 text-center"><span class="text-[10px] font-black text-slate-400 uppercase">${l.gift_card_type || '---'}</span></td><td class="p-3 text-center"><span class="text-[10px] font-black text-slate-500 uppercase">${l.csr_segment_cat || '---'}</span></td><td class="p-3 text-center">${statusLabel}</td></tr>`;
                 });
             }
             modal.classList.remove('hidden');
@@ -401,13 +331,11 @@
 
         function setSyncStatus(isSyncing) {
             const status = document.getElementById('sync-status');
-            const text = document.getElementById('sync-text');
-            if (isSyncing) { status.classList.add('animate-pulse'); text.innerText = "Syncing..."; } else { status.classList.remove('animate-pulse'); text.innerText = "Live Feed"; }
+            if (isSyncing) { status.classList.add('animate-pulse'); } else { status.classList.remove('animate-pulse'); }
         }
 
         async function updateDashboard(data) {
             await renderOverview(getSlice(data, 'overview'));
-            renderIdentities(getSlice(data, 'identities'));
             renderMKTPillars(getSlice(data, 'overview')); 
             renderOperations(getSlice(data, 'operations'));
             renderTherapists(getSlice(data, 'therapists'));
@@ -418,47 +346,84 @@
             container.innerHTML = '';
             const getVal = (k) => parseSheetNum(overviewData.find(i => i.Metric === k)?.Total);
             const getDelta = (k) => parseSheetNum(overviewData.find(i => i.Metric === k)?.Change_P30d);
-            const rep = { val: getVal("Total Nodes"), delta: getDelta("Total Nodes"), style: { border: 'border-l-sky-500', label: 'Total Nodes' } };
+            const rep = { val: getVal("Total Nodes"), delta: getDelta("Total Nodes"), border: 'border-l-sky-500', label: 'Nodes 節點總量' };
             const act = [
-                { val: getVal("Traffic"), delta: getDelta("Traffic"), style: { border: 'border-l-emerald-500', label: 'Active traffic' }, head: getVal("Traffic Head"), tail: getVal("Traffic Tail") },
-                { val: getVal("Purchase"), delta: getDelta("Purchase"), style: { border: 'border-l-rose-500', label: 'Active purchase' }, head: getVal("Purchase Head"), tail: getVal("Purchase Tail") }
+                { val: getVal("Traffic"), delta: getDelta("Traffic"), border: 'border-l-emerald-500', label: 'Active Traffic 活化流量', head: getVal("Traffic Head"), tail: getVal("Traffic Tail") },
+                { val: getVal("Purchase"), delta: getDelta("Purchase"), border: 'border-l-rose-500', label: 'Active Purchase 活化購買', head: getVal("Purchase Head"), tail: getVal("Purchase Tail") }
             ];
-            let html = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-3"><div class="glass-panel p-4 stat-card border-l-4 ${rep.style.border} text-center"><span class="text-slate-500 text-[10px] font-black uppercase mb-2 block">${rep.style.label}</span><span class="text-5xl font-black tabular-nums block">${rep.val.toLocaleString()}</span><div class="mt-2">${getBracketHtml(rep.delta)}</div></div>`;
+            let html = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-4"><div class="glass-panel p-4 stat-card border-l-4 ${rep.border} text-center"><span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${rep.label}</span><span class="text-5xl font-black block">${rep.val.toLocaleString()}</span><div class="mt-2">${getBracketHtml(rep.delta)}</div></div>`;
             act.forEach(e => {
-                html += `<div class="glass-panel p-4 stat-card border-l-4 ${e.style.border} text-center"><span class="text-slate-500 text-[10px] font-black uppercase mb-2 block">${e.style.label}</span><span class="text-5xl font-black tabular-nums block">${e.val.toLocaleString()}</span><div class="mt-2 mb-4">${getBracketHtml(e.delta)}</div><div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3"><div class="text-center"><span class="mini-label">Head</span><div class="font-black text-white text-lg">${(e.head || 0).toLocaleString()}</div></div><div class="text-center"><span class="mini-label">Tail</span><div class="font-black text-white text-lg">${(e.tail || 0).toLocaleString()}</div></div></div></div>`;
+                html += `<div class="glass-panel p-4 stat-card border-l-4 ${e.border} text-center"><span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${e.label}</span><span class="text-5xl font-black block">${e.val.toLocaleString()}</span><div class="mt-2 mb-3">${getBracketHtml(e.delta)}</div><div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3"><div class="text-center"><span class="mini-label">${labels.head}</span><div class="font-black text-white text-2xl">${(e.head || 0).toLocaleString()}</div></div><div class="text-center"><span class="mini-label">${labels.tail}</span><div class="font-black text-white text-2xl">${(e.tail || 0).toLocaleString()}</div></div></div></div>`;
             });
             container.innerHTML = html + `</div>`;
-        }
-
-        function renderIdentities(identitiesData) {
-            const tbody = document.getElementById('identities-body');
-            tbody.innerHTML = identitiesData.map(row => `<tr><td class="p-3 font-black text-lg text-white uppercase italic tracking-tighter text-center">${row['Shop Category'] || row.Identity}</td><td class="p-3 text-center mono text-2xl font-black text-sky-400">${parseSheetNum(row.Nodes).toLocaleString()} ${getBracketHtml(row.Nodes_Delta, 'text-xs')}</td><td class="p-3 text-center mono text-2xl font-black text-emerald-400">${parseSheetNum(row.Traffic).toLocaleString()} ${getBracketHtml(row.Traffic_Delta, 'text-xs')}</td><td class="p-3 text-center mono text-2xl font-black text-rose-400">${parseSheetNum(row.Purchase).toLocaleString()} ${getBracketHtml(row.Purchase_Delta, 'text-xs')}</td></tr>`).join('');
         }
 
         function renderMKTPillars(overviewData) {
             const container = document.getElementById('mkt-pillar-container');
             container.innerHTML = '';
             const getVal = (m) => parseSheetNum(overviewData.find(i => i.Metric === m)?.Total);
-            const renderPTBlock = (optionType, color, hideHead = false) => {
+            const isSH = networkMode === 'SH';
+            
+            const renderPTBlock = (optionType, color) => {
                 const prefix = `PT ${optionType}`;
-                return `<div class="glass-panel p-6 border-l-4 border-${color}-500 group bg-slate-900/20 h-full"><div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3"><div class="flex flex-col"><h4 class="text-xl font-black uppercase italic text-${color}-400">PAID TRIAL ANALYSIS</h4><p class="text-[9px] font-black text-slate-500 uppercase mt-1">Viewing: ${optionType}</p></div><div class="flex items-center glass-panel p-0.5 border-white/5 overflow-hidden scale-90">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setPTFilter('${f}')" class="filter-tab px-3 py-1 rounded-md text-[9px] font-black uppercase ${ptFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div>${!hideHead ? `<div class="mb-6"><div class="section-label mb-4">HEAD</div><div class="flex justify-around items-center"><div class="text-center"><span class="mini-label">ENTITLED</span><div class="text-4xl font-black text-white">${getVal("PT Overall Head").toLocaleString()}</div></div><div class="text-center"><span class="mini-label">TRAFFIC</span><div class="text-4xl font-black text-white">${getVal("PT Overall Traffic") || 0}</div></div><div class="text-center"><span class="mini-label">SHARE</span><div class="text-4xl font-black text-white">${getVal("PT Overall Share") || 0}</div></div></div></div>` : ''}<div><div class="section-label mb-4">TAIL</div><div class="grid grid-cols-5 gap-2">${[{l:"Redeem",v:getVal(prefix + " Redeem")},{l:"Book",v:getVal(prefix + " Book")},{l:"MTD Book",v:getVal(prefix + " MTD Book")},{l:"Show",v:getVal(prefix + " Show")},{l:"Amount",v:getVal(prefix + " $")}].map(s=>`<div class="grid-item py-3 ${s.l==='Amount'?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}"><span class="mini-label mb-1 opacity-70">${s.l}</span><span class="text-lg font-black ${s.l==='Amount'?'text-emerald-400':'text-white'}">${s.v.toLocaleString()}</span></div>`).join('')}</div></div></div>`;
+                return `<div class="glass-panel p-6 border-l-8 border-${color}-500 bg-slate-900/20 h-full relative overflow-hidden">${isSH?`<div class="pending-overlay"><span class="pending-text pending-large">PENDING DATA SOURCES 數據掛起</span></div>`:''}<div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4"><div><h4 class="text-2xl font-black uppercase italic text-${color}-400">付費體驗分析 (PT ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">${optionType}</p></div><div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setPTFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${ptFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div><div class="mb-8"><div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div><div class="flex justify-around items-center"><div class="text-center"><span class="mini-label text-base">${labels.entitled}</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Head").toLocaleString()}</div></div><div class="text-center"><span class="mini-label text-base">${labels.traffic}</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Traffic") || 0}</div></div><div class="text-center"><span class="mini-label text-base">${labels.share}</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Share") || 0}</div></div></div></div><div><div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div><div class="grid grid-cols-5 gap-3">${[{l:labels.redeem,v:getVal(prefix+" Redeem"),pend: (networkMode === 'HK')},{l:labels.book,v:getVal(prefix+" Book")},{l:labels.mtd,v:getVal(prefix+" MTD Book"),pend: (networkMode === 'HK')},{l:labels.show,v:getVal(prefix+" Show")},{l:labels.amount,v:getVal(prefix+" $")}].map(s=>`<div class="grid-item py-6 ${s.l.includes('Amount')?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}">${s.pend?`<div class="pending-overlay"><span class="pending-text">PENDING</span></div>`:''}<span class="mini-label mb-2 text-xs">${s.l}</span><span class="text-3xl font-black ${s.l.includes('Amount')?'text-emerald-400':'text-white'} leading-none">${s.v.toLocaleString()}</span></div>`).join('')}</div></div></div>`;
             };
+
             const renderBdaySplitBlock = (optionType, color) => {
                 const prefix = `Bday ${optionType}`;
-                const getCombined = (label, m, isAmount = false, isLarge = false) => {
-                    const total = getVal(prefix + " ACB " + m) + getVal(prefix + " ICB " + m);
-                    return `<div class="flex-1 text-center bg-slate-950/40 p-2 rounded-lg border border-white/5 min-w-[100px] ${isAmount ? 'bg-emerald-500/10 border-emerald-500/10' : ''}"><span class="mini-label opacity-60 mb-1">${label}</span><div class="${isLarge ? 'text-4xl' : 'text-xl'} font-black ${isAmount ? 'text-emerald-400' : 'text-white'}">${total.toLocaleString()}</div><div class="flex justify-center gap-2 mt-1 opacity-40"><span class="text-[7px] font-bold">A:${getVal(prefix + " ACB " + m)}</span><span class="text-[7px] font-bold">I:${getVal(prefix + " ICB " + m)}</span></div></div>`;
-                };
-                return `<div class="glass-panel p-6 border-l-4 border-${color}-500 bg-slate-900/20 h-full"><div class="flex justify-between items-center mb-6 border-b border-white/5 pb-3"><div class="flex flex-col"><h4 class="text-xl font-black italic text-${color}-400">BIRTHDAY ANALYSIS</h4><p class="text-[9px] font-black text-slate-500 uppercase mt-1">Viewing: ${optionType}</p></div><div class="flex items-center glass-panel p-0.5 border-white/5 overflow-hidden scale-90">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setBdayFilter('${f}')" class="filter-tab px-3 py-1 rounded-md text-[9px] font-black uppercase ${bdayFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div><div class="mb-6"><div class="section-label mb-4">HEAD</div><div class="flex flex-wrap gap-1.5">${getCombined("Entitled", "Head", false, true)}${getCombined("Traffic", "Traffic", false, true)}${getCombined("Redeem", "Redm", false, true)}${getCombined("Book", "Book Head")}${getCombined("MTD", "MTD Head")}${getCombined("Show", "Show Head")}${getCombined("Sign", "Sign Head")}${getCombined("Amount", "$ Head", true)}</div></div><div><div class="section-label mb-4">TAIL</div><div class="flex flex-wrap gap-1.5">${[{l:"Redeem",m:"Redeem"},{l:"Book",m:"Book"},{l:"MTD",m:"MTD Book"},{l:"Show",m:"Show"},{l:"Sign",m:"Sign"},{l:"Amount",m:"$",is$:true}].map(s=> getCombined(s.l, s.m, s.is$)).join('')}</div></div></div>`;
+                const getSum = (m) => getVal(prefix + " ACB " + m) + getVal(prefix + " ICB " + m);
+                const getMetric = (l, m, is$, isLg) => `<div class="flex-1 text-center bg-slate-950/40 p-4 rounded-xl border border-white/5 min-w-[125px] ${is$ ? 'bg-emerald-500/10' : ''}"><span class="mini-label ${isLg ? 'text-sm mb-2' : 'mb-1'} block">${l}</span><div class="${isLg ? 'text-5xl' : 'text-2xl'} font-black ${is$ ? 'text-emerald-400' : 'text-white'} leading-none">${getSum(m).toLocaleString()}</div><div class="flex justify-center gap-3 mt-2 opacity-60 text-[9px] font-bold"><span>ACB:${getVal(prefix+" ACB "+m)}</span><span class="w-px h-2 bg-white/10"></span><span>ICB:${getVal(prefix+" ICB "+m)}</span></div></div>`;
+                return `<div class="glass-panel p-8 border-l-8 border-${color}-500 bg-slate-900/20 h-full relative overflow-hidden"><div class="pending-overlay"><span class="pending-text pending-large">PENDING DATA SOURCES 數據掛起</span></div><div class="flex justify-between items-center mb-8 border-b border-white/10 pb-4"><div class="flex flex-col"><h4 class="text-2xl font-black italic text-${color}-400 uppercase">生日活動分析 (BIRTHDAY ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase mt-1">${optionType}</p></div><div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setBdayFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${bdayFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div><div class="mb-8"><div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div><div class="flex flex-wrap gap-2">${getMetric(labels.entitled, "Head", false, true)}${getMetric(labels.traffic, "Traffic", false, true)}${getMetric(labels.redeem, "Redm", false, true)}${getMetric(labels.book, "Book Head")}${getMetric(labels.mtd, "MTD Head")}${getMetric(labels.show, "Show Head")}${getMetric(labels.sign, "Sign Head")}${getMetric(labels.amount, "$ Head", true)}</div></div><div><div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div><div class="flex flex-wrap gap-2">${[{l:labels.redeem,m:"Redeem"},{l:labels.book,m:"Book"},{l:labels.mtd,m:"MTD Book"},{l:labels.show,m:"Show"},{l:labels.sign,m:"Sign"},{l:labels.amount,m:"$",is$:true}].map(s=> getMetric(s.l, s.m, s.is$)).join('')}</div></div></div>`;
             };
-            container.innerHTML = `<div class="space-y-4"><div class="flex flex-col gap-4">${renderPTBlock(ptFilter, 'indigo')}</div></div><div class="space-y-4 mt-6"><div class="flex flex-col gap-4">${renderBdaySplitBlock(bdayFilter, 'violet')}</div></div>`;
+
+            container.innerHTML = `<div class="flex flex-col gap-8"><div>${renderPTBlock(ptFilter, 'indigo')}</div><div>${renderBdaySplitBlock(bdayFilter, 'violet')}</div></div>`;
         }
 
         function renderTableLeadCell(d, type, brandName, floorName, therapistName = null) {
             const prefix = type === 'PT' ? 'PT_' : 'Bday_';
             const therapist = therapistName || d.Therapist || d.Identity;
-            const headActions = type === 'Bday' ? [{l:"Bok", v:d[prefix+'Book_Head']||d[prefix+'Book']},{l:"MTD", v:d[prefix+'MTD_Head']||d[prefix+'MTD_Book']},{l:"Shw", v:d[prefix+'Show_Head']||d[prefix+'Show']},{l:"Sgn", v:d[prefix+'Sign_Head']||d[prefix+'Sign']},{l:"Amt", v:d[prefix+'Amount_Head']||d[prefix+'Amount'], is$: true}] : [];
-            return `<div class="stacked-cell p-0.5"><div class="flex w-full items-center gap-1 px-1"><span class="section-tag head-tag">H</span><div class="flex-1 flex flex-col gap-1"><div class="flex justify-around items-center"><div class="flex flex-col"><span class="mini-label text-[7px] scale-90">Ent</span><button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled')" class="font-black text-sky-400 text-sm hover:text-white leading-none">${d[prefix + 'Eligible'] || '0'}</button></div><div class="flex flex-col"><span class="mini-label text-[7px] scale-90">Trf</span><span class="font-black text-sky-400 text-sm leading-none">${d[prefix + 'Traffic'] || '0'}</span></div><div class="flex flex-col"><span class="mini-label text-[7px] scale-90">${type === 'PT' ? 'Shr' : 'Red'}</span><button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared')` : ''}" class="font-black text-sky-400 text-sm leading-none">${d[prefix + (type === 'PT' ? 'Share' : 'Redeem')] || '0'}</button></div></div>${headActions.length > 0 ? `<div class="grid grid-cols-5 gap-0.5 border-t border-white/5 pt-1">${headActions.map(x => `<div class="grid-item p-0.5 ${x.is$ ? 'bg-sky-500/10 border-sky-500/20' : ''}"><span class="mini-label text-[6px] opacity-40">${x.l}</span><span class="font-black text-[9px] ${x.is$ ? 'text-sky-300' : 'text-slate-300'}">${x.v || '-'}</span></div>`).join('')}</div>` : ''}</div></div><div class="w-full h-px bg-white/5 my-1"></div><div class="flex w-full items-center gap-1 px-1"><span class="section-tag tail-tag">T</span><div class="flex-1 grid grid-cols-5 gap-0.5">${[{l:"Red",v:d[prefix+'Redeem']},{l:"Bok",v:d[prefix+'Book']},{l:"MTD",v:d[prefix+'MTD_Book']},{l:"Shw",v:d[prefix+'Show']},{l:"Amt",v:d[prefix+'Amount'],is$:true}].map(x=>`<div class="grid-item p-0.5 ${x.is$?'bg-emerald-500/10 border-emerald-500/20':''}"><span class="mini-label text-[6px] opacity-40">${x.l}</span><span class="font-black text-[10px] ${x.is$?'text-emerald-400':'text-white'}">${x.v || '-'}</span></div>`).join('')}</div></div></div>`;
+            const isSH = networkMode === 'SH';
+            const isHK = networkMode === 'HK';
+
+            return `
+            <div class="stacked-cell p-1">
+                <!-- Head Section -->
+                <div class="flex w-full items-start gap-1.5 px-1 relative overflow-hidden">
+                    ${(isSH && type === 'Bday') ? `<div class="pending-overlay"><span class="pending-text">龍頭掛起 PENDING HEAD</span></div>` : ''}
+                    <span class="section-tag head-tag mt-1">龍頭</span>
+                    <div class="flex-1 flex justify-around items-center h-10">
+                        <div class="flex flex-col items-center relative">
+                            ${(isSH && type === 'PT') ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
+                            <span class="mini-label scale-90 leading-none">符合資格</span>
+                            <button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled')" class="font-black text-sky-400 text-lg hover:text-white leading-none underline decoration-sky-500/20">${d[prefix + 'Eligible'] || '0'}</button>
+                        </div>
+                        <div class="flex flex-col items-center relative">
+                            ${(isSH && type === 'PT') ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
+                            <span class="mini-label scale-90 leading-none">流量</span>
+                            <span class="font-black text-sky-400 text-lg leading-none">${d[prefix + 'Traffic'] || '0'}</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="mini-label scale-90 leading-none">${type === 'PT' ? '分享' : '換領'}</span>
+                            <button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared')` : ''}" class="font-black text-sky-400 text-lg leading-none underline decoration-sky-500/20">${d[prefix + (type === 'PT' ? 'Share' : 'Redeem')] || '0'}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-white/5 my-1"></div>
+
+                <!-- Tail Section -->
+                <div class="flex w-full items-start gap-1.5 relative min-h-[48px] px-1.5 overflow-hidden">
+                    ${(isHK && type === 'Bday') ? `<div class="pending-overlay"><span class="pending-text">龍尾掛起 PENDING TAIL</span></div>` : ''}
+                    <span class="section-tag tail-tag mt-1">龍尾</span>
+                    <div class="flex-1 grid grid-cols-5 gap-1">
+                        ${[{l:"換領",v:d[prefix+'Redeem'], pend: (isHK && type === 'PT')},{l:"預約",v:d[prefix+'Book'], p:(isSH && type === 'PT')},{l:"本月",v:d[prefix+'MTD_Book'], p:(isSH && type === 'PT')},{l:"出席",v:d[prefix+'Show'], p:(isSH && type === 'PT')},{l:"金額",v:d[prefix+'Amount'],is$:true, p:(isSH && type === 'PT')}].map(x=>`
+                        <div class="grid-item p-1 ${x.is$?'bg-emerald-500/15 border-emerald-500/30':''}">
+                            ${(x.p || x.pend)?`<div class="pending-overlay !bg-slate-950/95"><span class="pending-text">N/A</span></div>`:''}
+                            <span class="mini-label opacity-70 scale-75 mb-0.5">${x.l}</span><span class="font-black text-lg leading-none ${x.is$?'text-emerald-400':'text-white'}">${x.v || '0'}</span>
+                        </div>`).join('')}
+                    </div>
+                </div>
+            </div>`;
         }
 
         function renderOperations(opsData) {
@@ -466,20 +431,17 @@
             const bFilter = document.getElementById('ops-brand-filter-container');
             container.innerHTML = '';
             const brands = [...new Set(opsData.map(d => d.Brand))].filter(Boolean);
-            if (!opsFilterBrand || !brands.includes(opsFilterBrand)) { opsFilterBrand = 'All'; }
-            bFilter.innerHTML = ['All', ...brands].map(b => `<button onclick="setOpsBrandFilter('${b}')" class="filter-tab px-4 py-1 rounded-md text-[10px] font-black uppercase ${opsFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
-            (opsFilterBrand === 'All' ? brands : [opsFilterBrand]).forEach(brand => {
+            if (!opsFilterBrand || !brands.includes(opsFilterBrand)) { opsFilterBrand = brands[0] || 'All'; }
+            bFilter.innerHTML = ['All', ...brands].map(b => `<button onclick="setOpsBrandFilter('${b}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${opsFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
+            [opsFilterBrand].forEach(brand => {
                 const color = colors[brand.toLowerCase()] || colors.default;
                 let data = getSortData(opsData.filter(d => d.Brand === brand), opsSort);
                 if (!data.length) return;
-                const getTh = (l, k, w) => `<th class="sort-header ${opsSort.key === k ? 'sort-active' : ''}" style="width: ${w};" onclick="handleSort('ops', '${k}')">${l}${getSortIcon(opsSort.key, k, opsSort.direction)}</th>`;
-                let html = `<div class="space-y-1"><div class="flex items-center gap-2 p-2 bg-${color}-500/10 border border-${color}-500/20 rounded-lg"><div class="w-1.5 h-4 rounded-full bg-${color}-500"></div><h3 class="text-sm font-black uppercase text-${color}-300">${brand}</h3></div><div class="glass-panel overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1700px] table-fixed"><thead><tr>${getTh('Location', 'Floor', '120px')}${getTh('HC', 'HC', '60px')}${getTh('Base', 'ACB_Ref', '100px')}<th colspan="2">REPLICATION</th><th colspan="4">ACTIVATION</th><th class="w-[320px]">Paid Trial Track</th><th class="w-[420px]">Birthday Track</th></tr><tr><th class="italic opacity-40 text-center">A/I Ref</th>${getTh('Nodes (Δ)', 'Nodes', '110px')}${getTh('Node/HC', 'Node_HC', '110px')}${getTh('Trf', 'Total_Traffic', '100px')}${getTh('Trf/HC', 'Trf_HC', '100px')}${getTh('Pur', 'Total_Purchase', '100px')}${getTh('Pur/HC', 'Pur_HC', '100px')}<th class="bg-indigo-500/10 text-center">Tracking (H/T)</th><th class="bg-violet-500/10 text-center">Tracking (H/T)</th></tr></thead><tbody>`;
+                const getTh = (l, k, w) => `<th class="sort-header ${opsSort.key === k ? 'text-white' : ''}" style="width: ${w};" onclick="handleSort('ops', '${k}')">${l}</th>`;
+                let html = `<div class="space-y-2"><div class="flex items-center gap-3 p-2 bg-${color}-500/10 border border-${color}-500/20 rounded-lg"><div class="w-1.5 h-4 rounded-full bg-${color}-500"></div><h3 class="text-sm font-black uppercase text-${color}-300 tracking-widest">${brand} OPERATIONS HUB 營運樞紐</h3></div><div class="glass-panel overflow-hidden border border-white/5"><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1700px] table-fixed"><thead><tr>${getTh('位置 Location', 'Floor', '140px')}${getTh(labels.hc, 'HC', '75px')}${getTh('客底 Base (A/I)', 'ACB_Ref', '100px')}<th colspan="2">節點分佈 REPLICATION</th><th colspan="4">活化表現 ACTIVATION</th><th class="w-[360px]">${labels.pt_track}</th><th class="w-[450px]">${labels.bday_track}</th></tr><tr class="bg-slate-900/30 text-[9px] opacity-70"><th>Center Info</th><th>Size</th><th>Ref Targets</th>${getTh('總點數 Nodes', 'Nodes', '110px')}<th>N/HC 比率</th>${getTh('流量 Traffic', 'Total_Traffic', '100px')}<th>T/HC 比率</th>${getTh('購買 Purchase', 'Total_Purchase', '100px')}<th>P/HC 比率</th><th colspan="2">漏斗分析 (龍頭:Head / 龍尾:Tail)</th></tr></thead><tbody>`;
                 data.forEach(d => {
                     const hc = parseSheetNum(d.HC);
-                    const ratio = hc > 0 ? (parseSheetNum(d.Nodes)/hc).toFixed(1) : '-';
-                    const trfTotal = parseSheetNum(d.Traffic_Head) + parseSheetNum(d.Traffic_Tail);
-                    const purTotal = parseSheetNum(d.Purchase_Head) + parseSheetNum(d.Purchase_Tail);
-                    html += `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 font-black text-slate-100 text-sm uppercase italic pl-4 text-left">${d.Floor}</td><td class="p-2 font-black text-xl text-center">${hc || '-'}</td><td class="text-center"><div class="stacked-cell text-[10px] font-bold"><span class="text-sky-300">A:${d.ACB_Ref || 0}</span><span class="text-indigo-400">I:${d.ICB_Ref || 0}</span></div></td><td class="font-black text-lg text-center">${parseSheetNum(d.Nodes).toLocaleString()} ${getBracketHtml(d.Nodes_Delta, 'text-[10px]')}</td><td class="bg-sky-500/5 font-black text-xl text-sky-300 text-center">${ratio}</td><td class="text-center"><div class="stacked-cell text-xs"><span class="text-white">H:${d.Traffic_Head || 0}</span><span class="text-emerald-400">T:${d.Traffic_Tail || 0}</span></div></td><td class="bg-emerald-500/5 text-xl font-black text-emerald-400 text-center">${hc > 0 ? (trfTotal/hc).toFixed(1) : '-'}</td><td class="text-center"><div class="stacked-cell text-xs"><span class="text-white">H:${d.Purchase_Head || 0}</span><span class="text-rose-400">T:${d.Purchase_Tail || 0}</span></div></td><td class="bg-rose-500/5 text-xl font-black text-rose-400 text-center">${hc > 0 ? (purTotal/hc).toFixed(1) : '-'}</td><td class="bg-indigo-500/[0.02]">${renderTableLeadCell(d, 'PT', brand, d.Floor)}</td><td class="bg-violet-500/[0.02]">${renderTableLeadCell(d, 'Bday', brand, d.Floor)}</td></tr>`;
+                    html += `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 font-black text-slate-100 text-sm uppercase italic text-left pl-4">${d.Floor}</td><td class="font-black text-2xl text-center">${hc || '-'}</td><td><div class="flex flex-col text-[11px] font-black items-center"><span class="text-sky-400">A:${d.ACB_Ref||0}</span><span class="text-indigo-400">I:${d.ICB_Ref||0}</span></div></td><td class="font-black text-2xl text-center">${parseSheetNum(d.Nodes).toLocaleString()}</td><td class="text-sky-300 font-black text-2xl text-center">${hc>0?(parseSheetNum(d.Nodes)/hc).toFixed(1):'-'}</td><td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Traffic_Head||0}</span><span class="text-emerald-400">${d.Traffic_Tail||0}</span></div></td><td class="text-emerald-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Traffic_Head)+parseSheetNum(d.Traffic_Tail))/hc).toFixed(1):'-'}</td><td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Purchase_Head||0}</span><span class="text-rose-400">${d.Purchase_Tail||0}</span></div></td><td class="text-rose-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Purchase_Head)+parseSheetNum(d.Purchase_Tail))/hc).toFixed(1):'-'}</td><td>${renderTableLeadCell(d, 'PT', brand, d.Floor)}</td><td>${renderTableLeadCell(d, 'Bday', brand, d.Floor)}</td></tr>`;
                 });
                 container.innerHTML += html + `</tbody></table></div></div></div>`;
             });
@@ -489,23 +451,17 @@
             const container = document.getElementById('therapist-container');
             const bFilter = document.getElementById('t-brand-filter-container');
             const fFilter = document.getElementById('floor-filter-container');
-            if (!tData || tData.length === 0) { container.innerHTML = `<div class="p-12 text-center glass-panel italic">Waiting for systems...</div>`; return; }
+            if (!tData || tData.length === 0) { container.innerHTML = `<div class="p-16 text-center glass-panel italic">Offline...</div>`; return; }
             const brands = [...new Set(tData.map(d => d.Brand))].filter(Boolean);
-            if (!therapistFilterBrand || !brands.includes(therapistFilterBrand)) { therapistFilterBrand = brands[0] || null; }
-            bFilter.innerHTML = brands.map(b => `<button onclick="setTherapistBrand('${b}')" class="filter-tab px-3 py-1 rounded-md text-[10px] font-black uppercase ${therapistFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
-            
-            // Unique Floors for the Brand + "All"
+            if (!therapistFilterBrand || !brands.includes(therapistFilterBrand)) { therapistFilterBrand = brands[0]; }
+            bFilter.innerHTML = brands.map(b => `<button onclick="setTherapistBrand('${b}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${therapistFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
             const brandFloors = [...new Set(tData.filter(t => t.Brand === therapistFilterBrand).map(t => t.Floor))].sort();
-            const floors = ['All', ...brandFloors];
-            if (!therapistFilterFloor || !floors.includes(therapistFilterFloor)) { therapistFilterFloor = 'All'; }
-            fFilter.innerHTML = floors.map(f => `<button onclick="setTherapistFloor('${f}')" class="floor-tab px-4 py-1 rounded-full border border-white/5 text-[10px] font-black uppercase ${f === therapistFilterFloor ? 'active' : 'bg-white/5'}">${f}</button>`).join('');
-            
-            let filtered = tData.filter(t => t.Brand === therapistFilterBrand && (therapistFilterFloor === 'All' || t.Floor === therapistFilterFloor));
-            filtered = getSortData(filtered, therapistSort);
+            if (!therapistFilterFloor || !['All', ...brandFloors].includes(therapistFilterFloor)) { therapistFilterFloor = brandFloors[0] || 'All'; }
+            fFilter.innerHTML = ['All', ...brandFloors].map(f => `<button onclick="setTherapistFloor('${f}')" class="floor-tab px-4 py-1 rounded-full border border-white/5 text-[10px] font-black uppercase ${f === therapistFilterFloor ? 'active' : ''}">${f}</button>`).join('');
+            let data = getSortData(tData.filter(t => t.Brand === therapistFilterBrand && (therapistFilterFloor === 'All' || t.Floor === therapistFilterFloor)), therapistSort);
             const color = colors[therapistFilterBrand?.toLowerCase()] || colors.default;
-            const getTh = (l, k, w, c = '') => `<th class="sort-header ${therapistSort.key === k ? 'sort-active' : ''} ${c}" style="width: ${w};" onclick="handleSort('therapist', '${k}')">${l}${getSortIcon(therapistSort.key, k, therapistSort.direction)}</th>`;
-            
-            container.innerHTML = `<div class="glass-panel border-l-4 border-${color}-500/50 overflow-hidden"><div class="bg-white/5 px-4 py-2 flex justify-between items-center border-b border-white/5"><span class="text-sm font-black uppercase italic text-${color}-300">${therapistFilterBrand} &bull; ${therapistFilterFloor}</span><span class="text-[9px] font-black text-slate-500 uppercase">${filtered.length} Leads Tracking</span></div><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1800px] table-fixed"><thead><tr class="text-[9px] font-black text-slate-400 uppercase bg-slate-900/40">${getTh('Identity', 'Therapist', '200px', 'text-left pl-6')}${getTh('Nodes (Δ)', 'Nodes', '120px')}${getTh('Traffic [H/T]', 'Total_Traffic', '180px', 'text-emerald-400')}${getTh('Purchase [H/T]', 'Total_Purchase', '180px', 'text-rose-400')}<th class="w-[450px] text-indigo-400 bg-indigo-500/5">Paid Trial Track</th><th class="w-[550px] text-violet-400 bg-violet-500/5">Birthday Track</th></tr></thead><tbody>` + filtered.map(t => `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 pl-6 font-black text-white text-lg uppercase italic text-left">${t.Therapist || t.Identity}</td><td class="font-black text-2xl text-center">${parseSheetNum(t.Nodes).toLocaleString()} ${getBracketHtml(t.Nodes_Delta, 'text-[10px]')}</td><td><div class="flex justify-around text-xs font-bold text-center"><span class="text-white">H:${t.Traffic_Head || 0}</span><span class="text-emerald-400">T:${t.Traffic_Tail || 0}</span></div></td><td><div class="flex justify-around text-xs font-bold text-center"><span class="text-white">H:${t.Purchase_Head || 0}</span><span class="text-rose-400">T:${t.Purchase_Tail || 0}</span></div></td><td class="bg-indigo-500/[0.01] text-center">${renderTableLeadCell(t, 'PT', therapistFilterBrand, t.Floor, t.Therapist)}</td><td class="bg-violet-500/[0.01] text-center">${renderTableLeadCell(t, 'Bday', therapistFilterBrand, t.Floor, t.Therapist)}</td></tr>`).join('') + `</tbody></table></div></div>`;
+            const getTh = (l, k, w) => `<th class="sort-header ${therapistSort.key === k ? 'text-white' : ''}" style="width: ${w};" onclick="handleSort('therapist', '${k}')">${l}</th>`;
+            container.innerHTML = `<div class="glass-panel border-l-8 border-${color}-500 overflow-hidden shadow-2xl"><div class="bg-white/5 px-5 py-3 flex justify-between items-center border-b border-white/10"><span class="text-lg font-black uppercase italic text-${color}-300">${therapistFilterBrand} THERAPIST PERFORMANCE 個人表現分析</span><span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${data.length} Units Online</span></div><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1600px] table-fixed"><thead><tr class="bg-slate-900/40">${getTh('身份 Identity', 'Therapist', '220px')}${getTh(labels.nodes+' (Δ)', 'Nodes', '150px')}${getTh(labels.traffic+' [龍頭/龍尾]', 'Total_Traffic', '180px')}${getTh(labels.purchase+' [龍頭/龍尾]', 'Total_Purchase', '180px')}<th class="w-[450px]">${labels.pt_track}</th><th class="w-[550px]">${labels.bday_track}</th></tr></thead><tbody>` + data.map(t => `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 pl-6 font-black text-slate-100 text-lg uppercase italic text-left">${t.Therapist || t.Identity}</td><td class="font-black text-3xl text-center">${parseSheetNum(t.Nodes).toLocaleString()} ${getBracketHtml(t.Nodes_Delta)}</td><td><div class="flex justify-around text-sm font-black text-center"><span class="text-white">龍:${t.Traffic_Head||0}</span><span class="text-emerald-400">尾:${t.Traffic_Tail||0}</span></div></td><td><div class="flex justify-around text-sm font-black text-center"><span class="text-white">龍:${t.Purchase_Head||0}</span><span class="text-rose-400">尾:${t.Purchase_Tail||0}</span></div></td><td class="bg-indigo-500/[0.02]">${renderTableLeadCell(t, 'PT', therapistFilterBrand, t.Floor, t.Therapist)}</td><td class="bg-violet-500/[0.02]">${renderTableLeadCell(t, 'Bday', therapistFilterBrand, t.Floor, t.Therapist)}</td></tr>`).join('') + `</tbody></table></div></div>`;
         }
 
         window.onload = () => { if (window.initDashboard) window.initDashboard(); setInterval(() => { const timeEl = document.getElementById('current-time'); if (timeEl) timeEl.innerText = new Date().toLocaleString(); }, 1000); };
