@@ -40,6 +40,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;700;900&display=swap');
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #020617; color: #f8fafc; font-size: 0.95rem; overflow-x: hidden; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 0.75rem; }
+        .stat-card { transition: transform 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); }
         
         .kpi-table th { font-size: 10px; letter-spacing: 0.05em; color: #cbd5e1; text-transform: uppercase; padding: 12px 4px; border: 1px solid #1e293b; line-height: 1.2; text-align: center; background: rgba(15, 23, 42, 0.95); font-weight: 900; }
         .kpi-table td { padding: 8px 4px; border: 1px solid rgba(30, 41, 59, 0.5); text-align: center; vertical-align: middle; }
@@ -61,19 +63,23 @@
         .section-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: #94a3b8; display: flex; align-items: center; gap: 8px; width: 100%; }
         .section-label::before, .section-label::after { content: ""; height: 1px; flex-grow: 1; background: rgba(255,255,255,0.1); }
 
-        .pending-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.96); display: flex; align-items: center; justify-content: center; z-index: 30; backdrop-filter: blur(1px); border-radius: inherit; border: 1px dashed rgba(244, 63, 94, 0.3); }
+        /* Pending Data Overlay */
+        .pending-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.94); display: flex; align-items: center; justify-content: center; z-index: 30; backdrop-filter: blur(1px); border-radius: inherit; border: 1px dashed rgba(244, 63, 94, 0.4); }
         .pending-text { color: #f43f5e; font-size: 8px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; }
-        .pending-large { font-size: 16px; letter-spacing: 0.2em; color: #f43f5e; font-style: italic; font-weight: 900; }
+        .pending-large { font-size: 16px; letter-spacing: 0.3em; color: #f43f5e; font-style: italic; font-weight: 900; }
         
-        .sort-header { cursor: pointer; }
+        .sort-header { cursor: pointer; transition: background 0.2s ease; position: relative; }
         .sort-header:hover { background: rgba(255, 255, 255, 0.08) !important; }
+        .sort-indicator { font-size: 10px; margin-left: 4px; opacity: 0.4; }
+        .sort-active { color: #38bdf8 !important; }
+        .sort-active .sort-indicator { opacity: 1; color: #38bdf8; }
     </style>
 </head>
 <body class="p-2 md:p-4">
 
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 p-6 text-center">
         <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-sky-400 font-mono text-sm animate-pulse uppercase tracking-widest font-black">Syncing Node Momentum...</p>
+        <p class="text-sky-400 font-mono text-sm animate-pulse uppercase tracking-widest font-black">Node Momentum Syncing...</p>
     </div>
 
     <!-- LEAD DETAIL MODAL -->
@@ -232,6 +238,8 @@
             opsFilterBrand = null; 
             therapistFilterBrand = null;
             therapistFilterFloor = 'All';
+            opsSort = { key: null, direction: 'desc' };
+            therapistSort = { key: null, direction: 'desc' };
             if (lastData) updateDashboard(lastData);
         }
 
@@ -240,19 +248,52 @@
 
         function handleSort(type, key) {
             const sortRef = type === 'ops' ? opsSort : therapistSort;
-            if (sortRef.key === key) { sortRef.direction = sortRef.direction === 'asc' ? 'desc' : 'asc'; } else { sortRef.key = key; sortRef.direction = 'desc'; }
-            type === 'ops' ? renderOperations(getSlice(lastData, 'operations')) : renderTherapists(getSlice(lastData, 'therapists'));
+            if (sortRef.key === key) { 
+                sortRef.direction = sortRef.direction === 'asc' ? 'desc' : 'asc'; 
+            } else { 
+                sortRef.key = key; 
+                sortRef.direction = 'desc'; 
+            }
+            if (type === 'ops') {
+                renderOperations(getSlice(lastData, 'operations'));
+            } else {
+                renderTherapists(getSlice(lastData, 'therapists'));
+            }
         }
 
         function getSortData(data, config) {
             if (!config.key) return data;
             return [...data].sort((a, b) => {
-                let valA = (config.key.includes('Total')) ? parseSheetNum(a[config.key.replace('Total_','Head')]) + parseSheetNum(a[config.key.replace('Total_','Tail')]) : a[config.key];
-                let valB = (config.key.includes('Total')) ? parseSheetNum(b[config.key.replace('Total_','Head')]) + parseSheetNum(b[config.key.replace('Total_','Tail')]) : b[config.key];
-                valA = isNaN(parseSheetNum(valA)) ? valA : parseSheetNum(valA);
-                valB = isNaN(parseSheetNum(valB)) ? valB : parseSheetNum(valB);
-                return config.direction === 'asc' ? (valA < valB ? -1 : 1) : (valA > valB ? -1 : 1);
+                let valA, valB;
+                if (config.key.includes('Total')) {
+                    const hK = config.key.replace('Total_','Head');
+                    const tK = config.key.replace('Total_','Tail');
+                    valA = parseSheetNum(a[hK]) + parseSheetNum(a[tK]);
+                    valB = parseSheetNum(b[hK]) + parseSheetNum(b[tK]);
+                } else {
+                    valA = a[config.key];
+                    valB = b[config.key];
+                }
+                const nA = parseSheetNum(valA);
+                const nB = parseSheetNum(valB);
+                const isNumA = (typeof valA === 'number') || (typeof valA === 'string' && valA.trim() !== '' && !isNaN(valA.replace(/,/g, '')));
+                const isNumB = (typeof valB === 'number') || (typeof valB === 'string' && valB.trim() !== '' && !isNaN(valB.replace(/,/g, '')));
+                if (isNumA && isNumB) {
+                    if (nA === nB) return 0;
+                    return config.direction === 'asc' ? nA - nB : nB - nA;
+                } else {
+                    const sA = String(valA || "").toLowerCase();
+                    const sB = String(valB || "").toLowerCase();
+                    if (sA < sB) return config.direction === 'asc' ? -1 : 1;
+                    if (sA > sB) return config.direction === 'asc' ? 1 : -1;
+                    return 0;
+                }
             });
+        }
+
+        function getSortIcon(currentKey, key, direction) {
+            if (currentKey !== key) return '<span class="sort-indicator">↕</span>';
+            return direction === 'asc' ? '<span class="sort-indicator">↑</span>' : '<span class="sort-indicator">↓</span>';
         }
 
         function getSlice(data, type) {
@@ -284,10 +325,10 @@
             
             const rawData = getSlice(lastData, 'raw');
             let leads = rawData.filter(d => {
-                const bMatch = String(d.Brand || '').toLowerCase() === String(brand).toLowerCase();
-                const cMatch = (floor === 'All') ? true : String(d.Center || '').toLowerCase() === String(floor).toLowerCase();
-                const tMatch = String(d.Therapist || '').toLowerCase().includes(String(therapist).toLowerCase());
-                return bMatch && cMatch && tMatch;
+                const bM = String(d.Brand || '').toLowerCase() === String(brand).toLowerCase();
+                const cM = (floor === 'All') ? true : String(d.Center || '').toLowerCase() === String(floor).toLowerCase();
+                const tM = String(d.Therapist || '').toLowerCase().includes(String(therapist).toLowerCase());
+                return bM && cM && tM;
             });
             
             if (type === 'Shared') { leads = leads.filter(d => d.click_share_dt && String(d.click_share_dt).trim() !== ''); }
@@ -299,12 +340,12 @@
                 emptyEl.classList.add('hidden');
                 countEl.innerText = `${leads.length} Active Records`;
                 leads.forEach(l => {
-                    const isRedeemed = l.shop_GC_redeem_dt && String(l.shop_GC_redeem_dt).trim() !== '';
-                    const isShared = l.click_share_dt && String(l.click_share_dt).trim() !== '';
-                    let statusLabel = '<span class="text-slate-600 text-[10px] font-black uppercase">Entitled 符合資格</span>';
-                    if (isRedeemed) statusLabel = '<span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase rounded border border-indigo-500/20">Redeemed 已換領</span>';
-                    else if (isShared) statusLabel = '<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase rounded border border-emerald-500/20">Shared 已分享</span>';
-                    tbody.innerHTML += `<tr class="lead-row hover:bg-white/5 transition-colors"><td class="p-3 pl-6 font-mono text-sm text-sky-100">${l.mmc_code || '---'}</td><td class="p-3 text-center"><span class="text-[10px] font-black text-slate-400 uppercase">${l.gift_card_type || '---'}</span></td><td class="p-3 text-center"><span class="text-[10px] font-black text-slate-500 uppercase">${l.csr_segment_cat || '---'}</span></td><td class="p-3 text-center">${statusLabel}</td></tr>`;
+                    const isRed = l.shop_GC_redeem_dt && String(l.shop_GC_redeem_dt).trim() !== '';
+                    const isShr = l.click_share_dt && String(l.click_share_dt).trim() !== '';
+                    let sL = '<span class="text-slate-600 text-[10px] font-black uppercase">Entitled 符合資格</span>';
+                    if (isRed) sL = '<span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase rounded border border-indigo-500/20">Redeemed 已換領</span>';
+                    else if (isShr) sL = '<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase rounded border border-emerald-500/20">Shared 已分享</span>';
+                    tbody.innerHTML += `<tr class="lead-row hover:bg-white/5 transition-colors"><td class="p-3 pl-6 font-mono text-sm text-sky-100">${l.mmc_code || '---'}</td><td class="p-3 text-center"><span class="text-[10px] font-black text-slate-400 uppercase">${l.gift_card_type || '---'}</span></td><td class="p-3 text-center"><span class="text-[10px] font-black text-slate-500 uppercase">${l.csr_segment_cat || '---'}</span></td><td class="p-3 text-center">${sL}</td></tr>`;
                 });
             }
             modal.classList.remove('hidden');
@@ -316,8 +357,8 @@
         async function fetchData() {
             setSyncStatus(true);
             try {
-                const response = await fetch(`${API_URL}?t=${Date.now()}`);
-                const data = await response.json();
+                const res = await fetch(`${API_URL}?t=${Date.now()}`);
+                const data = await res.json();
                 lastData = data;
                 updateDashboard(data);
                 document.getElementById('loading-overlay').style.opacity = '0';
@@ -329,9 +370,9 @@
             }
         }
 
-        function setSyncStatus(isSyncing) {
+        function setSyncStatus(is) {
             const status = document.getElementById('sync-status');
-            if (isSyncing) { status.classList.add('animate-pulse'); } else { status.classList.remove('animate-pulse'); }
+            if (is) { status.classList.add('animate-pulse'); } else { status.classList.remove('animate-pulse'); }
         }
 
         async function updateDashboard(data) {
@@ -351,11 +392,11 @@
                 { val: getVal("Traffic"), delta: getDelta("Traffic"), border: 'border-l-emerald-500', label: 'Active Traffic 活化流量', head: getVal("Traffic Head"), tail: getVal("Traffic Tail") },
                 { val: getVal("Purchase"), delta: getDelta("Purchase"), border: 'border-l-rose-500', label: 'Active Purchase 活化購買', head: getVal("Purchase Head"), tail: getVal("Purchase Tail") }
             ];
-            let html = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-4"><div class="glass-panel p-4 stat-card border-l-4 ${rep.border} text-center"><span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${rep.label}</span><span class="text-5xl font-black block">${rep.val.toLocaleString()}</span><div class="mt-2">${getBracketHtml(rep.delta)}</div></div>`;
+            let h = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-4"><div class="glass-panel p-4 stat-card border-l-4 ${rep.border} text-center"><span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${rep.label}</span><span class="text-5xl font-black block">${rep.val.toLocaleString()}</span><div class="mt-2">${getBracketHtml(rep.delta)}</div></div>`;
             act.forEach(e => {
-                html += `<div class="glass-panel p-4 stat-card border-l-4 ${e.border} text-center"><span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${e.label}</span><span class="text-5xl font-black block">${e.val.toLocaleString()}</span><div class="mt-2 mb-3">${getBracketHtml(e.delta)}</div><div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3"><div class="text-center"><span class="mini-label">${labels.head}</span><div class="font-black text-white text-2xl">${(e.head || 0).toLocaleString()}</div></div><div class="text-center"><span class="mini-label">${labels.tail}</span><div class="font-black text-white text-2xl">${(e.tail || 0).toLocaleString()}</div></div></div></div>`;
+                h += `<div class="glass-panel p-4 stat-card border-l-4 ${e.border} text-center"><span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${e.label}</span><span class="text-5xl font-black block">${e.val.toLocaleString()}</span><div class="mt-2 mb-3">${getBracketHtml(e.delta)}</div><div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3"><div class="text-center"><span class="mini-label">${labels.head}</span><div class="font-black text-white text-2xl">${(e.head || 0).toLocaleString()}</div></div><div class="text-center"><span class="mini-label">${labels.tail}</span><div class="font-black text-white text-2xl">${(e.tail || 0).toLocaleString()}</div></div></div></div>`;
             });
-            container.innerHTML = html + `</div>`;
+            container.innerHTML = h + `</div>`;
         }
 
         function renderMKTPillars(overviewData) {
@@ -363,17 +404,76 @@
             container.innerHTML = '';
             const getVal = (m) => parseSheetNum(overviewData.find(i => i.Metric === m)?.Total);
             const isSH = networkMode === 'SH';
+            const isHK = networkMode === 'HK';
             
             const renderPTBlock = (optionType, color) => {
                 const prefix = `PT ${optionType}`;
-                return `<div class="glass-panel p-6 border-l-8 border-${color}-500 bg-slate-900/20 h-full relative overflow-hidden">${isSH?`<div class="pending-overlay"><span class="pending-text pending-large">PENDING DATA SOURCES 數據掛起</span></div>`:''}<div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4"><div><h4 class="text-2xl font-black uppercase italic text-${color}-400">付費體驗分析 (PT ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">${optionType}</p></div><div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setPTFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${ptFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div><div class="mb-8"><div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div><div class="flex justify-around items-center"><div class="text-center"><span class="mini-label text-base">${labels.entitled}</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Head").toLocaleString()}</div></div><div class="text-center"><span class="mini-label text-base">${labels.traffic}</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Traffic") || 0}</div></div><div class="text-center"><span class="mini-label text-base">${labels.share}</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Share") || 0}</div></div></div></div><div><div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div><div class="grid grid-cols-5 gap-3">${[{l:labels.redeem,v:getVal(prefix+" Redeem"),pend: (networkMode === 'HK')},{l:labels.book,v:getVal(prefix+" Book")},{l:labels.mtd,v:getVal(prefix+" MTD Book"),pend: (networkMode === 'HK')},{l:labels.show,v:getVal(prefix+" Show")},{l:labels.amount,v:getVal(prefix+" $")}].map(s=>`<div class="grid-item py-6 ${s.l.includes('Amount')?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}">${s.pend?`<div class="pending-overlay"><span class="pending-text">PENDING</span></div>`:''}<span class="mini-label mb-2 text-xs">${s.l}</span><span class="text-3xl font-black ${s.l.includes('Amount')?'text-emerald-400':'text-white'} leading-none">${s.v.toLocaleString()}</span></div>`).join('')}</div></div></div>`;
+                return `
+                <div class="glass-panel p-6 border-l-8 border-${color}-500 bg-slate-900/20 h-full relative flex flex-col">
+                    <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                        <div><h4 class="text-2xl font-black uppercase italic text-${color}-400">付費體驗分析 (PT ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">${optionType}</p></div>
+                        <div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">
+                            ${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setPTFilter('${f}')" class="filter-tab px-4 py-1 rounded-lg text-[10px] font-black uppercase ${ptFilter === f ? 'active' : ''}">${f}</button>`).join('')}
+                        </div>
+                    </div>
+                    <div class="relative flex-1">
+                        ${isSH ? `<div class="pending-overlay"><span class="pending-text pending-large">PENDING DATA SOURCES 數據掛起</span></div>` : ''}
+                        <div class="mb-8">
+                            <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
+                            <div class="flex justify-around items-center">
+                                <div class="text-center"><span class="mini-label text-base">符合資格 Entitled</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Head").toLocaleString()}</div></div>
+                                <div class="text-center"><span class="mini-label text-base">流量 Traffic</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Traffic") || 0}</div></div>
+                                <div class="text-center"><span class="mini-label text-base">分享 Share</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal("PT Overall Share") || 0}</div></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div>
+                            <div class="grid grid-cols-5 gap-3">
+                                ${[
+                                    {l:"換領 Redeem",v:getVal(prefix+" Redeem"),p: isHK},
+                                    {l:"預約 Book",v:getVal(prefix+" Book")},
+                                    {l:"已到期之預約 MTD",v:getVal(prefix+" MTD Book"),p: isHK},
+                                    {l:"出席 Show",v:getVal(prefix+" Show")},
+                                    {l:"金額 Amount",v:getVal(prefix+" $")}
+                                ].map(s=>`<div class="grid-item py-6 ${s.l.includes('Amount')?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}">
+                                    ${s.p?`<div class="pending-overlay"><span class="pending-text">PENDING</span></div>`:''}
+                                    <span class="mini-label mb-2 text-xs">${s.l}</span><span class="text-3xl font-black ${s.l.includes('Amount')?'text-emerald-400':'text-white'} leading-none">${s.v.toLocaleString()}</span>
+                                </div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
             };
 
             const renderBdaySplitBlock = (optionType, color) => {
                 const prefix = `Bday ${optionType}`;
                 const getSum = (m) => getVal(prefix + " ACB " + m) + getVal(prefix + " ICB " + m);
                 const getMetric = (l, m, is$, isLg) => `<div class="flex-1 text-center bg-slate-950/40 p-4 rounded-xl border border-white/5 min-w-[125px] ${is$ ? 'bg-emerald-500/10' : ''}"><span class="mini-label ${isLg ? 'text-sm mb-2' : 'mb-1'} block">${l}</span><div class="${isLg ? 'text-5xl' : 'text-2xl'} font-black ${is$ ? 'text-emerald-400' : 'text-white'} leading-none">${getSum(m).toLocaleString()}</div><div class="flex justify-center gap-3 mt-2 opacity-60 text-[9px] font-bold"><span>ACB:${getVal(prefix+" ACB "+m)}</span><span class="w-px h-2 bg-white/10"></span><span>ICB:${getVal(prefix+" ICB "+m)}</span></div></div>`;
-                return `<div class="glass-panel p-8 border-l-8 border-${color}-500 bg-slate-900/20 h-full relative overflow-hidden"><div class="pending-overlay"><span class="pending-text pending-large">PENDING DATA SOURCES 數據掛起</span></div><div class="flex justify-between items-center mb-8 border-b border-white/10 pb-4"><div class="flex flex-col"><h4 class="text-2xl font-black italic text-${color}-400 uppercase">生日活動分析 (BIRTHDAY ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase mt-1">${optionType}</p></div><div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setBdayFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${bdayFilter === f ? 'active' : ''}">${f}</button>`).join('')}</div></div><div class="mb-8"><div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div><div class="flex flex-wrap gap-2">${getMetric(labels.entitled, "Head", false, true)}${getMetric(labels.traffic, "Traffic", false, true)}${getMetric(labels.redeem, "Redm", false, true)}${getMetric(labels.book, "Book Head")}${getMetric(labels.mtd, "MTD Head")}${getMetric(labels.show, "Show Head")}${getMetric(labels.sign, "Sign Head")}${getMetric(labels.amount, "$ Head", true)}</div></div><div><div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div><div class="flex flex-wrap gap-2">${[{l:labels.redeem,m:"Redeem"},{l:labels.book,m:"Book"},{l:labels.mtd,m:"MTD Book"},{l:labels.show,m:"Show"},{l:labels.sign,m:"Sign"},{l:labels.amount,m:"$",is$:true}].map(s=> getMetric(s.l, s.m, s.is$)).join('')}</div></div></div>`;
+                
+                return `
+                <div class="glass-panel p-8 border-l-8 border-${color}-500 bg-slate-900/20 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+                        <div class="flex flex-col"><h4 class="text-2xl font-black italic text-${color}-400 uppercase">生日活動分析 (BIRTHDAY ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase mt-1">Viewing: ${optionType}</p></div>
+                        <div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">
+                            ${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setBdayFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${bdayFilter === f ? 'active' : ''}">${f}</button>`).join('')}
+                        </div>
+                    </div>
+                    <div class="relative flex-1">
+                        ${(isHK || isSH) ? `<div class="pending-overlay"><span class="pending-text pending-large">PENDING DATA SOURCES 數據掛起</span></div>` : ''}
+                        <div class="mb-8">
+                            <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
+                            <div class="flex flex-wrap gap-2">
+                                ${getMetric(labels.entitled, "Head", false, true)}${getMetric(labels.traffic, "Traffic", false, true)}${getMetric(labels.redeem, "Redm", false, true)}${getMetric(labels.book, "Book Head")}${getMetric(labels.mtd, "MTD Head")}${getMetric(labels.show, "Show Head")}${getMetric(labels.sign, "Sign Head")}${getMetric(labels.amount, "$ Head", true)}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div>
+                            <div class="flex flex-wrap gap-2">
+                                ${[{l:labels.redeem,m:"Redeem"},{l:labels.book,m:"Book"},{l:labels.mtd,m:"MTD Book"},{l:labels.show,m:"Show"},{l:labels.sign,m:"Sign"},{l:labels.amount,m:"$",is$:true}].map(s=> getMetric(s.l, s.m, s.is$)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
             };
 
             container.innerHTML = `<div class="flex flex-col gap-8"><div>${renderPTBlock(ptFilter, 'indigo')}</div><div>${renderBdaySplitBlock(bdayFilter, 'violet')}</div></div>`;
@@ -387,7 +487,6 @@
 
             return `
             <div class="stacked-cell p-1">
-                <!-- Head Section -->
                 <div class="flex w-full items-start gap-1.5 px-1 relative overflow-hidden">
                     ${(isSH && type === 'Bday') ? `<div class="pending-overlay"><span class="pending-text">龍頭掛起 PENDING HEAD</span></div>` : ''}
                     <span class="section-tag head-tag mt-1">龍頭</span>
@@ -408,10 +507,7 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="w-full h-px bg-white/5 my-1"></div>
-
-                <!-- Tail Section -->
+                <div class="w-full h-px bg-white/5 my-1.5"></div>
                 <div class="flex w-full items-start gap-1.5 relative min-h-[48px] px-1.5 overflow-hidden">
                     ${(isHK && type === 'Bday') ? `<div class="pending-overlay"><span class="pending-text">龍尾掛起 PENDING TAIL</span></div>` : ''}
                     <span class="section-tag tail-tag mt-1">龍尾</span>
@@ -428,43 +524,44 @@
 
         function renderOperations(opsData) {
             const container = document.getElementById('ops-container');
-            const bFilter = document.getElementById('ops-brand-filter-container');
+            const bF = document.getElementById('ops-brand-filter-container');
             container.innerHTML = '';
             const brands = [...new Set(opsData.map(d => d.Brand))].filter(Boolean);
             if (!opsFilterBrand || !brands.includes(opsFilterBrand)) { opsFilterBrand = brands[0] || 'All'; }
-            bFilter.innerHTML = ['All', ...brands].map(b => `<button onclick="setOpsBrandFilter('${b}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${opsFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
-            [opsFilterBrand].forEach(brand => {
+            bF.innerHTML = ['All', ...brands].map(b => `<button onclick="setOpsBrandFilter('${b}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${opsFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
+            const targetB = opsFilterBrand === 'All' ? brands : [opsFilterBrand];
+            targetB.forEach(brand => {
                 const color = colors[brand.toLowerCase()] || colors.default;
                 let data = getSortData(opsData.filter(d => d.Brand === brand), opsSort);
                 if (!data.length) return;
-                const getTh = (l, k, w) => `<th class="sort-header ${opsSort.key === k ? 'text-white' : ''}" style="width: ${w};" onclick="handleSort('ops', '${k}')">${l}</th>`;
-                let html = `<div class="space-y-2"><div class="flex items-center gap-3 p-2 bg-${color}-500/10 border border-${color}-500/20 rounded-lg"><div class="w-1.5 h-4 rounded-full bg-${color}-500"></div><h3 class="text-sm font-black uppercase text-${color}-300 tracking-widest">${brand} OPERATIONS HUB 營運樞紐</h3></div><div class="glass-panel overflow-hidden border border-white/5"><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1700px] table-fixed"><thead><tr>${getTh('位置 Location', 'Floor', '140px')}${getTh(labels.hc, 'HC', '75px')}${getTh('客底 Base (A/I)', 'ACB_Ref', '100px')}<th colspan="2">節點分佈 REPLICATION</th><th colspan="4">活化表現 ACTIVATION</th><th class="w-[360px]">${labels.pt_track}</th><th class="w-[450px]">${labels.bday_track}</th></tr><tr class="bg-slate-900/30 text-[9px] opacity-70"><th>Center Info</th><th>Size</th><th>Ref Targets</th>${getTh('總點數 Nodes', 'Nodes', '110px')}<th>N/HC 比率</th>${getTh('流量 Traffic', 'Total_Traffic', '100px')}<th>T/HC 比率</th>${getTh('購買 Purchase', 'Total_Purchase', '100px')}<th>P/HC 比率</th><th colspan="2">漏斗分析 (龍頭:Head / 龍尾:Tail)</th></tr></thead><tbody>`;
+                const getTh = (l, k, w) => `<th class="sort-header ${opsSort.key === k ? 'sort-active' : ''}" style="width: ${w};" onclick="handleSort('ops', '${k}')">${l}${getSortIcon(opsSort.key, k, opsSort.direction)}</th>`;
+                let h = `<div class="space-y-2"><div class="flex items-center gap-3 p-2 bg-${color}-500/10 border border-${color}-500/20 rounded-lg"><div class="w-1.5 h-4 rounded-full bg-${color}-500"></div><h3 class="text-sm font-black uppercase text-${color}-300 tracking-widest">${brand} OPERATIONS HUB 營運樞紐</h3></div><div class="glass-panel overflow-hidden border border-white/5"><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1700px] table-fixed"><thead><tr>${getTh('位置 Location', 'Floor', '140px')}${getTh(labels.hc, 'HC', '75px')}${getTh(labels.base + '基準 (A/I)', 'ACB_Ref', '100px')}<th colspan="2">節點分佈 REPLICATION</th><th colspan="4">活化表現 ACTIVATION</th><th class="w-[360px]">${labels.pt_track}</th><th class="w-[450px]">${labels.bday_track}</th></tr><tr class="bg-slate-900/30 text-[9px] opacity-70"><th>Center Info</th><th>Size</th><th>Ref Targets</th>${getTh('總點數 Nodes', 'Nodes', '110px')}<th>N/HC 比率</th>${getTh('流量 Traffic', 'Total_Traffic', '100px')}<th>T/HC 比率</th>${getTh('購買 Purchase', 'Total_Purchase', '100px')}<th>P/HC 比率</th><th colspan="2">漏斗追蹤分析 (龍頭:Head / 龍尾:Tail)</th></tr></thead><tbody>`;
                 data.forEach(d => {
                     const hc = parseSheetNum(d.HC);
-                    html += `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 font-black text-slate-100 text-sm uppercase italic text-left pl-4">${d.Floor}</td><td class="font-black text-2xl text-center">${hc || '-'}</td><td><div class="flex flex-col text-[11px] font-black items-center"><span class="text-sky-400">A:${d.ACB_Ref||0}</span><span class="text-indigo-400">I:${d.ICB_Ref||0}</span></div></td><td class="font-black text-2xl text-center">${parseSheetNum(d.Nodes).toLocaleString()}</td><td class="text-sky-300 font-black text-2xl text-center">${hc>0?(parseSheetNum(d.Nodes)/hc).toFixed(1):'-'}</td><td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Traffic_Head||0}</span><span class="text-emerald-400">${d.Traffic_Tail||0}</span></div></td><td class="text-emerald-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Traffic_Head)+parseSheetNum(d.Traffic_Tail))/hc).toFixed(1):'-'}</td><td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Purchase_Head||0}</span><span class="text-rose-400">${d.Purchase_Tail||0}</span></div></td><td class="text-rose-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Purchase_Head)+parseSheetNum(d.Purchase_Tail))/hc).toFixed(1):'-'}</td><td>${renderTableLeadCell(d, 'PT', brand, d.Floor)}</td><td>${renderTableLeadCell(d, 'Bday', brand, d.Floor)}</td></tr>`;
+                    h += `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 font-black text-slate-100 text-sm uppercase italic text-left pl-4">${d.Floor}</td><td class="font-black text-2xl text-center">${hc || '-'}</td><td><div class="flex flex-col text-[11px] font-black items-center"><span class="text-sky-400">A:${d.ACB_Ref||0}</span><span class="text-indigo-400">I:${d.ICB_Ref||0}</span></div></td><td class="font-black text-2xl text-center">${parseSheetNum(d.Nodes).toLocaleString()}</td><td class="text-sky-300 font-black text-2xl text-center">${hc>0?(parseSheetNum(d.Nodes)/hc).toFixed(1):'-'}</td><td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Traffic_Head||0}</span><span class="text-emerald-400">${d.Traffic_Tail||0}</span></div></td><td class="text-emerald-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Traffic_Head)+parseSheetNum(d.Traffic_Tail))/hc).toFixed(1):'-'}</td><td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Purchase_Head||0}</span><span class="text-rose-400">${d.Purchase_Tail||0}</span></div></td><td class="text-rose-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Purchase_Head)+parseSheetNum(d.Purchase_Tail))/hc).toFixed(1):'-'}</td><td>${renderTableLeadCell(d, 'PT', brand, d.Floor)}</td><td>${renderTableLeadCell(d, 'Bday', brand, d.Floor)}</td></tr>`;
                 });
-                container.innerHTML += html + `</tbody></table></div></div></div>`;
+                container.innerHTML += h + `</tbody></table></div></div></div>`;
             });
         }
 
         function renderTherapists(tData) {
             const container = document.getElementById('therapist-container');
-            const bFilter = document.getElementById('t-brand-filter-container');
-            const fFilter = document.getElementById('floor-filter-container');
+            const bF = document.getElementById('t-brand-filter-container');
+            const fF = document.getElementById('floor-filter-container');
             if (!tData || tData.length === 0) { container.innerHTML = `<div class="p-16 text-center glass-panel italic">Offline...</div>`; return; }
             const brands = [...new Set(tData.map(d => d.Brand))].filter(Boolean);
             if (!therapistFilterBrand || !brands.includes(therapistFilterBrand)) { therapistFilterBrand = brands[0]; }
-            bFilter.innerHTML = brands.map(b => `<button onclick="setTherapistBrand('${b}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${therapistFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
-            const brandFloors = [...new Set(tData.filter(t => t.Brand === therapistFilterBrand).map(t => t.Floor))].sort();
-            if (!therapistFilterFloor || !['All', ...brandFloors].includes(therapistFilterFloor)) { therapistFilterFloor = brandFloors[0] || 'All'; }
-            fFilter.innerHTML = ['All', ...brandFloors].map(f => `<button onclick="setTherapistFloor('${f}')" class="floor-tab px-4 py-1 rounded-full border border-white/5 text-[10px] font-black uppercase ${f === therapistFilterFloor ? 'active' : ''}">${f}</button>`).join('');
+            bF.innerHTML = brands.map(b => `<button onclick="setTherapistBrand('${b}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${therapistFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
+            const bFloors = [...new Set(tData.filter(t => t.Brand === therapistFilterBrand).map(t => t.Floor))].sort();
+            if (!therapistFilterFloor || !['All', ...bFloors].includes(therapistFilterFloor)) { therapistFilterFloor = 'All'; }
+            fF.innerHTML = ['All', ...bFloors].map(f => `<button onclick="setTherapistFloor('${f}')" class="filter-tab px-4 py-1 rounded-full border border-white/5 text-[10px] font-black uppercase ${f === therapistFilterFloor ? 'active' : ''}">${f}</button>`).join('');
             let data = getSortData(tData.filter(t => t.Brand === therapistFilterBrand && (therapistFilterFloor === 'All' || t.Floor === therapistFilterFloor)), therapistSort);
             const color = colors[therapistFilterBrand?.toLowerCase()] || colors.default;
-            const getTh = (l, k, w) => `<th class="sort-header ${therapistSort.key === k ? 'text-white' : ''}" style="width: ${w};" onclick="handleSort('therapist', '${k}')">${l}</th>`;
-            container.innerHTML = `<div class="glass-panel border-l-8 border-${color}-500 overflow-hidden shadow-2xl"><div class="bg-white/5 px-5 py-3 flex justify-between items-center border-b border-white/10"><span class="text-lg font-black uppercase italic text-${color}-300">${therapistFilterBrand} THERAPIST PERFORMANCE 個人表現分析</span><span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${data.length} Units Online</span></div><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1600px] table-fixed"><thead><tr class="bg-slate-900/40">${getTh('身份 Identity', 'Therapist', '220px')}${getTh(labels.nodes+' (Δ)', 'Nodes', '150px')}${getTh(labels.traffic+' [龍頭/龍尾]', 'Total_Traffic', '180px')}${getTh(labels.purchase+' [龍頭/龍尾]', 'Total_Purchase', '180px')}<th class="w-[450px]">${labels.pt_track}</th><th class="w-[550px]">${labels.bday_track}</th></tr></thead><tbody>` + data.map(t => `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 pl-6 font-black text-slate-100 text-lg uppercase italic text-left">${t.Therapist || t.Identity}</td><td class="font-black text-3xl text-center">${parseSheetNum(t.Nodes).toLocaleString()} ${getBracketHtml(t.Nodes_Delta)}</td><td><div class="flex justify-around text-sm font-black text-center"><span class="text-white">龍:${t.Traffic_Head||0}</span><span class="text-emerald-400">尾:${t.Traffic_Tail||0}</span></div></td><td><div class="flex justify-around text-sm font-black text-center"><span class="text-white">龍:${t.Purchase_Head||0}</span><span class="text-rose-400">尾:${t.Purchase_Tail||0}</span></div></td><td class="bg-indigo-500/[0.02]">${renderTableLeadCell(t, 'PT', therapistFilterBrand, t.Floor, t.Therapist)}</td><td class="bg-violet-500/[0.02]">${renderTableLeadCell(t, 'Bday', therapistFilterBrand, t.Floor, t.Therapist)}</td></tr>`).join('') + `</tbody></table></div></div>`;
+            const getTh = (l, k, w, ex = '') => `<th class="sort-header ${therapistSort.key === k ? 'sort-active' : ''} ${ex}" style="width: ${w};" onclick="handleSort('therapist', '${k}')">${l}${getSortIcon(therapistSort.key, k, therapistSort.direction)}</th>`;
+            container.innerHTML = `<div class="glass-panel border-l-8 border-${color}-500 overflow-hidden shadow-2xl"><div class="bg-white/5 px-5 py-3 flex justify-between items-center border-b border-white/10"><span class="text-lg font-black uppercase italic text-${color}-300">${therapistFilterBrand} THERAPIST PERFORMANCE 個人表現分析</span><span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${data.length} Units Online</span></div><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1600px] table-fixed"><thead><tr class="bg-slate-900/40">${getTh('身份 Identity', 'Therapist', '220px', 'text-left pl-6')}${getTh(labels.nodes+' (Δ)', 'Nodes', '150px')}${getTh(labels.traffic+' [龍頭/龍尾]', 'Total_Traffic', '180px')}${getTh(labels.purchase+' [龍頭/龍尾]', 'Total_Purchase', '180px')}<th class="w-[450px]">${labels.pt_track}</th><th class="w-[550px]">${labels.bday_track}</th></tr></thead><tbody>` + data.map(t => `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 pl-6 font-black text-slate-100 text-lg uppercase italic text-left">${t.Therapist || t.Identity}</td><td class="font-black text-3xl text-center">${parseSheetNum(t.Nodes).toLocaleString()} ${getBracketHtml(t.Nodes_Delta)}</td><td><div class="flex justify-around text-sm font-black text-center"><span class="text-white">龍:${t.Traffic_Head||0}</span><span class="text-emerald-400">尾:${t.Traffic_Tail||0}</span></div></td><td><div class="flex justify-around text-sm font-black text-center"><span class="text-white">龍:${t.Purchase_Head||0}</span><span class="text-rose-400">尾:${t.Purchase_Tail||0}</span></div></td><td class="bg-indigo-500/[0.02]">${renderTableLeadCell(t, 'PT', therapistFilterBrand, t.Floor, t.Therapist)}</td><td class="bg-violet-500/[0.02]">${renderTableLeadCell(t, 'Bday', therapistFilterBrand, t.Floor, t.Therapist)}</td></tr>`).join('') + `</tbody></table></div></div>`;
         }
 
-        window.onload = () => { if (window.initDashboard) window.initDashboard(); setInterval(() => { const timeEl = document.getElementById('current-time'); if (timeEl) timeEl.innerText = new Date().toLocaleString(); }, 1000); };
+        window.onload = () => { if (window.initDashboard) window.initDashboard(); setInterval(() => { const tE = document.getElementById('current-time'); if (tE) tE.innerText = new Date().toLocaleString(); }, 1000); };
     </script>
 </body>
 </html>
