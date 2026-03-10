@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -64,7 +63,6 @@
         .section-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: #94a3b8; display: flex; align-items: center; gap: 8px; width: 100%; }
         .section-label::before, .section-label::after { content: ""; height: 1px; flex-grow: 1; background: rgba(255,255,255,0.1); }
 
-        /* Pending Data Overlay */
         .pending-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.96); display: flex; align-items: center; justify-content: center; z-index: 30; backdrop-filter: blur(1px); border-radius: inherit; border: 1px dashed rgba(244, 63, 94, 0.4); }
         .pending-text { color: #f43f5e; font-size: 8px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; }
         .pending-large { font-size: 16px; letter-spacing: 0.2em; color: #f43f5e; font-style: italic; font-weight: 900; }
@@ -94,6 +92,8 @@
                         <p id="modal-brand-name" class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Brand</p>
                         <span class="text-slate-700">•</span>
                         <p id="modal-center-name" class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Center</p>
+                        <span class="text-slate-700">•</span>
+                        <p id="modal-track-name" class="text-sky-400 text-[10px] font-black uppercase tracking-widest">Track</p>
                     </div>
                 </div>
                 <button onclick="closeLeadModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white font-black text-lg">&times;</button>
@@ -179,7 +179,7 @@
     </section>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwbuwcrc-8OF4-kxSVKUKQmprG15Pu5oWIySG961UXLXmm0F_3izfvUxeuS-VhwYRuWxg/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyvrX2msHcYa6qZEw88doYC0bF5cXu-51EXARyE1OCVHl__0ugMn5oG5j7xTnopSdSiZw/exec";
         const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
         
         let lastData = null;
@@ -310,26 +310,45 @@
         function setTherapistBrand(brand) { therapistFilterBrand = brand; therapistFilterFloor = null; if (lastData) renderTherapists(getSlice(lastData, 'therapists')); }
         function setTherapistFloor(floor) { therapistFilterFloor = floor; if (lastData) renderTherapists(getSlice(lastData, 'therapists')); }
 
-        function openLeadModal(brand, floor, therapist, type) {
+        // UPDATED openLeadModal with "track" filtering to separate PT vs Bday
+        function openLeadModal(brand, floor, therapist, type, track) {
             const modal = document.getElementById('lead-modal');
             const tbody = document.getElementById('lead-modal-body');
             const titleEl = document.getElementById('modal-therapist-name');
             const brandEl = document.getElementById('modal-brand-name');
             const centerEl = document.getElementById('modal-center-name');
+            const trackEl = document.getElementById('modal-track-name');
             const emptyEl = document.getElementById('modal-empty-state');
             const countEl = document.getElementById('modal-count');
 
             titleEl.innerText = therapist;
             brandEl.innerText = brand;
             centerEl.innerText = floor;
+            trackEl.innerText = (track === 'Bday' ? '生日禮券 Bday Track' : '付費體驗禮券 PT Track');
             tbody.innerHTML = '';
             
             const rawData = getSlice(lastData, 'raw');
             let leads = rawData.filter(d => {
                 const bM = String(d.Brand || '').toLowerCase() === String(brand).toLowerCase();
-                const cM = (floor === 'All') ? true : String(d.Center || '').toLowerCase() === String(floor).toLowerCase();
-                const tM = String(d.Therapist || '').toLowerCase().includes(String(therapist).toLowerCase());
-                return bM && cM && tM;
+                
+                // Fuzzy match for center
+                const targetFloor = String(floor).toLowerCase();
+                const sheetFloor = String(d.Center || '').toLowerCase();
+                const cM = (floor === 'All') ? true : (sheetFloor.includes(targetFloor) || targetFloor.includes(sheetFloor));
+                
+                // Fuzzy match for therapist
+                const targetTherapist = String(therapist).toLowerCase();
+                const sheetTherapist = String(d.Therapist || '').toLowerCase();
+                const tM = sheetTherapist.includes(targetTherapist) || targetTherapist.includes(sheetTherapist);
+                
+                // NEW: Filter by track (Category)
+                // If Bday, only include rows with "Bday" in gift_card_type
+                // If PT, exclude rows with "Bday"
+                const giftType = String(d.gift_card_type || '').toUpperCase();
+                const isBdayData = giftType.includes('BDAY') || giftType.includes('生日');
+                const isMatchTrack = (track === 'Bday' ? isBdayData : !isBdayData);
+
+                return bM && cM && tM && isMatchTrack;
             });
             
             if (type === 'Shared') { leads = leads.filter(d => d.click_share_dt && String(d.click_share_dt).trim() !== ''); }
@@ -393,18 +412,18 @@
                 { val: getVal("Purchase"), delta: getVal("Purchase_Delta"), border: 'border-l-rose-500', label: 'Active Purchase 活化購買', head: getVal("Purchase_Head"), tail: getVal("Purchase_Tail") }
             ];
             let h = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-			<div class="glass-panel p-4 stat-card border-l-4 ${rep.border} text-center">
-			<span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${rep.label}</span>
-			<span class="text-5xl font-black block">${rep.val.toLocaleString()}</span>
-			<div class="mt-2">${getBracketHtml(rep.delta)}</div></div>`;
+            <div class="glass-panel p-4 stat-card border-l-4 ${rep.border} text-center">
+            <span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${rep.label}</span>
+            <span class="text-5xl font-black block">${rep.val.toLocaleString()}</span>
+            <div class="mt-2">${getBracketHtml(rep.delta)}</div></div>`;
             act.forEach(e => {
                 h += `<div class="glass-panel p-4 stat-card border-l-4 ${e.border} text-center">
-				<span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${e.label}</span>
-				<span class="text-5xl font-black block">${e.val.toLocaleString()}</span>
-				<div class="mt-2 mb-3">${getBracketHtml(e.delta)}</div>
-				<div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3">
-				<div class="text-center"><span class="mini-label">${labels.head}</span><div class="font-black text-white text-2xl">${(e.head || 0).toLocaleString()}</div></div>
-				<div class="text-center"><span class="mini-label">${labels.tail}</span><div class="font-black text-white text-2xl">${(e.tail || 0).toLocaleString()}</div></div></div></div>`;
+                <span class="text-slate-500 text-[11px] font-black uppercase mb-1 block">${e.label}</span>
+                <span class="text-5xl font-black block">${e.val.toLocaleString()}</span>
+                <div class="mt-2 mb-3">${getBracketHtml(e.delta)}</div>
+                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3">
+                <div class="text-center"><span class="mini-label">${labels.head}</span><div class="font-black text-white text-2xl">${(e.head || 0).toLocaleString()}</div></div>
+                <div class="text-center"><span class="mini-label">${labels.tail}</span><div class="font-black text-white text-2xl">${(e.tail || 0).toLocaleString()}</div></div></div></div>`;
             });
             container.innerHTML = h + `</div>`;
         }
@@ -432,7 +451,7 @@
                             <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
                             <div class="flex justify-around items-center">
                                 <div class="text-center"><span class="mini-label text-base">符合資格 Entitled</span><div class="text-6xl font-black text-white leading-none mt-2">
-								${getVal(prefix+"Eligible") || 0}</div></div>
+                                ${getVal(prefix+"Eligible") || 0}</div></div>
                                 <div class="text-center"><span class="mini-label text-base">流量 Traffic</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal(prefix+"Traffic") || 0}</div></div>
                                 <div class="text-center"><span class="mini-label text-base">分享 Share</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal(prefix+"Share") || 0}</div></div>
                             </div>
@@ -459,16 +478,16 @@
             const renderBdaySplitBlock = (optionType, color) => {
                 const prefix = `Bday_${optionType === 'Overall' ? '' : optionType+'_'}`;
                 const getMetric = (l, m, is$, isLg) => `
-				<div class="flex-1 text-center bg-slate-950/40 p-4 rounded-xl border border-white/5 min-w-[125px] ${is$ ? 'bg-emerald-500/10' : ''}">
-				<span class="mini-label ${isLg ? 'text-sm mb-2' : 'mb-1'} block">${l}</span>
-				<div class="${isLg ? 'text-5xl' : 'text-2xl'} font-black ${is$ ? 'text-emerald-400' : 'text-white'} leading-none">
-				${getVal(prefix+m)}</div>
-				<div class="flex justify-center gap-3 mt-2 opacity-60 text-[9px] font-bold">
-				<span>ACB:${getVal(prefix+m+" (ACB)")}</span>
-				<span class="w-px h-2 bg-white/10"></span>
-				<span>ICB:${getVal(prefix+m+" (ICB)")}</span>
-				</div>
-				</div>`;
+                <div class="flex-1 text-center bg-slate-950/40 p-4 rounded-xl border border-white/5 min-w-[125px] ${is$ ? 'bg-emerald-500/10' : ''}">
+                <span class="mini-label ${isLg ? 'text-sm mb-2' : 'mb-1'} block">${l}</span>
+                <div class="${isLg ? 'text-5xl' : 'text-2xl'} font-black ${is$ ? 'text-emerald-400' : 'text-white'} leading-none">
+                ${getVal(prefix+m)}</div>
+                <div class="flex justify-center gap-3 mt-2 opacity-60 text-[9px] font-bold">
+                <span>ACB:${getVal(prefix+m+" (ACB)")}</span>
+                <span class="w-px h-2 bg-white/10"></span>
+                <span>ICB:${getVal(prefix+m+" (ICB)")}</span>
+                </div>
+                </div>`;
                 
                 return `
                 <div class="glass-panel p-8 border-l-8 border-${color}-500 bg-slate-900/20 h-full flex flex-col">
@@ -483,25 +502,25 @@
                             <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
                             <div class="flex flex-wrap gap-2">
                                 ${getMetric(labels.entitled, "Eligible", false, true)}
-								${getMetric(labels.traffic, "Traffic", false, true)}
-								${getMetric(labels.share, "Share", false, true)}
-								${getMetric(labels.redeem, "Redeem_Head", false, true)}
-								${getMetric(labels.book, "Book_Head")}
-								${getMetric(labels.mtd, "MTD_Book_Head")}
-								${getMetric(labels.show, "Show_Head")}
-								${getMetric(labels.sign, "Sign_Head")}
-								${getMetric(labels.amount, "Amount_Head", true)}
+                                ${getMetric(labels.traffic, "Traffic", false, true)}
+                                ${getMetric(labels.share, "Share", false, true)}
+                                ${getMetric(labels.redeem, "Redeem_Head", false, true)}
+                                ${getMetric(labels.book, "Book_Head")}
+                                ${getMetric(labels.mtd, "MTD_Book_Head")}
+                                ${getMetric(labels.show, "Show_Head")}
+                                ${getMetric(labels.sign, "Sign_Head")}
+                                ${getMetric(labels.amount, "Amount_Head", true)}
                             </div>
                         </div>
                         <div>
                             <div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div>
                             <div class="flex flex-wrap gap-2">
                                 ${[{l:labels.redeem,m:"Redeem_Tail"},
-								{l:labels.book,m:"Book_Tail"},
-								{l:labels.mtd,m:"MTD_Book_Tail"},
-								{l:labels.show,m:"Show_Tail"},
-								{l:labels.sign,m:"Sign_Tail"},
-								{l:labels.amount,m:"Amount_Tail",is$:true}].map(s=> getMetric(s.l, s.m, s.is$)).join('')}
+                                {l:labels.book,m:"Book_Tail"},
+                                {l:labels.mtd,m:"MTD_Book_Tail"},
+                                {l:labels.show,m:"Show_Tail"},
+                                {l:labels.sign,m:"Sign_Tail"},
+                                {l:labels.amount,m:"Amount_Tail",is$:true}].map(s=> getMetric(s.l, s.m, s.is$)).join('')}
                             </div>
                         </div>
                     </div>
@@ -529,9 +548,9 @@
                             <div class="flex flex-col items-center relative">
                                 ${(isSH && type === 'PT') ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
                                 <span class="mini-label scale-90 leading-none">符合資格</span>
-                                <button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled')" 
-								class="font-black text-sky-400 text-lg hover:text-white leading-none underline decoration-sky-500/20">
-								${d[prefix + 'Eligible'] || '0'}</button>
+                                <button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled', '${type}')" 
+                                class="font-black text-sky-400 text-lg hover:text-white leading-none underline decoration-sky-500/20">
+                                ${d[prefix + 'Eligible'] || '0'}</button>
                             </div>
                             <div class="flex flex-col items-center relative">
                                 ${(isSH && type === 'PT') ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
@@ -540,15 +559,15 @@
                             </div>
                             <div class="flex flex-col items-center">
                                 <span class="mini-label scale-90 leading-none">${type === 'PT' ? '分享' : '換領'}</span>
-                                <button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared')` : ''}" 
-								class="font-black text-sky-400 text-lg leading-none underline decoration-sky-500/20">
-								${d[prefix + (type === 'PT' ? 'Share' : 'Redeem_Head')] || '0'}</button>
+                                <button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared', '${type}')` : ''}" 
+                                class="font-black text-sky-400 text-lg leading-none underline decoration-sky-500/20">
+                                ${d[prefix + (type === 'PT' ? 'Share' : 'Redeem_Head')] || '0'}</button>
                             </div>
                         </div>
                         ${headActions.length > 0 ? `<div class="grid grid-cols-5 gap-0.5 border-t border-white/5 pt-1.5 mt-1">
-						${headActions.map(x => `<div class="grid-item p-1 ${x.is$ ? 'bg-sky-500/15' : ''}"><span class="mini-label opacity-70 scale-75 leading-none mb-0.5">
-						${x.l}</span><span class="font-black text-sm ${x.is$ ? 'text-sky-300' : 'text-slate-300'}">
-						${x.v || '0'}</span></div>`).join('')}</div>` : ''}
+                        ${headActions.map(x => `<div class="grid-item p-1 ${x.is$ ? 'bg-sky-500/15' : ''}"><span class="mini-label opacity-70 scale-75 leading-none mb-0.5">
+                        ${x.l}</span><span class="font-black text-sm ${x.is$ ? 'text-sky-300' : 'text-slate-300'}">
+                        ${x.v || '0'}</span></div>`).join('')}</div>` : ''}
                     </div>
                 </div>
 
@@ -591,43 +610,43 @@
                 const getTh = (l, k, w) => `<th class="sort-header ${opsSort.key === k ? 'sort-active' : ''}" style="width: ${w};" onclick="handleSort('ops', '${k}')">${l}${getSortIcon(opsSort.key, k, opsSort.direction)}</th>`;
                 
                 let h = `<div class="space-y-2">
-				<div class="flex items-center gap-3 p-2 bg-${color}-500/10 border border-${color}-500/20 rounded-lg">
-				<div class="w-1.5 h-4 rounded-full bg-${color}-500"></div>
-				<h3 class="text-sm font-black uppercase text-${color}-300 tracking-widest">${brand} OPERATIONS HUB 營運樞紐</h3>
-				</div>
-				<div class="glass-panel overflow-hidden border border-white/5">
-				<div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1700px] table-fixed">
-				<thead><tr>
-				${getTh('位置 Location', 'Floor', '140px')}
-				${getTh(labels.hc, 'HC', '75px')}
-				${getTh('客底基準 Base (A/I)', 'ACB_Ref', '100px')}
-				<th colspan="2">節點分佈 REPLICATION</th>
-				<th colspan="4">活化表現 ACTIVATION</th>
-				<th class="w-[360px]">${labels.pt_track}</th>
-				<th class="w-[450px]">${labels.bday_track}</th>
-				</tr>
-				<tr class="bg-slate-900/30 text-[9px] opacity-70">
-				<th>Center Info</th>
-				<th>Size</th>
-				<th>Ref Targets</th>${getTh('總點數 Nodes', 'Nodes', '110px')}
-				<th>N/HC 比率</th>${getTh('流量 Traffic', 'Total_Traffic', '100px')}
-				<th>T/HC 比率</th>${getTh('購買 Purchase', 'Total_Purchase', '100px')}
-				<th>P/HC 比率</th><th colspan="2">漏斗追蹤分析 (龍頭:Head / 龍尾:Tail)</th></tr></thead><tbody>`;
+                <div class="flex items-center gap-3 p-2 bg-${color}-500/10 border border-${color}-500/20 rounded-lg">
+                <div class="w-1.5 h-4 rounded-full bg-${color}-500"></div>
+                <h3 class="text-sm font-black uppercase text-${color}-300 tracking-widest">${brand} OPERATIONS HUB 營運樞紐</h3>
+                </div>
+                <div class="glass-panel overflow-hidden border border-white/5">
+                <div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1700px] table-fixed">
+                <thead><tr>
+                ${getTh('位置 Location', 'Floor', '140px')}
+                ${getTh(labels.hc, 'HC', '75px')}
+                ${getTh('客底基準 Base (A/I)', 'ACB_Ref', '100px')}
+                <th colspan="2">節點分佈 REPLICATION</th>
+                <th colspan="4">活化表現 ACTIVATION</th>
+                <th class="w-[360px]">${labels.pt_track}</th>
+                <th class="w-[450px]">${labels.bday_track}</th>
+                </tr>
+                <tr class="bg-slate-900/30 text-[9px] opacity-70">
+                <th>Center Info</th>
+                <th>Size</th>
+                <th>Ref Targets</th>${getTh('總點數 Nodes', 'Nodes', '110px')}
+                <th>N/HC 比率</th>${getTh('流量 Traffic', 'Total_Traffic', '100px')}
+                <th>T/HC 比率</th>${getTh('購買 Purchase', 'Total_Purchase', '100px')}
+                <th>P/HC 比率</th><th colspan="2">漏斗追蹤分析 (龍頭:Head / 龍尾:Tail)</th></tr></thead><tbody>`;
                 data.forEach(d => {
                     const hc = parseSheetNum(d.HC);
                     h += `<tr class="hover:bg-white/[0.03] transition-colors">
-					<td class="p-2 font-black text-slate-100 text-sm uppercase italic text-left pl-4">
-					${d.Floor}</td>
-					<td class="font-black text-2xl text-center">${hc || '-'}</td>
-					<td><div class="flex flex-col text-[11px] font-black items-center"><span class="text-sky-400">A:${d.ACB_Ref||0}</span><span class="text-indigo-400">I:${d.ICB_Ref||0}</span></div></td>
-					<td class="font-black text-2xl text-center">${parseSheetNum(d.Nodes).toLocaleString()}</td>
-					<td class="text-sky-300 font-black text-2xl text-center">${hc>0?(parseSheetNum(d.Nodes)/hc).toFixed(1):'-'}</td>
-					<td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Traffic_Head||0}</span><span class="text-emerald-400">${d.Traffic_Tail||0}</span></div></td>
-					<td class="text-emerald-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Traffic_Head)+parseSheetNum(d.Traffic_Tail))/hc).toFixed(1):'-'}</td>
-					<td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Purchase_Head||0}</span><span class="text-rose-400">${d.Purchase_Tail||0}</span></div></td>
-					<td class="text-rose-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Purchase_Head)+parseSheetNum(d.Purchase_Tail))/hc).toFixed(1):'-'}</td>
-					<td>${renderTableLeadCell(d, 'PT', brand, d.Floor)}</td>
-					<td>${renderTableLeadCell(d, 'Bday', brand, d.Floor)}</td></tr>`;
+                    <td class="p-2 font-black text-slate-100 text-sm uppercase italic text-left pl-4">
+                    ${d.Floor}</td>
+                    <td class="font-black text-2xl text-center">${hc || '-'}</td>
+                    <td><div class="flex flex-col text-[11px] font-black items-center"><span class="text-sky-400">A:${d.ACB_Ref||0}</span><span class="text-indigo-400">I:${d.ICB_Ref||0}</span></div></td>
+                    <td class="font-black text-2xl text-center">${parseSheetNum(d.Nodes).toLocaleString()}</td>
+                    <td class="text-sky-300 font-black text-2xl text-center">${hc>0?(parseSheetNum(d.Nodes)/hc).toFixed(1):'-'}</td>
+                    <td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Traffic_Head||0}</span><span class="text-emerald-400">${d.Traffic_Tail||0}</span></div></td>
+                    <td class="text-emerald-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Traffic_Head)+parseSheetNum(d.Traffic_Tail))/hc).toFixed(1):'-'}</td>
+                    <td><div class="flex flex-col text-xs font-black items-center"><span class="text-white">${d.Purchase_Head||0}</span><span class="text-rose-400">${d.Purchase_Tail||0}</span></div></td>
+                    <td class="text-rose-400 font-black text-3xl text-center">${hc>0?((parseSheetNum(d.Purchase_Head)+parseSheetNum(d.Purchase_Tail))/hc).toFixed(1):'-'}</td>
+                    <td>${renderTableLeadCell(d, 'PT', brand, d.Floor)}</td>
+                    <td>${renderTableLeadCell(d, 'Bday', brand, d.Floor)}</td></tr>`;
                 });
                 container.innerHTML += h + `</tbody></table></div></div></div>`;
             });
@@ -651,26 +670,26 @@
             const getTh = (l, k, w, ex = '') => `<th class="sort-header ${therapistSort.key === k ? 'sort-active' : ''} ${ex}" style="width: ${w};" onclick="handleSort('therapist', '${k}')">${l}${getSortIcon(therapistSort.key, k, therapistSort.direction)}</th>`;
             
             container.innerHTML = `<div class="glass-panel border-l-8 border-${color}-500 overflow-hidden shadow-2xl"><div class="bg-white/5 px-5 py-3 flex justify-between items-center border-b border-white/10"><span class="text-lg font-black uppercase italic text-${color}-300">${therapistFilterBrand} THERAPIST PERFORMANCE 個人表現分析</span>
-			<span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${data.length} Units Online</span></div><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1600px] table-fixed">
-			<thead><tr class="bg-slate-900/40">
-			${getTh('身份 Identity', 'Therapist', '220px', 'text-left pl-6')}
-			${getTh(labels.nodes+' (Δ)', 'Nodes', '150px')}
-			${getTh(labels.traffic+' [龍頭/龍尾]', 'Total_Traffic', '180px')}
-			${getTh(labels.purchase+' [龍頭/龍尾]', 'Total_Purchase', '180px')}
-			<th class="w-[450px]">${labels.pt_track}</th><th class="w-[550px]">
-			${labels.bday_track}</th></tr></thead><tbody>` + 
-			data.map(t => `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 pl-6 font-black text-slate-100 text-lg uppercase italic text-left">
-			${t.Therapist || t.Identity}</td><td class="font-black text-3xl text-center">
-			${parseSheetNum(t.Nodes).toLocaleString()} ${getBracketHtml(t.Nodes_Delta)}</td>
-			<td><div class="flex justify-around text-sm font-black text-center">
-			<span class="text-white">龍:${t.Traffic_Head||0}</span>
-			<span class="text-emerald-400">尾:${t.Traffic_Tail||0}</span>
-			</div></td><td><div class="flex justify-around text-sm font-black text-center">
-			<span class="text-white">龍:${t.Purchase_Head||0}</span>
-			<span class="text-rose-400">尾:${t.Purchase_Tail||0}</span>
-			</div></td><td class="bg-indigo-500/[0.02]">${renderTableLeadCell(t, 'PT', therapistFilterBrand, t.Floor, t.Therapist)}</td>
-			<td class="bg-violet-500/[0.02]">${renderTableLeadCell(t, 'Bday', therapistFilterBrand, t.Floor, t.Therapist)}</td>
-			</tr>`).join('') + `</tbody></table></div></div>`;
+            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${data.length} Units Online</span></div><div class="overflow-x-auto"><table class="w-full text-left kpi-table min-w-[1600px] table-fixed">
+            <thead><tr class="bg-slate-900/40">
+            ${getTh('身份 Identity', 'Therapist', '220px', 'text-left pl-6')}
+            ${getTh(labels.nodes+' (Δ)', 'Nodes', '150px')}
+            ${getTh(labels.traffic+' [龍頭/龍尾]', 'Total_Traffic', '180px')}
+            ${getTh(labels.purchase+' [龍頭/龍尾]', 'Total_Purchase', '180px')}
+            <th class="w-[450px]">${labels.pt_track}</th><th class="w-[550px]">
+            ${labels.bday_track}</th></tr></thead><tbody>` + 
+            data.map(t => `<tr class="hover:bg-white/[0.03] transition-colors"><td class="p-2 pl-6 font-black text-slate-100 text-lg uppercase italic text-left">
+            ${t.Therapist || t.Identity}</td><td class="font-black text-3xl text-center">
+            ${parseSheetNum(t.Nodes).toLocaleString()} ${getBracketHtml(t.Nodes_Delta)}</td>
+            <td><div class="flex justify-around text-sm font-black text-center">
+            <span class="text-white">龍:${t.Traffic_Head||0}</span>
+            <span class="text-emerald-400">尾:${t.Traffic_Tail||0}</span>
+            </div></td><td><div class="flex justify-around text-sm font-black text-center">
+            <span class="text-white">龍:${t.Purchase_Head||0}</span>
+            <span class="text-rose-400">尾:${t.Purchase_Tail||0}</span>
+            </div></td><td class="bg-indigo-500/[0.02]">${renderTableLeadCell(t, 'PT', therapistFilterBrand, t.Floor, t.Therapist)}</td>
+            <td class="bg-violet-500/[0.02]">${renderTableLeadCell(t, 'Bday', therapistFilterBrand, t.Floor, t.Therapist)}</td>
+            </tr>`).join('') + `</tbody></table></div></div>`;
         }
 
         window.onload = () => { if (window.initDashboard) window.initDashboard(); setInterval(() => { const tE = document.getElementById('current-time'); if (tE) tE.innerText = new Date().toLocaleString(); }, 1000); };
