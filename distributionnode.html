@@ -63,6 +63,7 @@
         .section-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: #94a3b8; display: flex; align-items: center; gap: 8px; width: 100%; }
         .section-label::before, .section-label::after { content: ""; height: 1px; flex-grow: 1; background: rgba(255,255,255,0.1); }
 
+        /* Pending Data Overlay */
         .pending-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.96); display: flex; align-items: center; justify-content: center; z-index: 30; backdrop-filter: blur(1px); border-radius: inherit; border: 1px dashed rgba(244, 63, 94, 0.4); }
         .pending-text { color: #f43f5e; font-size: 8px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; }
         .pending-large { font-size: 16px; letter-spacing: 0.2em; color: #f43f5e; font-style: italic; font-weight: 900; }
@@ -72,6 +73,8 @@
         .sort-indicator { font-size: 10px; margin-left: 4px; opacity: 0.4; }
         .sort-active { color: #38bdf8 !important; }
         .sort-active .sort-indicator { opacity: 1; color: #38bdf8; }
+
+        .metric-container { position: relative; overflow: hidden; border-radius: 0.75rem; }
     </style>
 </head>
 <body class="p-2 md:p-4">
@@ -310,7 +313,6 @@
         function setTherapistBrand(brand) { therapistFilterBrand = brand; therapistFilterFloor = null; if (lastData) renderTherapists(getSlice(lastData, 'therapists')); }
         function setTherapistFloor(floor) { therapistFilterFloor = floor; if (lastData) renderTherapists(getSlice(lastData, 'therapists')); }
 
-        // UPDATED openLeadModal with "track" filtering to separate PT vs Bday
         function openLeadModal(brand, floor, therapist, type, track) {
             const modal = document.getElementById('lead-modal');
             const tbody = document.getElementById('lead-modal-body');
@@ -330,24 +332,15 @@
             const rawData = getSlice(lastData, 'raw');
             let leads = rawData.filter(d => {
                 const bM = String(d.Brand || '').toLowerCase() === String(brand).toLowerCase();
-                
-                // Fuzzy match for center
                 const targetFloor = String(floor).toLowerCase();
                 const sheetFloor = String(d.Center || '').toLowerCase();
                 const cM = (floor === 'All') ? true : (sheetFloor.includes(targetFloor) || targetFloor.includes(sheetFloor));
-                
-                // Fuzzy match for therapist
                 const targetTherapist = String(therapist).toLowerCase();
                 const sheetTherapist = String(d.Therapist || '').toLowerCase();
                 const tM = sheetTherapist.includes(targetTherapist) || targetTherapist.includes(sheetTherapist);
-                
-                // NEW: Filter by track (Category)
-                // If Bday, only include rows with "Bday" in gift_card_type
-                // If PT, exclude rows with "Bday"
                 const giftType = String(d.gift_card_type || '').toUpperCase();
                 const isBdayData = giftType.includes('BDAY') || giftType.includes('生日');
                 const isMatchTrack = (track === 'Bday' ? isBdayData : !isBdayData);
-
                 return bM && cM && tM && isMatchTrack;
             });
             
@@ -446,12 +439,14 @@
                         </div>
                     </div>
                     <div class="relative flex-1">
-                        ${isSH ? `<div class="pending-overlay"><span class="pending-text pending-large">PENDING DATA SOURCES 數據掛起</span></div>` : ''}
                         <div class="mb-8">
                             <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
                             <div class="flex justify-around items-center">
-                                <div class="text-center"><span class="mini-label text-base">符合資格 Entitled</span><div class="text-6xl font-black text-white leading-none mt-2">
-                                ${getVal(prefix+"Eligible") || 0}</div></div>
+                                <div class="metric-container text-center">
+                                    ${isSH ? `<div class="pending-overlay !bg-slate-900/90 z-40"><span class="pending-text">!</span></div>` : ''}
+                                    <span class="mini-label text-base">符合資格 Entitled</span>
+                                    <div class="text-6xl font-black text-white leading-none mt-2">${getVal(prefix+"Eligible") || 0}</div>
+                                </div>
                                 <div class="text-center"><span class="mini-label text-base">流量 Traffic</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal(prefix+"Traffic") || 0}</div></div>
                                 <div class="text-center"><span class="mini-label text-base">分享 Share</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal(prefix+"Share") || 0}</div></div>
                             </div>
@@ -466,7 +461,6 @@
                                     {l:"出席 Show",v:getVal(prefix+"Show")},
                                     {l:"金額 Amount",v:getVal(prefix+"Amount")}
                                 ].map(s=>`<div class="grid-item py-6 ${s.l.includes('Amount')?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}">
-                                    ${s.p?`<div class="pending-overlay"><span class="pending-text">PENDING</span></div>`:''}
                                     <span class="mini-label mb-2 text-xs">${s.l}</span><span class="text-3xl font-black ${s.l.includes('Amount')?'text-emerald-400':'text-white'} leading-none">${s.v.toLocaleString()}</span>
                                 </div>`).join('')}
                             </div>
@@ -477,16 +471,19 @@
 
             const renderBdaySplitBlock = (optionType, color) => {
                 const prefix = `Bday_${optionType === 'Overall' ? '' : optionType+'_'}`;
-                const getMetric = (l, m, is$, isLg) => `
-                <div class="flex-1 text-center bg-slate-950/40 p-4 rounded-xl border border-white/5 min-w-[125px] ${is$ ? 'bg-emerald-500/10' : ''}">
-                <span class="mini-label ${isLg ? 'text-sm mb-2' : 'mb-1'} block">${l}</span>
-                <div class="${isLg ? 'text-5xl' : 'text-2xl'} font-black ${is$ ? 'text-emerald-400' : 'text-white'} leading-none">
-                ${getVal(prefix+m)}</div>
-                <div class="flex justify-center gap-3 mt-2 opacity-60 text-[9px] font-bold">
-                <span>ACB:${getVal(prefix+m+" (ACB)")}</span>
-                <span class="w-px h-2 bg-white/10"></span>
-                <span>ICB:${getVal(prefix+m+" (ICB)")}</span>
-                </div>
+                const getMetric = (l, m, is$, isLg, shouldMask = false) => `
+                <div class="metric-container flex-1">
+                    ${(isSH && shouldMask) ? `<div class="pending-overlay !bg-slate-950/80 z-40"><span class="pending-text">PENDING</span></div>` : ''}
+                    <div class="text-center bg-slate-950/40 p-4 rounded-xl border border-white/5 min-w-[125px] h-full ${is$ ? 'bg-emerald-500/10' : ''}">
+                    <span class="mini-label ${isLg ? 'text-sm mb-2' : 'mb-1'} block">${l}</span>
+                    <div class="${isLg ? 'text-5xl' : 'text-2xl'} font-black ${is$ ? 'text-emerald-400' : 'text-white'} leading-none">
+                    ${getVal(prefix+m)}</div>
+                    <div class="flex justify-center gap-3 mt-2 opacity-60 text-[9px] font-bold">
+                    <span>ACB:${getVal(prefix+m+" (ACB)")}</span>
+                    <span class="w-px h-2 bg-white/10"></span>
+                    <span>ICB:${getVal(prefix+m+" (ICB)")}</span>
+                    </div>
+                    </div>
                 </div>`;
                 
                 return `
@@ -501,9 +498,9 @@
                         <div class="mb-8">
                             <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
                             <div class="flex flex-wrap gap-2">
-                                ${getMetric(labels.entitled, "Eligible", false, true)}
-                                ${getMetric(labels.traffic, "Traffic", false, true)}
-                                ${getMetric(labels.share, "Share", false, true)}
+                                ${getMetric(labels.entitled, "Eligible", false, true, true)}
+                                ${getMetric(labels.traffic, "Traffic", false, true, true)}
+                                ${getMetric(labels.share, "Share", false, true, true)}
                                 ${getMetric(labels.redeem, "Redeem_Head", false, true)}
                                 ${getMetric(labels.book, "Book_Head")}
                                 ${getMetric(labels.mtd, "MTD_Book_Head")}
@@ -541,23 +538,23 @@
             <div class="stacked-cell p-1">
                 <!-- Head Section -->
                 <div class="flex w-full items-start gap-1.5 px-1 relative overflow-hidden">
-                    ${(isSH && type === 'Bday') ? `<div class="pending-overlay"><span class="pending-text">龍頭數據掛起 PENDING HEAD</span></div>` : ''}
                     <span class="section-tag head-tag mt-1">龍頭</span>
                     <div class="flex-1 flex flex-col">
                         <div class="flex justify-around items-center h-10">
                             <div class="flex flex-col items-center relative">
-                                ${(isSH && type === 'PT') ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
+                                ${(isSH) ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
                                 <span class="mini-label scale-90 leading-none">符合資格</span>
                                 <button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled', '${type}')" 
                                 class="font-black text-sky-400 text-lg hover:text-white leading-none underline decoration-sky-500/20">
                                 ${d[prefix + 'Eligible'] || '0'}</button>
                             </div>
                             <div class="flex flex-col items-center relative">
-                                ${(isSH && type === 'PT') ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
+                                ${(isSH) ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
                                 <span class="mini-label scale-90 leading-none">流量</span>
                                 <span class="font-black text-sky-400 text-lg leading-none">${d[prefix + 'Traffic'] || '0'}</span>
                             </div>
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center relative">
+                                ${(isSH && type === 'PT') ? `<div class="pending-overlay !bg-slate-900/95"><span class="pending-text">!</span></div>` : ''}
                                 <span class="mini-label scale-90 leading-none">${type === 'PT' ? '分享' : '換領'}</span>
                                 <button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared', '${type}')` : ''}" 
                                 class="font-black text-sky-400 text-lg leading-none underline decoration-sky-500/20">
