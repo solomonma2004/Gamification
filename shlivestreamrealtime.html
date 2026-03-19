@@ -1,380 +1,323 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Trophy, Target, DollarSign, TrendingUp, RefreshCw, Zap,
-  MapPin, UserCheck, Users, Layers, LayoutGrid, Gift, 
-  MousePointer2, Clock, History, ChevronRight, Loader2, AlertTriangle, Database, Code, Filter
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上海直播膠原少女節實時數據 | 營運看板</title>
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .status-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+        .festival-gradient { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
+        .toggle-checkbox:checked + .toggle-label { background-color: #6366f1; }
+        .toggle-checkbox:checked { transform: translateX(100%); border-color: #6366f1; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen selection:bg-indigo-100 text-left">
 
-const App = () => {
-  // --- 已連接您的 Google Sheet CSV 連結 ---
-  const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAnIo_Ypzm1mEYuHgd63XRrxGem9izXHlhr26pWUBSvp7Fuk_FluK3Ld5ODiT59gL81N_ivSl0adJq/pub?gid=447092227&single=true&output=csv"; 
-
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [lastSync, setLastSync] = useState(null);
-  const [rawPreview, setRawPreview] = useState(""); 
-
-  // 篩選狀態
-  const [selectedCenter, setSelectedCenter] = useState('All');
-  const [selectedTherapist, setSelectedTherapist] = useState('All');
-
-  const parseCSV = (text) => {
-    const rows = [];
-    let currRow = [];
-    let currCell = "";
-    let inQuotes = false;
-
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      const nextChar = text[i + 1];
-
-      if (inQuotes) {
-        if (char === '"' && nextChar === '"') {
-          currCell += '"';
-          i++;
-        } else if (char === '"') {
-          inQuotes = false;
-        } else {
-          currCell += char;
-        }
-      } else {
-        if (char === '"') {
-          inQuotes = true;
-        } else if (char === ',') {
-          currRow.push(currCell.trim());
-          currCell = "";
-        } else if (char === '\r' || char === '\n') {
-          if (currCell || currRow.length > 0) {
-            currRow.push(currCell.trim());
-            rows.push(currRow);
-            currRow = [];
-            currCell = "";
-          }
-          if (char === '\r' && nextChar === '\n') i++;
-        } else {
-          currCell += char;
-        }
-      }
-    }
-    if (currCell || currRow.length > 0) {
-      currRow.push(currCell.trim());
-      rows.push(currRow);
-    }
-    return rows;
-  };
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setRawPreview("");
-
-      const fetchUrl = `${SHEET_CSV_URL}&t=${Date.now()}`;
-      const response = await fetch(fetchUrl, { 
-        method: 'GET',
-        headers: { 'Accept': 'text/csv' }
-      });
-
-      if (!response.ok) throw new Error(`網路請求失敗: ${response.status}`);
-      
-      const csvText = await response.text();
-      setRawPreview(csvText.substring(0, 500)); 
-
-      if (csvText.includes("<!DOCTYPE html>") || csvText.includes("<html")) {
-        throw new Error("獲取到的是網頁內容而非 CSV。請確認已正確「發佈為 CSV」。");
-      }
-
-      const rows = parseCSV(csvText);
-      if (rows.length < 1) throw new Error("試算表內容為空。");
-
-      const headers = rows[0].map(h => h.replace(/^\uFEFF/, '').trim());
-      
-      const jsonData = rows.slice(1)
-        .filter(row => row.length > 0 && row.some(cell => cell !== ""))
-        .map(row => {
-          const obj = {};
-          headers.forEach((header, i) => {
-            let val = row[i] || "";
-            const cleanVal = val.replace(/[%,$]/g, '').replace(/,/g, '');
-            if (cleanVal !== "" && !isNaN(cleanVal)) {
-              obj[header] = parseFloat(cleanVal);
-            } else {
-              obj[header] = val;
-            }
-          });
-          return obj;
-        });
-
-      const mappedData = jsonData.map(item => {
-        const target = item["Individual Target $$ (Month)"] || item["Individual Target $$"] || 0;
-        const sales = item["Total Sales (Month)"] || item["Total Sales"] || 0;
-        const mtd = item["MTD%"] || (target > 0 ? (sales / target) * 100 : 0);
-        
-        return {
-          center: item["Center"] || "未設定",
-          therapist: item["Therapist"] || "未知",
-          target: target,
-          monthlySales: sales,
-          mtd: mtd,
-          todaySales: item["今日開單 $$"] || item["今日開單"] || 0,
-          remaining: item["轉燈尚欠 $$"] || item["轉燈尚欠"] || (target * 2 - sales),
-          yesterdayShow: item["昨天SHOW"] || 0,
-          yesterdayShowICB: item["昨天SHOW ICB"] || 0,
-          futureICB: item["未來ICB Booking / HC"] || 0,
-          nodeTotal: item["Node總數"] || item["Node 總數"] || 0,
-          mau: item["MAU %"] || item["MAU%"] || 0,
-          nodeInc: item["3天増加"] || item["3天增加"] || 0,
-          ptSign: item["Paid Trial Sign"] || 0,
-          ptSignToday: item["Paid Trial Sign (Today)"] || 0,
-          pkgSign: item["Package Sign"] || 0,
-          pkgSignToday: item["Package Sign (Today)"] || 0,
-          penetration: item["滲透率%"] || 0,
-          bdayBook: item["Bday giftcard book"] || 0,
-          bdayInc: item["Bday giftcard 三天增加"] || 0,
-          plasmaBook: item["Plasma giftcard book"] || 0,
-          plasmaInc: item["Plasma giftcard 三天增加"] || 0
-        };
-      });
-
-      setData(mappedData);
-      setLastSync(new Date().toLocaleTimeString());
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // 取得篩選清單
-  const centerOptions = ['All', ...new Set(data.map(item => item.center))].sort();
-  const therapistOptions = ['All', ...new Set(data
-    .filter(item => selectedCenter === 'All' || item.center === selectedCenter)
-    .map(item => item.therapist))].sort();
-
-  // 執行篩選
-  const filteredData = data.filter(item => {
-    const centerMatch = selectedCenter === 'All' || item.center === selectedCenter;
-    const therapistMatch = selectedTherapist === 'All' || item.therapist === selectedTherapist;
-    return centerMatch && therapistMatch;
-  });
-
-  const getStatus = (mtd) => {
-    if (mtd >= 200) return { name: '紫燈', color: 'bg-purple-600', text: 'text-purple-600' };
-    if (mtd >= 150) return { name: '藍燈', color: 'bg-blue-600', text: 'text-blue-600' };
-    if (mtd >= 100) return { name: '綠燈', color: 'bg-green-600', text: 'text-green-600' };
-    if (mtd >= 80) return { name: '黃燈', color: 'bg-yellow-400', text: 'text-yellow-600' };
-    return { name: '紅燈', color: 'bg-red-600', text: 'text-red-600' };
-  };
-
-  if (loading && data.length === 0) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-indigo-600 mb-4" size={48} />
-        <p className="font-black text-slate-400 animate-pulse tracking-widest mt-4">正在同步雲端數據...</p>
-      </div>
-    );
-  }
-
-  if (error && data.length === 0) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <AlertTriangle size={48} className="text-red-500 mb-4 mx-auto" />
-        <h2 className="text-xl font-black mb-2">同步失敗</h2>
-        <p className="text-red-500 mb-6">{error}</p>
-        <button onClick={fetchData} className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold">重試</button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-900 tracking-tight">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-black flex items-center gap-3">
-            <div className="p-2 bg-indigo-600 rounded-lg shadow-lg"><TrendingUp className="text-white" size={20} /></div>
-            營運實時看板 <span className="text-slate-300 font-light">|</span> 雲端連動
-          </h1>
-          <p className="text-[10px] text-slate-400 font-black uppercase mt-2 tracking-widest">最後同步: {lastSync}</p>
-        </div>
-        <button onClick={fetchData} className="flex items-center gap-2 bg-white border border-slate-200 px-6 py-3 rounded-2xl font-black text-xs hover:shadow-md transition-all">
-          <RefreshCw size={14} /> 刷新數據
-        </button>
-      </div>
-
-      {/* 篩選器區域 */}
-      <div className="max-w-7xl mx-auto mb-10 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-wrap gap-6 items-center">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
-            <Filter size={18} />
-          </div>
-          <span className="text-sm font-black text-slate-500 uppercase tracking-widest">篩選數據</span>
-        </div>
-
-        <div className="flex flex-wrap gap-4 flex-1">
-          {/* 中心篩選 */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-[10px] font-black text-slate-400 uppercase mb-1 ml-1">Center (中心)</label>
-            <select 
-              value={selectedCenter}
-              onChange={(e) => {
-                setSelectedCenter(e.target.value);
-                setSelectedTherapist('All'); // 當中心改變時，重置治療師篩選
-              }}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-            >
-              {centerOptions.map(option => (
-                <option key={option} value={option}>{option === 'All' ? '所有中心 (All)' : option}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 治療師篩選 */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-[10px] font-black text-slate-400 uppercase mb-1 ml-1">Therapist (治療師)</label>
-            <select 
-              value={selectedTherapist}
-              onChange={(e) => setSelectedTherapist(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-            >
-              {therapistOptions.map(option => (
-                <option key={option} value={option}>{option === 'All' ? '所有人員 (All)' : option}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* 顯示結果數量 */}
-        <div className="px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-100">
-          <p className="text-[10px] font-black text-indigo-400 uppercase">顯示筆數</p>
-          <p className="text-sm font-black text-indigo-600">{filteredData.length} / {data.length}</p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto space-y-12">
-        {filteredData.length === 0 ? (
-          <div className="bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
-            <Users className="mx-auto text-slate-200 mb-4" size={64} />
-            <p className="text-slate-400 font-bold">找不到匹配的資料，請嘗試調整篩選條件。</p>
-          </div>
-        ) : (
-          filteredData.map((item, index) => {
-            const status = getStatus(item.mtd);
-            return (
-              <div key={index} className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-white overflow-hidden transition-all hover:shadow-indigo-100/50">
-                
-                {/* 核心 KPI 橫幅 */}
-                <div className="bg-slate-900 p-8 text-white">
-                  <div className="flex flex-col xl:flex-row justify-between gap-8">
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-500/20">
-                        <UserCheck size={32} />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-black tracking-tight">{item.therapist}</h2>
-                        <div className="flex items-center gap-2 mt-1 font-bold text-indigo-400">
-                          <MapPin size={16} /> {item.center}
-                        </div>
-                      </div>
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+            <div class="flex-1">
+                <h1 class="text-3xl md:text-4xl font-black flex items-center gap-3 italic tracking-tight text-left">
+                    <div class="p-2.5 festival-gradient rounded-2xl shadow-lg text-white transform -rotate-3">
+                        <i data-lucide="sparkles" size="28"></i>
                     </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
-                      <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Target (M)</p>
-                        <p className="text-lg font-black">${item.target.toLocaleString()}</p>
-                      </div>
-                      <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Sales (M)</p>
-                        <p className="text-lg font-black">${item.monthlySales.toLocaleString()}</p>
-                      </div>
-                      <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">MTD%</p>
-                        <div className="flex items-baseline gap-2">
-                          <p className={`text-xl font-black ${status.text}`}>{item.mtd.toFixed(1)}%</p>
-                          <span className={`text-[8px] px-1.5 py-0.5 rounded font-black ${status.color} text-white`}>{status.name}</span>
-                        </div>
-                      </div>
-                      <div className="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/20">
-                        <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1 text-xs">轉燈尚欠 $$</p>
-                        <p className="text-lg font-black text-purple-400">
-                          ${item.remaining.toLocaleString()}
+                    <span>上海直播：膠原少女節 <span class="text-slate-300 font-light not-italic mx-1">|</span> <span class="text-indigo-600">實時數據</span></span>
+                </h1>
+                <div class="flex flex-wrap items-center gap-4 mt-3">
+                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 status-pulse"></span>
+                        <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">
+                            最後同步: <span id="lastSync" class="text-slate-800">尚未同步</span>
                         </p>
-                      </div>
-                      <div className="bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20 col-span-2 md:col-span-1">
-                        <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">今日開單 $$</p>
-                        <p className="text-xl font-black text-emerald-400">${item.todaySales.toLocaleString()}</p>
-                      </div>
                     </div>
-                  </div>
+                    
+                    <div class="flex items-center gap-3 bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                        <span class="text-[10px] font-black text-slate-400 uppercase">表格</span>
+                        <div class="relative inline-block w-10 h-5 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="viewToggle" onchange="renderDashboard()" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-slate-300 appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" checked/>
+                            <label for="viewToggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer transition-colors duration-200"></label>
+                        </div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase">卡片</span>
+                    </div>
                 </div>
+            </div>
+            
+            <button onclick="fetchData()" id="refreshBtn" class="group flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200">
+                <i data-lucide="refresh-cw" size="16" id="refreshIcon" class="group-hover:rotate-180 transition-transform duration-500"></i> 
+                刷新數據
+            </button>
+        </header>
 
-                {/* 指標拆解 */}
-                <div className="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 text-indigo-600 border-b border-indigo-50 pb-4">
-                      <History size={20} strokeWidth={3} />
-                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">862 營運紀錄</span>
-                    </div>
-                    <div className="space-y-4 font-medium text-sm">
-                      <div className="flex justify-between"><span>昨天SHOW</span><span className="font-black text-slate-800">{item.yesterdayShow}</span></div>
-                      <div className="flex justify-between"><span>昨天SHOW ICB</span><span className="font-black text-indigo-600">{item.yesterdayShowICB}</span></div>
-                      <div className="flex justify-between"><span>未來ICB Booking</span><span className="font-black text-slate-800">{item.futureICB}</span></div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 text-blue-600 border-b border-blue-50 pb-4">
-                      <LayoutGrid size={20} strokeWidth={3} />
-                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">200 分發點</span>
-                    </div>
-                    <div className="space-y-4 font-medium text-sm">
-                      <div className="flex justify-between"><span>Node 總數</span><span className="font-black text-slate-800">{item.nodeTotal}</span></div>
-                      <div className="flex justify-between"><span>MAU %</span><span className="font-black text-blue-600">{item.mau}%</span></div>
-                      <div className="bg-blue-50 p-3 rounded-2xl text-blue-700 font-black flex justify-between"><span>3天增加</span><span>+{item.nodeInc}</span></div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 text-amber-500 border-b border-amber-50 pb-4">
-                      <Zap size={20} strokeWidth={3} />
-                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">High Pexo</span>
-                    </div>
-                    <div className="space-y-4 font-medium text-sm">
-                      <div className="flex justify-between"><span>Paid Trial</span><span className="font-black">{item.ptSign} <span className="text-emerald-500 text-xs">+{item.ptSignToday}</span></span></div>
-                      <div className="flex justify-between"><span>Package Sign</span><span className="font-black">{item.pkgSign} <span className="text-emerald-500 text-xs">+{item.pkgSignToday}</span></span></div>
-                      <div className="pt-2">
-                         <div className="flex justify-between text-[10px] font-black text-slate-400 mb-1"><span>滲透率</span><span>{item.penetration}%</span></div>
-                         <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-amber-400" style={{width: `${item.penetration}%`}}></div></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 text-rose-500 border-b border-rose-50 pb-4">
-                      <Gift size={20} strokeWidth={3} />
-                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">TAIL 禮品卡</span>
-                    </div>
-                    <div className="space-y-4 font-medium text-sm">
-                      <div className="flex justify-between"><span>Bday Book</span><span className="font-black">{item.bdayBook} <span className="text-rose-500 text-xs">+{item.bdayInc}</span></span></div>
-                      <div className="flex justify-between"><span>Plasma Book</span><span className="font-black">{item.plasmaBook} <span className="text-rose-500 text-xs">+{item.plasmaInc}</span></span></div>
-                      <div className="mt-4 p-4 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
-                        <Trophy size={16} className="text-amber-400 mr-2" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">目標：200% 紫燈</span>
-                      </div>
-                    </div>
-                  </div>
+        <!-- Filters -->
+        <div class="mb-8 bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col lg:flex-row gap-8 items-stretch lg:items-center">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 text-left">
+                <div class="relative">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1 tracking-wider text-left">中心渠道 (Center)</label>
+                    <select id="centerFilter" onchange="onFilterChange()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-bold outline-none appearance-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all cursor-pointer">
+                        <option value="All">所有渠道 (All Channels)</option>
+                    </select>
                 </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+                <div class="relative">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1 tracking-wider text-left">專員名稱 (Therapist)</label>
+                    <select id="therapistFilter" onchange="onFilterChange()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-bold outline-none appearance-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all cursor-pointer">
+                        <option value="All">所有專員 (All Therapists)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-indigo-600 rounded-3xl text-white shadow-lg shadow-indigo-100 min-w-[140px] text-center">
+                <p class="text-[10px] font-black uppercase opacity-70 mb-1">當前顯示</p>
+                <p class="text-2xl font-black" id="resultCount">0</p>
+            </div>
+        </div>
+
+        <!-- Status Container -->
+        <div id="statusContainer" class="hidden">
+            <div id="loadingState" class="flex flex-col items-center justify-center py-32 bg-white rounded-[3rem] border border-slate-100 shadow-sm mb-12">
+                <div class="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
+                <p class="font-black text-slate-500 tracking-widest text-center">正在從「real time (SH)」讀取數據...</p>
+            </div>
+            <div id="errorState" class="hidden flex flex-col items-center justify-center py-20 text-center bg-red-50 rounded-[3rem] border border-red-100 mb-12">
+                <i data-lucide="alert-circle" size="48" class="text-red-500 mb-4"></i>
+                <h2 class="text-2xl font-black mb-3 text-slate-800 text-center">數據連線失敗</h2>
+                <p id="errorMsg" class="text-red-600 font-bold mb-8 max-w-md mx-auto px-4 text-center"></p>
+                <button onclick="fetchData()" class="px-12 py-4 bg-red-600 text-white rounded-2xl font-black">立即重試</button>
+            </div>
+        </div>
+
+        <div id="dashboardContent" class="grid grid-cols-1 gap-12 transition-all duration-500 pb-20"></div>
     </div>
-  );
-};
 
-export default App;
+    <!-- Message Overlay -->
+    <div id="msgOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden px-4">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl text-center">
+            <h3 id="msgTitle" class="text-xl font-black mb-2 text-center"></h3>
+            <p id="msgText" class="text-slate-500 mb-8 text-center"></p>
+            <button onclick="closeMsg()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black">確認</button>
+        </div>
+    </div>
+
+    <script>
+        // 已更新為您最新的 Google Apps Script 部署網址
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxC6PYndEA0oc4FBhmOtBZ__OozeVHkOhkWq7kq3aUt7ONL6-epytGAgTYN6zGozvX43w/exec"; 
+        
+        let allData = [];
+        let selectedCenter = 'All';
+        let selectedTherapist = 'All';
+
+        function closeMsg() { document.getElementById('msgOverlay').classList.add('hidden'); }
+        function showMsg(title, text) {
+            document.getElementById('msgTitle').textContent = title;
+            document.getElementById('msgText').textContent = text;
+            document.getElementById('msgOverlay').classList.remove('hidden');
+        }
+
+        function cleanVal(val) {
+            if (val === null || val === undefined) return 0;
+            if (typeof val === 'number') return val;
+            const str = String(val).replace(/[$,%]/g, '').replace(/,/g, '').trim();
+            if (str === "" || isNaN(str)) return 0;
+            return parseFloat(str);
+        }
+
+        function findKey(obj, target) {
+            if (!obj) return null;
+            const normalizedTarget = target.toLowerCase().replace(/\s/g, '');
+            const key = Object.keys(obj).find(k => {
+                const cleanK = k.toLowerCase().replace(/\s/g, '');
+                return cleanK.includes(normalizedTarget) || normalizedTarget.includes(cleanK);
+            });
+            return key ? obj[key] : null;
+        }
+
+        async function fetchData() {
+            const dashboardContent = document.getElementById('dashboardContent');
+            const statusContainer = document.getElementById('statusContainer');
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const refreshIcon = document.getElementById('refreshIcon');
+
+            try {
+                statusContainer.classList.remove('hidden');
+                loadingState.classList.remove('hidden');
+                errorState.classList.add('hidden');
+                dashboardContent.classList.add('opacity-30', 'pointer-events-none');
+                refreshIcon.classList.add('animate-spin');
+
+                const response = await fetch(`${WEB_APP_URL}?t=${Date.now()}`);
+                if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
+                
+                const jsonData = await response.json();
+                if (jsonData.error) throw new Error(jsonData.error);
+                
+                const dataToProcess = Array.isArray(jsonData) ? jsonData : (jsonData.data || []);
+
+                if (dataToProcess.length === 0) {
+                    throw new Error("試算表「real time (SH)」目前沒有任何有效數據列。");
+                }
+
+                allData = dataToProcess.map(item => {
+                    const target = cleanVal(findKey(item, "IndividualTarget") || findKey(item, "目標"));
+                    const sales = cleanVal(findKey(item, "TotalSales") || findKey(item, "累計銷售"));
+                    const mtd = cleanVal(findKey(item, "MTD") || findKey(item, "達成率"));
+
+                    return {
+                        center: findKey(item, "Center") || findKey(item, "渠道") || findKey(item, "中心") || "未定義",
+                        therapist: findKey(item, "Therapist") || findKey(item, "專員") || findKey(item, "Staff") || "未知",
+                        target: target,
+                        monthlySales: sales,
+                        mtd: mtd || (target > 0 ? (sales / target) * 100 : 0),
+                        todaySales: cleanVal(findKey(item, "今日開單")),
+                        remaining: cleanVal(findKey(item, "轉燈尚欠") || findKey(item, "尚欠")),
+                        yesterdayShow: cleanVal(findKey(item, "昨天SHOW")),
+                        yesterdayShowICB: cleanVal(findKey(item, "SHOWICB")),
+                        futureICB: cleanVal(findKey(item, "未來ICB") || findKey(item, "未來預約")),
+                        nodeTotal: cleanVal(findKey(item, "Node總數")),
+                        mau: cleanVal(findKey(item, "MAU")),
+                        nodeInc: cleanVal(findKey(item, "3天增加")),
+                        ptSign: cleanVal(findKey(item, "PT")),
+                        ptSignToday: cleanVal(findKey(item, "PTToday")),
+                        pkgSign: cleanVal(findKey(item, "Pkg")),
+                        pkgSignToday: cleanVal(findKey(item, "PkgToday")),
+                        penetration: cleanVal(findKey(item, "滲透率")),
+                        bdayBook: cleanVal(findKey(item, "Bday")),
+                        bdayInc: cleanVal(findKey(item, "BdayInc")),
+                        plasmaBook: cleanVal(findKey(item, "Plasma")),
+                        plasmaInc: cleanVal(findKey(item, "PlasmaInc"))
+                    };
+                });
+
+                document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+                statusContainer.classList.add('hidden');
+                dashboardContent.classList.remove('opacity-30', 'pointer-events-none');
+                updateFilterOptions();
+                renderDashboard();
+
+            } catch (err) {
+                console.error(err);
+                errorState.classList.remove('hidden');
+                loadingState.classList.add('hidden');
+                document.getElementById('errorMsg').textContent = err.message;
+            } finally {
+                refreshIcon.classList.remove('animate-spin');
+                lucide.createIcons();
+            }
+        }
+
+        function updateFilterOptions() {
+            const centers = ['All', ...new Set(allData.map(d => d.center))].sort();
+            document.getElementById('centerFilter').innerHTML = centers.map(c => `<option value="${c}">${c === 'All' ? '所有渠道' : c}</option>`).join('');
+            updateTherapistOptions();
+        }
+
+        function updateTherapistOptions() {
+            const centerValue = document.getElementById('centerFilter').value;
+            const therapists = ['All', ...new Set(allData.filter(d => centerValue === 'All' || d.center === centerValue).map(d => d.therapist))].sort();
+            document.getElementById('therapistFilter').innerHTML = therapists.map(t => `<option value="${t}">${t === 'All' ? '所有專員' : t}</option>`).join('');
+        }
+
+        function onFilterChange() {
+            selectedCenter = document.getElementById('centerFilter').value;
+            selectedTherapist = document.getElementById('therapistFilter').value;
+            renderDashboard();
+        }
+
+        function getStatus(mtd) {
+            if (mtd >= 200) return { name: '紫燈', color: 'bg-purple-600', text: 'text-purple-600' };
+            if (mtd >= 150) return { name: '藍燈', color: 'bg-blue-600', text: 'text-blue-600' };
+            if (mtd >= 100) return { name: '綠燈', color: 'bg-green-600', text: 'text-green-600' };
+            if (mtd >= 80) return { name: '黃燈', color: 'bg-amber-400', text: 'text-amber-600' };
+            return { name: '紅燈', color: 'bg-red-600', text: 'text-red-600' };
+        }
+
+        function renderDashboard() {
+            const dashboardContent = document.getElementById('dashboardContent');
+            const isCardMode = document.getElementById('viewToggle').checked;
+            const filtered = allData.filter(item => (selectedCenter === 'All' || item.center === selectedCenter) && (selectedTherapist === 'All' || item.therapist === selectedTherapist));
+            document.getElementById('resultCount').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                dashboardContent.innerHTML = `<div class="bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200 text-slate-400 font-black text-center">暫無數據</div>`;
+                return;
+            }
+
+            if (isCardMode) { renderCardView(filtered); } else { renderTableView(filtered); }
+            lucide.createIcons();
+        }
+
+        function renderTableView(data) {
+            document.getElementById('dashboardContent').innerHTML = `
+                <div class="bg-white rounded-[2rem] shadow-xl border overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-900 text-white text-[10px] uppercase font-black">
+                            <tr><th class="p-6 text-left">專員</th><th class="p-6 text-right">目標</th><th class="p-6 text-right">銷售</th><th class="p-6 text-center">達成%</th><th class="p-6 text-right">今日</th><th class="p-6 text-center">狀態</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${data.map(item => {
+                                const s = getStatus(item.mtd);
+                                return `<tr class="hover:bg-slate-50">
+                                    <td class="p-6 text-left"><div class="font-black text-left">${item.therapist}</div><div class="text-[10px] text-slate-400 text-left">${item.center}</div></td>
+                                    <td class="p-6 text-right font-bold">$${item.target.toLocaleString()}</td>
+                                    <td class="p-6 text-right font-black">$${item.monthlySales.toLocaleString()}</td>
+                                    <td class="p-6 text-center font-black ${s.text}">${item.mtd.toFixed(1)}%</td>
+                                    <td class="p-6 text-right font-black text-emerald-600">$${item.todaySales.toLocaleString()}</td>
+                                    <td class="p-6 text-center"><span class="px-3 py-1 rounded-full text-[9px] font-black text-white ${s.color}">${s.name}</span></td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+
+        function renderCardView(data) {
+            document.getElementById('dashboardContent').innerHTML = data.map(item => {
+                const s = getStatus(item.mtd);
+                return `
+                <div class="bg-white rounded-[3rem] shadow-xl border overflow-hidden text-left">
+                    <div class="bg-slate-900 p-8 text-white flex flex-col md:flex-row justify-between gap-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-2xl festival-gradient flex items-center justify-center"><i data-lucide="user-check"></i></div>
+                            <div class="text-left"><h2 class="text-3xl font-black text-left">${item.therapist}</h2><p class="text-indigo-400 text-xs font-black uppercase text-left">${item.center}</p></div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 flex-1 text-left">
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-left"><p class="text-[9px] text-slate-500 uppercase font-black text-left">目標</p><p class="font-black text-left">$${item.target.toLocaleString()}</p></div>
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-left"><p class="text-[9px] text-slate-500 uppercase font-black text-left">銷售</p><p class="font-black text-left">$${item.monthlySales.toLocaleString()}</p></div>
+                            <div class="bg-white/10 p-3 rounded-xl border border-white/20 text-left"><p class="text-[9px] text-slate-500 uppercase font-black text-left">達成</p><p class="text-lg font-black ${s.text} text-left">${item.mtd.toFixed(1)}%</p></div>
+                            <div class="bg-purple-500/10 p-3 rounded-xl border border-purple-500/20 text-left"><p class="text-[9px] text-purple-400 uppercase font-black text-left">尚欠</p><p class="font-black text-purple-400 text-left">$${item.remaining.toLocaleString()}</p></div>
+                            <div class="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 text-left"><p class="text-[9px] text-emerald-400 uppercase font-black text-left">今日開單</p><p class="font-black text-emerald-400 text-left">$${item.todaySales.toLocaleString()}</p></div>
+                        </div>
+                    </div>
+                    <div class="p-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+                        <div class="space-y-4 text-left">
+                            <div class="flex items-center gap-2 text-indigo-600 border-b pb-2"><i data-lucide="tv-2" size="16"></i><span class="text-[10px] font-black uppercase">直播轉化</span></div>
+                            <div class="text-sm font-bold flex justify-between text-left"><span>昨天SHOW</span><span>${item.yesterdayShow}</span></div>
+                            <div class="text-sm font-bold flex justify-between text-indigo-600 text-left"><span>SHOW ICB</span><span>${item.yesterdayShowICB}</span></div>
+                        </div>
+                        <div class="space-y-4 text-left">
+                            <div class="flex items-center gap-2 text-blue-600 border-b pb-2"><i data-lucide="share-2" size="16"></i><span class="text-[10px] font-black uppercase">分發流量</span></div>
+                            <div class="text-sm font-bold flex justify-between text-left"><span>Node總數</span><span>${item.nodeTotal}</span></div>
+                            <div class="bg-blue-50 p-2 rounded-xl text-blue-700 font-black flex justify-between text-left"><span>3天增加</span><span>+${item.nodeInc}</span></div>
+                        </div>
+                        <div class="space-y-4 text-left">
+                            <div class="flex items-center gap-2 text-amber-500 border-b pb-2"><i data-lucide="zap" size="16"></i><span class="text-[10px] font-black uppercase">產品轉化</span></div>
+                            <div class="text-sm font-bold flex justify-between text-left"><span>PT簽單</span><span>${item.ptSign} <span class="text-emerald-500">+${item.ptSignToday}</span></span></div>
+                            <div class="text-sm font-bold flex justify-between text-left"><span>Pkg簽單</span><span>${item.pkgSign} <span class="text-emerald-500">+${item.pkgSignToday}</span></span></div>
+                        </div>
+                        <div class="space-y-4 text-left">
+                            <div class="flex items-center gap-2 text-pink-500 border-b pb-2"><i data-lucide="heart" size="16"></i><span class="text-[10px] font-black uppercase">限定福利</span></div>
+                            <div class="text-sm font-bold flex justify-between text-left"><span>Bday禮遇</span><span>${item.bdayBook} <span class="text-pink-500">+${item.bdayInc}</span></span></div>
+                            <div class="text-sm font-bold flex justify-between text-left"><span>Plasma預訂</span><span>${item.plasmaBook} <span class="text-pink-500">+${item.plasmaInc}</span></span></div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
