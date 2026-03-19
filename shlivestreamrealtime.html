@@ -1,0 +1,380 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Trophy, Target, DollarSign, TrendingUp, RefreshCw, Zap,
+  MapPin, UserCheck, Users, Layers, LayoutGrid, Gift, 
+  MousePointer2, Clock, History, ChevronRight, Loader2, AlertTriangle, Database, Code, Filter
+} from 'lucide-react';
+
+const App = () => {
+  // --- 已連接您的 Google Sheet CSV 連結 ---
+  const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAnIo_Ypzm1mEYuHgd63XRrxGem9izXHlhr26pWUBSvp7Fuk_FluK3Ld5ODiT59gL81N_ivSl0adJq/pub?gid=447092227&single=true&output=csv"; 
+
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [lastSync, setLastSync] = useState(null);
+  const [rawPreview, setRawPreview] = useState(""); 
+
+  // 篩選狀態
+  const [selectedCenter, setSelectedCenter] = useState('All');
+  const [selectedTherapist, setSelectedTherapist] = useState('All');
+
+  const parseCSV = (text) => {
+    const rows = [];
+    let currRow = [];
+    let currCell = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const nextChar = text[i + 1];
+
+      if (inQuotes) {
+        if (char === '"' && nextChar === '"') {
+          currCell += '"';
+          i++;
+        } else if (char === '"') {
+          inQuotes = false;
+        } else {
+          currCell += char;
+        }
+      } else {
+        if (char === '"') {
+          inQuotes = true;
+        } else if (char === ',') {
+          currRow.push(currCell.trim());
+          currCell = "";
+        } else if (char === '\r' || char === '\n') {
+          if (currCell || currRow.length > 0) {
+            currRow.push(currCell.trim());
+            rows.push(currRow);
+            currRow = [];
+            currCell = "";
+          }
+          if (char === '\r' && nextChar === '\n') i++;
+        } else {
+          currCell += char;
+        }
+      }
+    }
+    if (currCell || currRow.length > 0) {
+      currRow.push(currCell.trim());
+      rows.push(currRow);
+    }
+    return rows;
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setRawPreview("");
+
+      const fetchUrl = `${SHEET_CSV_URL}&t=${Date.now()}`;
+      const response = await fetch(fetchUrl, { 
+        method: 'GET',
+        headers: { 'Accept': 'text/csv' }
+      });
+
+      if (!response.ok) throw new Error(`網路請求失敗: ${response.status}`);
+      
+      const csvText = await response.text();
+      setRawPreview(csvText.substring(0, 500)); 
+
+      if (csvText.includes("<!DOCTYPE html>") || csvText.includes("<html")) {
+        throw new Error("獲取到的是網頁內容而非 CSV。請確認已正確「發佈為 CSV」。");
+      }
+
+      const rows = parseCSV(csvText);
+      if (rows.length < 1) throw new Error("試算表內容為空。");
+
+      const headers = rows[0].map(h => h.replace(/^\uFEFF/, '').trim());
+      
+      const jsonData = rows.slice(1)
+        .filter(row => row.length > 0 && row.some(cell => cell !== ""))
+        .map(row => {
+          const obj = {};
+          headers.forEach((header, i) => {
+            let val = row[i] || "";
+            const cleanVal = val.replace(/[%,$]/g, '').replace(/,/g, '');
+            if (cleanVal !== "" && !isNaN(cleanVal)) {
+              obj[header] = parseFloat(cleanVal);
+            } else {
+              obj[header] = val;
+            }
+          });
+          return obj;
+        });
+
+      const mappedData = jsonData.map(item => {
+        const target = item["Individual Target $$ (Month)"] || item["Individual Target $$"] || 0;
+        const sales = item["Total Sales (Month)"] || item["Total Sales"] || 0;
+        const mtd = item["MTD%"] || (target > 0 ? (sales / target) * 100 : 0);
+        
+        return {
+          center: item["Center"] || "未設定",
+          therapist: item["Therapist"] || "未知",
+          target: target,
+          monthlySales: sales,
+          mtd: mtd,
+          todaySales: item["今日開單 $$"] || item["今日開單"] || 0,
+          remaining: item["轉燈尚欠 $$"] || item["轉燈尚欠"] || (target * 2 - sales),
+          yesterdayShow: item["昨天SHOW"] || 0,
+          yesterdayShowICB: item["昨天SHOW ICB"] || 0,
+          futureICB: item["未來ICB Booking / HC"] || 0,
+          nodeTotal: item["Node總數"] || item["Node 總數"] || 0,
+          mau: item["MAU %"] || item["MAU%"] || 0,
+          nodeInc: item["3天増加"] || item["3天增加"] || 0,
+          ptSign: item["Paid Trial Sign"] || 0,
+          ptSignToday: item["Paid Trial Sign (Today)"] || 0,
+          pkgSign: item["Package Sign"] || 0,
+          pkgSignToday: item["Package Sign (Today)"] || 0,
+          penetration: item["滲透率%"] || 0,
+          bdayBook: item["Bday giftcard book"] || 0,
+          bdayInc: item["Bday giftcard 三天增加"] || 0,
+          plasmaBook: item["Plasma giftcard book"] || 0,
+          plasmaInc: item["Plasma giftcard 三天增加"] || 0
+        };
+      });
+
+      setData(mappedData);
+      setLastSync(new Date().toLocaleTimeString());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // 取得篩選清單
+  const centerOptions = ['All', ...new Set(data.map(item => item.center))].sort();
+  const therapistOptions = ['All', ...new Set(data
+    .filter(item => selectedCenter === 'All' || item.center === selectedCenter)
+    .map(item => item.therapist))].sort();
+
+  // 執行篩選
+  const filteredData = data.filter(item => {
+    const centerMatch = selectedCenter === 'All' || item.center === selectedCenter;
+    const therapistMatch = selectedTherapist === 'All' || item.therapist === selectedTherapist;
+    return centerMatch && therapistMatch;
+  });
+
+  const getStatus = (mtd) => {
+    if (mtd >= 200) return { name: '紫燈', color: 'bg-purple-600', text: 'text-purple-600' };
+    if (mtd >= 150) return { name: '藍燈', color: 'bg-blue-600', text: 'text-blue-600' };
+    if (mtd >= 100) return { name: '綠燈', color: 'bg-green-600', text: 'text-green-600' };
+    if (mtd >= 80) return { name: '黃燈', color: 'bg-yellow-400', text: 'text-yellow-600' };
+    return { name: '紅燈', color: 'bg-red-600', text: 'text-red-600' };
+  };
+
+  if (loading && data.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-indigo-600 mb-4" size={48} />
+        <p className="font-black text-slate-400 animate-pulse tracking-widest mt-4">正在同步雲端數據...</p>
+      </div>
+    );
+  }
+
+  if (error && data.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+        <AlertTriangle size={48} className="text-red-500 mb-4 mx-auto" />
+        <h2 className="text-xl font-black mb-2">同步失敗</h2>
+        <p className="text-red-500 mb-6">{error}</p>
+        <button onClick={fetchData} className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold">重試</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-900 tracking-tight">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-black flex items-center gap-3">
+            <div className="p-2 bg-indigo-600 rounded-lg shadow-lg"><TrendingUp className="text-white" size={20} /></div>
+            營運實時看板 <span className="text-slate-300 font-light">|</span> 雲端連動
+          </h1>
+          <p className="text-[10px] text-slate-400 font-black uppercase mt-2 tracking-widest">最後同步: {lastSync}</p>
+        </div>
+        <button onClick={fetchData} className="flex items-center gap-2 bg-white border border-slate-200 px-6 py-3 rounded-2xl font-black text-xs hover:shadow-md transition-all">
+          <RefreshCw size={14} /> 刷新數據
+        </button>
+      </div>
+
+      {/* 篩選器區域 */}
+      <div className="max-w-7xl mx-auto mb-10 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-wrap gap-6 items-center">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
+            <Filter size={18} />
+          </div>
+          <span className="text-sm font-black text-slate-500 uppercase tracking-widest">篩選數據</span>
+        </div>
+
+        <div className="flex flex-wrap gap-4 flex-1">
+          {/* 中心篩選 */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-[10px] font-black text-slate-400 uppercase mb-1 ml-1">Center (中心)</label>
+            <select 
+              value={selectedCenter}
+              onChange={(e) => {
+                setSelectedCenter(e.target.value);
+                setSelectedTherapist('All'); // 當中心改變時，重置治療師篩選
+              }}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            >
+              {centerOptions.map(option => (
+                <option key={option} value={option}>{option === 'All' ? '所有中心 (All)' : option}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 治療師篩選 */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-[10px] font-black text-slate-400 uppercase mb-1 ml-1">Therapist (治療師)</label>
+            <select 
+              value={selectedTherapist}
+              onChange={(e) => setSelectedTherapist(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            >
+              {therapistOptions.map(option => (
+                <option key={option} value={option}>{option === 'All' ? '所有人員 (All)' : option}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* 顯示結果數量 */}
+        <div className="px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-100">
+          <p className="text-[10px] font-black text-indigo-400 uppercase">顯示筆數</p>
+          <p className="text-sm font-black text-indigo-600">{filteredData.length} / {data.length}</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-12">
+        {filteredData.length === 0 ? (
+          <div className="bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
+            <Users className="mx-auto text-slate-200 mb-4" size={64} />
+            <p className="text-slate-400 font-bold">找不到匹配的資料，請嘗試調整篩選條件。</p>
+          </div>
+        ) : (
+          filteredData.map((item, index) => {
+            const status = getStatus(item.mtd);
+            return (
+              <div key={index} className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-white overflow-hidden transition-all hover:shadow-indigo-100/50">
+                
+                {/* 核心 KPI 橫幅 */}
+                <div className="bg-slate-900 p-8 text-white">
+                  <div className="flex flex-col xl:flex-row justify-between gap-8">
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-500/20">
+                        <UserCheck size={32} />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black tracking-tight">{item.therapist}</h2>
+                        <div className="flex items-center gap-2 mt-1 font-bold text-indigo-400">
+                          <MapPin size={16} /> {item.center}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
+                      <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Target (M)</p>
+                        <p className="text-lg font-black">${item.target.toLocaleString()}</p>
+                      </div>
+                      <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Sales (M)</p>
+                        <p className="text-lg font-black">${item.monthlySales.toLocaleString()}</p>
+                      </div>
+                      <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">MTD%</p>
+                        <div className="flex items-baseline gap-2">
+                          <p className={`text-xl font-black ${status.text}`}>{item.mtd.toFixed(1)}%</p>
+                          <span className={`text-[8px] px-1.5 py-0.5 rounded font-black ${status.color} text-white`}>{status.name}</span>
+                        </div>
+                      </div>
+                      <div className="bg-purple-500/10 p-4 rounded-2xl border border-purple-500/20">
+                        <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1 text-xs">轉燈尚欠 $$</p>
+                        <p className="text-lg font-black text-purple-400">
+                          ${item.remaining.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20 col-span-2 md:col-span-1">
+                        <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">今日開單 $$</p>
+                        <p className="text-xl font-black text-emerald-400">${item.todaySales.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 指標拆解 */}
+                <div className="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 text-indigo-600 border-b border-indigo-50 pb-4">
+                      <History size={20} strokeWidth={3} />
+                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">862 營運紀錄</span>
+                    </div>
+                    <div className="space-y-4 font-medium text-sm">
+                      <div className="flex justify-between"><span>昨天SHOW</span><span className="font-black text-slate-800">{item.yesterdayShow}</span></div>
+                      <div className="flex justify-between"><span>昨天SHOW ICB</span><span className="font-black text-indigo-600">{item.yesterdayShowICB}</span></div>
+                      <div className="flex justify-between"><span>未來ICB Booking</span><span className="font-black text-slate-800">{item.futureICB}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 text-blue-600 border-b border-blue-50 pb-4">
+                      <LayoutGrid size={20} strokeWidth={3} />
+                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">200 分發點</span>
+                    </div>
+                    <div className="space-y-4 font-medium text-sm">
+                      <div className="flex justify-between"><span>Node 總數</span><span className="font-black text-slate-800">{item.nodeTotal}</span></div>
+                      <div className="flex justify-between"><span>MAU %</span><span className="font-black text-blue-600">{item.mau}%</span></div>
+                      <div className="bg-blue-50 p-3 rounded-2xl text-blue-700 font-black flex justify-between"><span>3天增加</span><span>+{item.nodeInc}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 text-amber-500 border-b border-amber-50 pb-4">
+                      <Zap size={20} strokeWidth={3} />
+                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">High Pexo</span>
+                    </div>
+                    <div className="space-y-4 font-medium text-sm">
+                      <div className="flex justify-between"><span>Paid Trial</span><span className="font-black">{item.ptSign} <span className="text-emerald-500 text-xs">+{item.ptSignToday}</span></span></div>
+                      <div className="flex justify-between"><span>Package Sign</span><span className="font-black">{item.pkgSign} <span className="text-emerald-500 text-xs">+{item.pkgSignToday}</span></span></div>
+                      <div className="pt-2">
+                         <div className="flex justify-between text-[10px] font-black text-slate-400 mb-1"><span>滲透率</span><span>{item.penetration}%</span></div>
+                         <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-amber-400" style={{width: `${item.penetration}%`}}></div></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 text-rose-500 border-b border-rose-50 pb-4">
+                      <Gift size={20} strokeWidth={3} />
+                      <span className="text-xs font-black uppercase tracking-[0.1em] text-slate-500">TAIL 禮品卡</span>
+                    </div>
+                    <div className="space-y-4 font-medium text-sm">
+                      <div className="flex justify-between"><span>Bday Book</span><span className="font-black">{item.bdayBook} <span className="text-rose-500 text-xs">+{item.bdayInc}</span></span></div>
+                      <div className="flex justify-between"><span>Plasma Book</span><span className="font-black">{item.plasmaBook} <span className="text-rose-500 text-xs">+{item.plasmaInc}</span></span></div>
+                      <div className="mt-4 p-4 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
+                        <Trophy size={16} className="text-amber-400 mr-2" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">目標：200% 紫燈</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
