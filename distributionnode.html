@@ -62,10 +62,6 @@
 
         .section-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: #94a3b8; display: flex; align-items: center; gap: 8px; width: 100%; }
         .section-label::before, .section-label::after { content: ""; height: 1px; flex-grow: 1; background: rgba(255,255,255,0.1); }
-
-        .pending-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.96); display: flex; align-items: center; justify-content: center; z-index: 30; backdrop-filter: blur(1px); border-radius: inherit; border: 1px dashed rgba(244, 63, 94, 0.4); }
-        .pending-text { color: #f43f5e; font-size: 8px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; }
-        .pending-large { font-size: 16px; letter-spacing: 0.2em; color: #f43f5e; font-style: italic; font-weight: 900; }
         
         .sort-header { cursor: pointer; transition: background 0.2s ease; position: relative; }
         .sort-header:hover { background: rgba(255, 255, 255, 0.08) !important; }
@@ -85,7 +81,7 @@
 
     <!-- LEAD DETAIL MODAL -->
     <div id="lead-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden">
-        <div class="absolute inset-0 modal-backdrop" onclick="closeLeadModal()"></div>
+        <div class="absolute inset-0 modal-backdrop" onclick="closeLeadModal()" style="background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(4px);"></div>
         <div class="glass-panel w-full max-w-4xl max-h-[85vh] overflow-hidden border border-white/10 shadow-2xl relative flex flex-col">
             <div class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
                 <div class="flex flex-col gap-0.5">
@@ -103,7 +99,7 @@
             <div class="p-0 overflow-y-auto flex-1">
                 <table class="w-full text-left">
                     <thead class="sticky top-0 bg-slate-950 shadow-sm border-b border-white/5" id="lead-modal-thead">
-                        <!-- Dynamic Headers will be inserted here -->
+                        <!-- Dynamic Headers -->
                     </thead>
                     <tbody id="lead-modal-body" class="divide-y divide-white/[0.02]"></tbody>
                 </table>
@@ -180,11 +176,11 @@
     </section>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyvrX2msHcYa6qZEw88doYC0bF5cXu-51EXARyE1OCVHl__0ugMn5oG5j7xTnopSdSiZw/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbx6p2bq7JCEl8RsfenZZ6ZCvYyNt1VK6aly_03FFLdMmV2Lw_9e3A6u7mSUVEHKp_L3eA/exec";
         const colors = { dermes: 'sky', elyze: 'emerald', reenex: 'rose', evvus: 'indigo', default: 'slate' };
         
         let lastData = null;
-        let networkMode = 'HK'; 
+        let networkMode = 'HK';
         let opsFilterBrand = null;
         let opsPTFilter = 'Overall'; 
         let therapistFilterBrand = null;
@@ -216,10 +212,56 @@
             tail: "龍尾 TAIL"
         };
 
+        // Utility: Robust string normalization (removes spaces, underscores, casing)
+        function normalizeKey(str) {
+            return String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        // Utility: Highly Resilient Property Retrieval (Handles missing prefixes and aliases)
+        function getSafeVal(obj, key) {
+            if (!obj || !key) return undefined;
+            const normKey = normalizeKey(key);
+            
+            let foundKey = Object.keys(obj).find(k => normalizeKey(k) === normKey);
+            if (!foundKey && normKey.startsWith('pt')) foundKey = Object.keys(obj).find(k => normalizeKey(k) === normKey.substring(2));
+            if (!foundKey && normKey.startsWith('bday')) foundKey = Object.keys(obj).find(k => normalizeKey(k) === normKey.substring(4));
+            
+            if (foundKey) return obj[foundKey];
+
+            // Alias check (Eligible <-> Entitled)
+            const altKey = normKey.includes('eligible') ? normKey.replace('eligible', 'entitled') : normKey.replace('entitled', 'eligible');
+            foundKey = Object.keys(obj).find(k => normalizeKey(k) === altKey);
+            if (!foundKey && altKey.startsWith('pt')) foundKey = Object.keys(obj).find(k => normalizeKey(k) === altKey.substring(2));
+            
+            if (foundKey) return obj[foundKey];
+
+            // Deep Fuzzy Match (e.g. "PT Pexo Eligible" matches "PEXO Entitled")
+            const keywords = key.toLowerCase().split('_').filter(k => k && k !== 'pt' && k !== 'bday');
+            const hasHead = keywords.includes('head');
+            const hasTail = keywords.includes('tail');
+
+            foundKey = Object.keys(obj).find(k => {
+                const nk = normalizeKey(k);
+                if (hasHead && !nk.includes('head')) return false;
+                if (hasTail && !nk.includes('tail')) return false;
+                if (!hasHead && !hasTail && (nk.includes('head') || nk.includes('tail'))) return false;
+
+                return keywords.every(kw => {
+                    if (kw === 'head' || kw === 'tail') return true;
+                    if (kw === 'eligible' && nk.includes('entitled')) return true;
+                    if (kw === 'entitled' && nk.includes('eligible')) return true;
+                    return nk.includes(kw);
+                });
+            });
+
+            return foundKey ? obj[foundKey] : undefined;
+        }
+
         function parseSheetNum(val) {
             if (typeof val === 'number') return val;
             if (!val) return 0;
             const cleaned = val.toString().replace(/,/g, '').replace(/[^\d.-]/g, '');
+            if (cleaned === '') return 0;
             return parseFloat(cleaned) || 0;
         }
 
@@ -244,11 +286,14 @@
             therapistFilterFloor = null;
             opsSort = { key: null, direction: 'desc' };
             therapistSort = { key: null, direction: 'desc' };
+            ptFilter = 'Overall';
+            bdayFilter = 'Overall';
             if (lastData) updateDashboard(lastData);
         }
 
-        function setBdayFilter(type) { bdayFilter = type; if (lastData) renderMKTPillars(getSlice(lastData, 'overview')); }
-        function setPTFilter(type) { ptFilter = type; if (lastData) renderMKTPillars(getSlice(lastData, 'overview')); }
+        // Strictly explicitly target the gift card slice to avoid contamination
+        function setBdayFilter(type) { bdayFilter = type; if (lastData) renderMKTPillars(getSlice(lastData, 'gift_card')); }
+        function setPTFilter(type) { ptFilter = type; if (lastData) renderMKTPillars(getSlice(lastData, 'gift_card')); }
 
         function handleSort(type, key) {
             const sortRef = type === 'ops' ? opsSort : therapistSort;
@@ -300,11 +345,28 @@
             return direction === 'asc' ? '<span class="sort-indicator">↑</span>' : '<span class="sort-indicator">↓</span>';
         }
 
+        // Segregates the array data strictly depending on context requested
         function getSlice(data, type) {
             const prefix = networkMode === 'SH' ? 'SH_' : '';
-            if (type === 'overview') return data[prefix + 'overview'] || [];
-            if (type === 'operations') return data[prefix + 'operations'] || [];
-            if (type === 'therapists') return data[prefix + 'Therapists'] || data[prefix + 'therapists'] || [];
+            if (type === 'overview') {
+                return data[prefix + 'overview'] || data['overview'] || [];
+            }
+            if (type === 'gift_card') {
+                if (networkMode === 'SH') {
+                    // Force SH to only look at SH Overview for MKT pillars
+                    return data['SH_overview'] || data['SH Overview'] || data['SH_Overview'] || [];
+                } else {
+                    // HK Mode: Focus explicitly on Gift Card Overview
+                    return [
+                        ...(data['Gift Card Overview'] || []),
+                        ...(data['gift_card_overview'] || []),
+                        ...(data['Gift_Card_Overview'] || []),
+                        ...(data['overview'] || [])
+                    ];
+                }
+            }
+            if (type === 'operations') return data[prefix + 'operations'] || data['operations'] || [];
+            if (type === 'therapists') return data[prefix + 'Therapists'] || data[prefix + 'therapists'] || data['Therapists'] || data['therapists'] || [];
             if (type === 'raw') return data['gift_card_raw'] || [];
             return [];
         }
@@ -331,7 +393,6 @@
             centerEl.innerText = floor;
             trackEl.innerText = (track === 'Bday' ? '生日禮券 BDAY TRACK' : '付費體驗禮券 PT TRACK');
             
-            // Set Dynamic Headers
             if (track === 'Bday') {
                 thead.innerHTML = `
                     <tr class="text-[10px] font-black text-slate-500 uppercase tracking-widest">
@@ -360,7 +421,6 @@
                 const sheetFloor = String(d.Center || '').toLowerCase();
                 const cM = (floor === 'All') ? true : (sheetFloor.includes(targetFloor) || targetFloor.includes(sheetFloor));
                 
-                // Only filter by therapist if it's provided (Individual performance view)
                 let tM = true;
                 if (therapist) {
                     const targetTherapist = String(therapist).toLowerCase();
@@ -386,7 +446,6 @@
                 
                 leads.forEach(l => {
                     if (track === 'Bday') {
-                        // Priority: Booked > Redeemed
                         const hStatus = l.head_book_dt ? 'Booked 已預約' : (l.head_redeem_dt ? 'Redeemed 已換領' : '---');
                         const tStatus = l.tail_book_dt ? 'Booked 已預約' : (l.tail_redeem_dt ? 'Redeemed 已換領' : '---');
                         
@@ -431,7 +490,12 @@
             setSyncStatus(true);
             const overlay = document.getElementById('loading-overlay');
             try {
-                const res = await fetch(`${API_URL}?t=${Date.now()}`, { method: 'GET', redirect: 'follow', headers: { 'Accept': 'application/json' } });
+                // 加入明確的 GET 與 redirect 參數，防止在某些環境下產生的預設跨域攔截
+                const res = await fetch(`${API_URL}?t=${Date.now()}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
                 if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
                 const data = await res.json();
                 lastData = data;
@@ -440,7 +504,29 @@
                 setTimeout(() => overlay.style.display = 'none', 500);
             } catch (error) {
                 console.error("Fetch Error:", error);
-                overlay.innerHTML = `<div class="glass-panel p-8 text-left max-w-lg border border-rose-500/30 shadow-2xl relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 to-orange-500"></div><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-500 text-xl">⚠️</div><div><h3 class="text-rose-500 font-black text-xl uppercase tracking-tighter">Connection Error</h3><p class="text-slate-400 text-[10px] uppercase tracking-widest font-black">Data Fetch Failed</p></div></div><div class="bg-slate-900/60 p-4 rounded-lg mb-6 border border-white/5"><p class="text-rose-400 text-xs font-mono mb-3 p-2 bg-rose-500/5 rounded">Error: ${error.message}</p><p class="text-slate-300 text-sm leading-relaxed mb-2 font-semibold">CORS policy block usually means permissions in Google Apps Script need updating.</p></div><button onclick="location.reload()" class="w-full py-3 bg-rose-500 text-slate-950 rounded-lg font-black uppercase text-xs tracking-widest hover:bg-rose-400 transition-colors shadow-lg shadow-rose-500/20">Reload Dashboard</button></div>`;
+                overlay.innerHTML = `
+                    <div class="glass-panel p-8 text-left max-w-lg border border-rose-500/30 shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 to-orange-500"></div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-500 text-xl">⚠️</div>
+                            <div>
+                                <h3 class="text-rose-500 font-black text-xl uppercase tracking-tighter">Connection Error 連線錯誤</h3>
+                                <p class="text-slate-400 text-[10px] uppercase tracking-widest font-black">Data Fetch Failed 數據獲取失敗</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/60 p-4 rounded-lg mb-6 border border-white/5">
+                            <p class="text-rose-400 text-xs font-mono mb-3 p-2 bg-rose-500/5 rounded">Error: ${error.message}</p>
+                            <p class="text-slate-300 text-sm leading-relaxed mb-2 font-semibold">這個錯誤通常是因為 Google Apps Script 的權限設定問題所引起 (CORS 阻擋)。</p>
+                            <div class="mt-4 p-3 bg-sky-900/30 border border-sky-500/30 rounded">
+                                <p class="text-sky-400 text-xs font-bold mb-2">👉 解決方法：請回到 Google Apps Script 重新部署，並確保設定如下：</p>
+                                <ol class="list-decimal list-inside text-slate-300 text-[11px] space-y-1">
+                                    <li>依據以下使用者的身分執行 (Execute as)：<b>您自己 (Me)</b></li>
+                                    <li>誰可以存取 (Who has access)：<b>所有人 (Anyone)</b></li>
+                                </ol>
+                            </div>
+                        </div>
+                        <button onclick="location.reload()" class="w-full py-3 bg-rose-500 text-slate-950 rounded-lg font-black uppercase text-xs tracking-widest hover:bg-rose-400 transition-colors shadow-lg shadow-rose-500/20">Reload Dashboard 重新載入</button>
+                    </div>`;
             } finally {
                 setSyncStatus(false);
             }
@@ -452,8 +538,9 @@
         }
 
         async function updateDashboard(data) {
+            // Explicitly route data slices
             await renderOverview(getSlice(data, 'overview'));
-            renderMKTPillars(getSlice(data, 'overview')); 
+            renderMKTPillars(getSlice(data, 'gift_card')); 
             renderOperations(getSlice(data, 'operations'));
             renderTherapists(getSlice(data, 'therapists'));
         }
@@ -461,7 +548,26 @@
         async function renderOverview(overviewData) {
             const container = document.getElementById('overview-container');
             container.innerHTML = '';
-            const getVal = (k) => parseSheetNum(overviewData.find(i => i.Metric === k)?.Total);
+            
+            const getVal = (k) => {
+                const normK = normalizeKey(k);
+                if (!Array.isArray(overviewData)) return 0;
+                
+                for (const row of overviewData) {
+                    if (!row) continue;
+                    if (Array.isArray(row) && row.length >= 2) {
+                        if (normalizeKey(row[0]) === normK) return parseSheetNum(row[1]);
+                    } else if (typeof row === 'object') {
+                        if (row.Metric && normalizeKey(row.Metric) === normK) return parseSheetNum(row.Total);
+                        if (row.A && normalizeKey(row.A) === normK) return parseSheetNum(row.B);
+                        for (const [key, v] of Object.entries(row)) {
+                            if (normalizeKey(key) === normK) return parseSheetNum(v);
+                        }
+                    }
+                }
+                return 0;
+            };
+
             const rep = { val: getVal("Nodes"), delta: getVal("Nodes_Delta"), border: 'border-l-sky-500', label: 'Nodes 節點總量' };
             const act = [
                 { val: getVal("Traffic"), delta: getVal("Traffic_Delta"), border: 'border-l-emerald-500', label: 'Active Traffic 活化流量', head: getVal("Traffic_Head"), tail: getVal("Traffic_Tail") },
@@ -474,32 +580,81 @@
             container.innerHTML = h + `</div>`;
         }
 
-        function renderMKTPillars(overviewData) {
+        function renderMKTPillars(giftCardData) {
             const container = document.getElementById('mkt-pillar-container');
             container.innerHTML = '';
-            const getVal = (m) => parseSheetNum(overviewData.find(i => i.Metric === m)?.Total);
-            const isSH = networkMode === 'SH';
+            
+            // STRICTLY scans only the Gift Card / MKT Pillar specific slice. Removed cross-tab searching.
+            const getVal = (m) => {
+                const normM = normalizeKey(m);
+                const altM = normM.includes('eligible') ? normM.replace('eligible', 'entitled') : normM.replace('entitled', 'eligible');
+                const keysToTry = [
+                    normM, 
+                    normM.startsWith('pt') ? normM.substring(2) : normM,
+                    altM,
+                    altM.startsWith('pt') ? altM.substring(2) : altM
+                ];
+                
+                if (!Array.isArray(giftCardData)) return 0;
+                
+                for (const row of giftCardData) {
+                    if (!row) continue;
+                    
+                    // Directly matching Column A & B pattern
+                    if (Array.isArray(row) && row.length >= 2) {
+                        if (typeof row[0] === 'string' && keysToTry.includes(normalizeKey(row[0]))) return parseSheetNum(row[1]);
+                    } 
+                    // Matching structured objects like { "A": "PT_Pexo_Eligible", "B": 2449 }
+                    else if (typeof row === 'object') {
+                        if (row.A && typeof row.A === 'string' && keysToTry.includes(normalizeKey(row.A))) return parseSheetNum(row.B);
+                        if (row.Metric && typeof row.Metric === 'string' && keysToTry.includes(normalizeKey(row.Metric))) return parseSheetNum(row.Total);
+                        if (row.Key && typeof row.Key === 'string' && keysToTry.includes(normalizeKey(row.Key))) return parseSheetNum(row.Value);
+                        
+                        // Checking flat format { "PT_Pexo_Eligible": 2449 }
+                        for (const [k, v] of Object.entries(row)) {
+                            if (keysToTry.includes(normalizeKey(k))) return parseSheetNum(v);
+                        }
+
+                        // Deep check values if headers are mapped incorrectly by JSON API
+                        const vals = Object.values(row);
+                        const keyIndex = vals.findIndex(v => typeof v === 'string' && keysToTry.includes(normalizeKey(v)));
+                        if (keyIndex !== -1) {
+                            if (row.Total !== undefined) return parseSheetNum(row.Total);
+                            if (row.B !== undefined) return parseSheetNum(row.B);
+                            if (row.Value !== undefined) return parseSheetNum(row.Value);
+                            for (let i = 0; i < vals.length; i++) {
+                                if (i === keyIndex) continue;
+                                const val = vals[i];
+                                if (typeof val === 'number') return val;
+                                if (typeof val === 'string' && val.trim() !== '' && !isNaN(parseFloat(val.replace(/,/g, '')))) return parseSheetNum(val);
+                            }
+                        }
+                    }
+                }
+                
+                return 0; // If exact key isn't in Gift Card tab, it will return 0 safely
+            };
             
             const renderPTBlock = (optionType, color) => {
-                const prefix = `PT_${optionType}_`;
-                const hasData = overviewData.some(i => i.Metric && i.Metric.startsWith(prefix));
-                const showBlockPending = optionType === 'PEXO' && !hasData;
+                // 根據您的指示：PT 分析的 Overall 選項統一指向 PT_Overall_ 開頭的資料
+                const prefix = optionType === 'Overall' ? 'PT_Overall_' : `PT_${optionType}_`;
+                
+                // 保留 PN/BBL/PEXO 的篩選器，若沒有資料則會自動顯示為 0
+                const ptOptions = ['Overall', 'PN', 'BBL', 'Pexo'];
                 
                 return `
                 <div class="glass-panel p-6 border-l-8 border-${color}-500 bg-slate-900/20 h-full relative flex flex-col">
                     <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                         <div><h4 class="text-2xl font-black uppercase italic text-${color}-400">付費體驗分析 (PT ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">${optionType}</p></div>
                         <div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">
-                            ${['Overall', 'PN', 'BBL', 'PEXO'].map(f => `<button onclick="setPTFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${ptFilter === f ? 'active' : ''}">${f}</button>`).join('')}
+                            ${ptOptions.map(f => `<button onclick="setPTFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${ptFilter === f ? 'active' : ''}">${f}</button>`).join('')}
                         </div>
                     </div>
                     <div class="relative flex-1">
-                        ${showBlockPending ? `<div class="pending-overlay z-50"><span class="pending-large">PENDING DATA SOURCES 數據掛起</span></div>` : ''}
-                        <div class="mb-8 ${showBlockPending ? 'opacity-20 pointer-events-none' : ''}">
+                        <div class="mb-8">
                             <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
                             <div class="flex justify-around items-center">
                                 <div class="metric-container text-center">
-                                    ${isSH ? `<div class="pending-overlay !bg-slate-900/90 z-40"><span class="pending-text">!</span></div>` : ''}
                                     <span class="mini-label text-base">符合資格 Entitled</span>
                                     <div class="text-6xl font-black text-white leading-none mt-2">${getVal(prefix+"Eligible") || 0}</div>
                                 </div>
@@ -507,7 +662,7 @@
                                 <div class="text-center"><span class="mini-label text-base">分享 Share</span><div class="text-6xl font-black text-white leading-none mt-2">${getVal(prefix+"Share") || 0}</div></div>
                             </div>
                         </div>
-                        <div class="${showBlockPending ? 'opacity-20 pointer-events-none' : ''}">
+                        <div>
                             <div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div>
                             <div class="grid grid-cols-5 gap-3">
                                 ${[{l:"換領 Redeem",v:getVal(prefix+"Redeem")},{l:"預約 Book",v:getVal(prefix+"Book")},{l:"已到期之預約 MTD",v:getVal(prefix+"MTD_Book")},{l:"出席 Show",v:getVal(prefix+"Show")},{l:"金額 Amount",v:getVal(prefix+"Amount")}].map(s=>`<div class="grid-item py-6 ${s.l.includes('Amount')?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}"><span class="mini-label mb-2 text-xs">${s.l}</span><span class="text-3xl font-black ${s.l.includes('Amount')?'text-emerald-400':'text-white'} leading-none">${s.v.toLocaleString()}</span></div>`).join('')}
@@ -518,10 +673,14 @@
             };
 
             const renderBdaySplitBlock = (optionType, color) => {
+                // Bday 分析的 Overall 選項保持為 Bday_，這樣就能成功對接到 Bday_xxxx_Tail / Head
                 const prefix = `Bday_${optionType === 'Overall' ? '' : optionType+'_'}`;
-                const getMetric = (l, m, is$, isLg, shouldMask = false) => `
+                
+                // 保留 PN/BBL 的篩選器，若沒有資料則會自動顯示為 0
+                const bdayOptions = ['Overall', 'PN', 'BBL'];
+
+                const getMetric = (l, m, is$, isLg) => `
                 <div class="metric-container flex-1">
-                    ${(isSH && shouldMask) ? `<div class="pending-overlay !bg-slate-950/80 z-40"><span class="pending-text">PENDING</span></div>` : ''}
                     <div class="text-center bg-slate-950/40 p-4 rounded-xl border border-white/5 min-w-[125px] h-full ${is$ ? 'bg-emerald-500/10' : ''}">
                     <span class="mini-label ${isLg ? 'text-sm mb-2' : 'mb-1'} block">${l}</span>
                     <div class="${isLg ? 'text-5xl' : 'text-2xl'} font-black ${is$ ? 'text-emerald-400' : 'text-white'} leading-none">${getVal(prefix+m)}</div>
@@ -534,15 +693,15 @@
                     <div class="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
                         <div class="flex flex-col"><h4 class="text-2xl font-black italic text-${color}-400 uppercase">生日活動分析 (BIRTHDAY ANALYSIS)</h4><p class="text-[10px] font-black text-slate-400 uppercase mt-1">Viewing: ${optionType}</p></div>
                         <div class="flex items-center glass-panel p-1 border-white/10 scale-95 origin-right">
-                            ${['Overall', 'PN', 'BBL'].map(f => `<button onclick="setBdayFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${bdayFilter === f ? 'active' : ''}">${f}</button>`).join('')}
+                            ${bdayOptions.map(f => `<button onclick="setBdayFilter('${f}')" class="filter-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase ${bdayFilter === f ? 'active' : ''}">${f}</button>`).join('')}
                         </div>
                     </div>
                     <div class="relative flex-1">
                         <div class="mb-8">
                             <div class="section-label mb-6">龍頭部分 (HEAD SECTION)</div>
                             <div class="flex flex-wrap gap-2">
-                                ${getMetric(labels.entitled, "Eligible", false, true, true)}
-                                ${getMetric(labels.traffic, "Traffic", false, true, true)}
+                                ${getMetric(labels.entitled, "Eligible", false, true)}
+                                ${getMetric(labels.traffic, "Traffic", false, true)}
                                 ${getMetric(labels.share, "Share", false, true)}
                                 ${getMetric(labels.redeem, "Redeem_Head", false, true)}
                                 ${getMetric(labels.book, "Book_Head")}
@@ -568,34 +727,30 @@
         function renderTableLeadCell(d, type, brandName, floorName, therapistName = null, ptFilterType = 'Overall') {
             const prefix = type === 'PT' ? `PT_${ptFilterType}_` : 'Bday_';
             const therapist = therapistName || d.Therapist || d.Identity;
-            const isSH = networkMode === 'SH';
-            const headActions = type === 'Bday' ? [{l:"預約", v:d[prefix+'Book_Head']},{l:"本月", v:d[prefix+'MTD_Book_Head']},{l:"出席", v:d[prefix+'Show_Head']},{l:"簽約", v:d[prefix+'Sign_Head']},{l:"金額", v:d[prefix+'Amount_Head'], is$: true}] : [];
-
-            const isPTUnavailable = type === 'PT' && isSH;
-            const hasData = Object.keys(d).some(key => key && key.startsWith(prefix));
-            const showSubTabPending = type === 'PT' && ptFilterType !== 'Overall' && !hasData;
+            
+            // Extracts row data safely regardless of header variances (Eligible/Entitled, Pexo_Traffic vs PT_Pexo_Traffic)
+            const val = (k) => getSafeVal(d, prefix + k);
+            
+            const headActions = type === 'Bday' ? [{l:"預約", v:val('Book_Head')},{l:"本月", v:val('MTD_Book_Head')},{l:"出席", v:val('Show_Head')},{l:"簽約", v:val('Sign_Head')},{l:"金額", v:val('Amount_Head'), is$: true}] : [];
 
             return `
             <div class="stacked-cell p-1 relative h-full overflow-hidden">
-                ${(isPTUnavailable || showSubTabPending) ? `<div class="pending-overlay !bg-slate-950/92 z-50 flex-col"><span class="pending-text text-lg">PENDING</span><span class="text-[9px] font-black tracking-widest opacity-50 uppercase mt-1">Data Unavailable</span></div>` : ''}
-                <div class="w-full transition-opacity duration-300 ${ (isPTUnavailable || showSubTabPending) ? 'opacity-10 blur-[2px]' : '' }">
+                <div class="w-full transition-opacity duration-300">
                     <div class="flex w-full items-start gap-1.5 px-1 relative">
                         <span class="section-tag head-tag mt-1">龍頭</span>
                         <div class="flex-1 flex flex-col">
                             <div class="flex justify-around items-center h-10">
                                 <div class="flex flex-col items-center relative">
-                                    ${(isSH && type === 'Bday') ? `<div class="pending-overlay !bg-slate-900/95 z-40"><span class="pending-text">!</span></div>` : ''}
                                     <span class="mini-label scale-90 leading-none">符合資格</span>
-                                    <button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled', '${type}')" class="font-black text-sky-400 text-lg hover:text-white leading-none underline decoration-sky-500/20">${d[prefix + 'Eligible'] || '0'}</button>
+                                    <button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Entitled', '${type}')" class="font-black text-sky-400 text-lg hover:text-white leading-none underline decoration-sky-500/20">${val('Eligible') || '0'}</button>
                                 </div>
                                 <div class="flex flex-col items-center relative">
-                                    ${(isSH && type === 'Bday') ? `<div class="pending-overlay !bg-slate-900/95 z-40"><span class="pending-text">!</span></div>` : ''}
                                     <span class="mini-label scale-90 leading-none">流量</span>
-                                    <span class="font-black text-sky-400 text-lg leading-none">${d[prefix + 'Traffic'] || '0'}</span>
+                                    <span class="font-black text-sky-400 text-lg leading-none">${val('Traffic') || '0'}</span>
                                 </div>
                                 <div class="flex flex-col items-center">
                                     <span class="mini-label scale-90 leading-none">${type === 'PT' ? '分享' : '換領'}</span>
-                                    <button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared', '${type}')` : `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Redeem_Head', '${type}')`}" class="font-black text-sky-400 text-lg leading-none underline decoration-sky-500/20">${d[prefix + (type === 'PT' ? 'Share' : 'Redeem_Head')] || '0'}</button>
+                                    <button onclick="${type === 'PT' ? `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Shared', '${type}')` : `openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Redeem_Head', '${type}')`}" class="font-black text-sky-400 text-lg leading-none underline decoration-sky-500/20">${val(type === 'PT' ? 'Share' : 'Redeem_Head') || '0'}</button>
                                 </div>
                             </div>
                             ${headActions.length > 0 ? `<div class="grid grid-cols-5 gap-0.5 border-t border-white/5 pt-1.5 mt-1">${headActions.map(x => `<div class="grid-item p-1 ${x.is$ ? 'bg-sky-500/15' : ''}"><span class="mini-label opacity-70 scale-75 leading-none mb-0.5">${x.l}</span><span class="font-black text-sm ${x.is$ ? 'text-sky-300' : 'text-slate-300'}">${x.v || '0'}</span></div>`).join('')}</div>` : ''}
@@ -605,7 +760,7 @@
                     <div class="flex w-full items-start gap-1.5 relative min-h-[48px] px-1.5">
                         <span class="section-tag tail-tag mt-1">龍尾</span>
                         <div class="flex-1 grid grid-cols-5 gap-1">
-                            ${[{l:"換領",v:d[prefix+'Redeem'+(type==='Bday'?'_Tail':'')]},{l:"預約",v:d[prefix+'Book'+(type==='Bday'?'_Tail':'')]},{l:"本月",v:d[prefix+'MTD_Book'+(type==='Bday'?'_Tail':'')]},{l:"出席",v:d[prefix+'Show'+(type==='Bday'?'_Tail':'')]},{l:"金額",v:d[prefix+'Amount'+(type==='Bday'?'_Tail':'')],is$:true}].map(x=>`<div class="grid-item p-1 ${x.is$?'bg-emerald-500/15 border-emerald-500/30':''}"><span class="mini-label opacity-70 scale-75 mb-0.5">${x.l}</span><button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Redeem_Tail', '${type}')" class="font-black text-lg leading-none underline decoration-emerald-500/20 ${x.is$?'text-emerald-400':'text-white'}">${x.v || '0'}</button></div>`).join('')}
+                            ${[{l:"換領",v:val('Redeem'+(type==='Bday'?'_Tail':''))},{l:"預約",v:val('Book'+(type==='Bday'?'_Tail':''))},{l:"本月",v:val('MTD_Book'+(type==='Bday'?'_Tail':''))},{l:"出席",v:val('Show'+(type==='Bday'?'_Tail':''))},{l:"金額",v:val('Amount'+(type==='Bday'?'_Tail':'')),is$:true}].map(x=>`<div class="grid-item p-1 ${x.is$?'bg-emerald-500/15 border-emerald-500/30':''}"><span class="mini-label opacity-70 scale-75 mb-0.5">${x.l}</span><button onclick="openLeadModal('${brandName}', '${floorName}', '${therapist}', 'Redeem_Tail', '${type}')" class="font-black text-lg leading-none underline decoration-emerald-500/20 ${x.is$?'text-emerald-400':'text-white'}">${x.v || '0'}</button></div>`).join('')}
                         </div>
                     </div>
                 </div>
@@ -620,7 +775,9 @@
             const brands = [...new Set(opsData.map(d => d.Brand))].filter(Boolean);
             if (!opsFilterBrand || !brands.includes(opsFilterBrand)) { opsFilterBrand = brands[0] || 'All'; }
             bF.innerHTML = ['All', ...brands].map(b => `<button onclick="setOpsBrandFilter('${b}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${opsFilterBrand === b ? 'active' : ''}">${b}</button>`).join('');
-            ptF.innerHTML = ['Overall', 'PN', 'BBL', 'PEXO'].map(f => `<button onclick="setOpsPTFilter('${f}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${opsPTFilter === f ? 'active' : ''}">${f}</button>`).join('');
+            
+            ptF.innerHTML = ['Overall', 'PN', 'BBL', 'Pexo'].map(f => `<button onclick="setOpsPTFilter('${f}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${opsPTFilter === f ? 'active' : ''}">${f}</button>`).join('');
+            
             const targetB = opsFilterBrand === 'All' ? brands : [opsFilterBrand];
             targetB.forEach(brand => {
                 const color = colors[brand.toLowerCase()] || colors.default;
@@ -648,7 +805,9 @@
             const bFloors = [...new Set(tData.filter(t => t.Brand === therapistFilterBrand).map(t => t.Floor))].sort();
             if (!therapistFilterFloor || !['All', ...bFloors].includes(therapistFilterFloor)) { therapistFilterFloor = bFloors[0] || 'All'; }
             fF.innerHTML = ['All', ...bFloors].map(f => `<button onclick="setTherapistFloor('${f}')" class="filter-tab px-4 py-1 rounded-full border border-white/5 text-[10px] font-black uppercase ${f === therapistFilterFloor ? 'active' : ''}">${f}</button>`).join('');
-            ptF.innerHTML = ['Overall', 'PN', 'BBL', 'PEXO'].map(f => `<button onclick="setTherapistPTFilter('${f}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${therapistPTFilter === f ? 'active' : ''}">${f}</button>`).join('');
+            
+            ptF.innerHTML = ['Overall', 'PN', 'BBL', 'Pexo'].map(f => `<button onclick="setTherapistPTFilter('${f}')" class="filter-tab px-4 py-1.5 rounded-lg text-[10px] font-black uppercase ${therapistPTFilter === f ? 'active' : ''}">${f}</button>`).join('');
+            
             let data = getSortData(tData.filter(t => t.Brand === therapistFilterBrand && (therapistFilterFloor === 'All' || t.Floor === therapistFilterFloor)), therapistSort);
             const color = colors[therapistFilterBrand?.toLowerCase()] || colors.default;
             const getTh = (l, k, w, ex = '') => `<th class="sort-header ${therapistSort.key === k ? 'sort-active' : ''} ${ex}" style="width: ${w};" onclick="handleSort('therapist', '${k}')">${l}${getSortIcon(therapistSort.key, k, therapistSort.direction)}</th>`;
