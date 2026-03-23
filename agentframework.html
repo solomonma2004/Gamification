@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agentic Framework: Horizontal Layer Stack</title>
+    <title>AI Agentic Framework: High-Velocity Pipeline</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700;800;900&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -40,9 +40,64 @@
             overflow-x: hidden;
         }
 
+        /* --- CUSTOMER QUEUE AREA --- */
+        .queue-section {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .queue-label {
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-sub);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        #queue-container {
+            display: flex;
+            gap: 15px;
+            padding: 10px;
+            height: 60px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .queued-customer {
+            width: 35px;
+            height: 35px;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .queued-customer.processing {
+            transform: scale(1.3);
+            z-index: 100;
+            border-color: var(--text-main);
+            color: var(--text-main);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
         header {
             text-align: center;
-            margin-bottom: 80px;
+            margin-bottom: 60px;
             z-index: 10;
         }
 
@@ -66,31 +121,31 @@
         /* --- TRAVELING CUSTOMER ICON --- */
         #traveler {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             background: white;
             border: 2px solid var(--text-main);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             color: var(--text-main);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 0 15px var(--accent-glow, transparent);
-            z-index: 100;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            z-index: 200;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s, border-color 0.3s, box-shadow 0.3s;
+            transition: opacity 0.2s;
         }
 
         .traveler-pulse {
-            animation: pulse 1.5s infinite;
+            animation: pulse 0.6s infinite;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.4); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(15, 23, 42, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(15, 23, 42, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.6); }
+            70% { box-shadow: 0 0 0 12px rgba(15, 23, 42, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(15, 23, 42, 0); }
         }
 
         /* --- LAYER SECTION --- */
@@ -136,7 +191,7 @@
             border-radius: 16px;
             padding: 18px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -205,10 +260,10 @@
             border-radius: 20px;
             padding: 6px;
             border: 2px solid #334155;
-            height: 200px;
+            height: 180px;
             display: flex;
             flex-direction: column;
-            transition: all 0.4s;
+            transition: all 0.3s;
         }
 
         .phone-mini.active-node {
@@ -238,6 +293,7 @@
 
         .screen-body { padding: 10px; text-align: center; }
         .screen-body h5 { margin: 0 0 4px; font-weight: 800; font-size: 10px; }
+        .screen-body p { font-size: 9px; margin: 0; line-height: 1.3; color: #475569; }
         .screen-btn { padding: 6px; border: none; color: white; font-weight: 800; margin-top: auto; font-size: 9px; }
 
         .gated { opacity: 0.5; filter: grayscale(1); }
@@ -246,14 +302,19 @@
 </head>
 <body onload="initSimulation()">
 
-    <!-- Traveling Customer Icon -->
+    <!-- Fixed Traveling Customer Icon -->
     <div id="traveler">
         <i class="fa-solid fa-user"></i>
     </div>
 
+    <div class="queue-section">
+        <div class="queue-label">High-Velocity Intake Queue</div>
+        <div id="queue-container"></div>
+    </div>
+
     <header id="header-ref">
-        <h1>Autonomous Revenue Engine v5.1</h1>
-        <p style="color:var(--text-sub)">Real-Time Intent Flow across Horizontal Layers</p>
+        <h1>Autonomous Revenue Engine v5.4</h1>
+        <p style="color:var(--text-sub)">Real-Time Stack: High-Frequency Agent Processing</p>
     </header>
 
     <div class="framework-stack" id="stack-ref">
@@ -264,23 +325,23 @@
             <div class="objective-grid">
                 <div class="card obj-retain" id="p-0">
                     <div class="card-header"><i class="fa-solid fa-user-check"></i> <span>Retain</span></div>
-                    <div class="card-body"><b>Trigger:</b> Cycle Complete.<br><b>Signal:</b> 100% attendance.</div>
+                    <div class="card-body"><b>Trigger:</b> Cycle Optimized.</div>
                 </div>
                 <div class="card obj-reactivate" id="p-1">
                     <div class="card-header"><i class="fa-solid fa-plug"></i> <span>Reactivate</span></div>
-                    <div class="card-body"><b>Trigger:</b> 180-Day Gap.<br><b>Signal:</b> No booking activity.</div>
+                    <div class="card-body"><b>Trigger:</b> Abandoned LTV.</div>
                 </div>
                 <div class="card obj-reconfirm" id="p-2">
                     <div class="card-header"><i class="fa-solid fa-triangle-exclamation"></i> <span>Reconfirm</span></div>
-                    <div class="card-body"><b>Trigger:</b> T-24h Appt.<br><b>Signal:</b> 35% No-show probability.</div>
+                    <div class="card-body"><b>Trigger:</b> T-24h Critical.</div>
                 </div>
                 <div class="card obj-upsell" id="p-3">
                     <div class="card-header"><i class="fa-solid fa-gem"></i> <span>Upsell</span></div>
-                    <div class="card-body"><b>Trigger:</b> High Engagement.<br><b>Signal:</b> Cross-sell gap detected.</div>
+                    <div class="card-body"><b>Trigger:</b> TX Success.</div>
                 </div>
                 <div class="card obj-referral" id="p-4">
                     <div class="card-header"><i class="fa-solid fa-share-nodes"></i> <span>Referral</span></div>
-                    <div class="card-body"><b>Trigger:</b> Post-Treatment.<br><b>Signal:</b> 10/10 NPS provided.</div>
+                    <div class="card-body"><b>Trigger:</b> NPS 10 peak.</div>
                 </div>
             </div>
         </div>
@@ -290,38 +351,41 @@
             <div class="layer-header">Layer 2: Cognition (Strategic Agents)</div>
             <div class="objective-grid">
                 <div class="card obj-retain" id="c-0">
-                    <div class="card-header"><i class="fa-solid fa-brain"></i> <span>Retention Hub</span></div>
+                    <div class="card-header"><i class="fa-solid fa-calendar-alt"></i> <span>Retention Hub</span></div>
                     <div class="card-body">
-                        <b>Strategy:</b> Predicted Slotting.<br>
-                        <div class="highlight-msg">"我哋留意到妳嘅療程效果..."</div>
+                        <b>Strategy:</b> Next Appt Date.<br>
+                        <div class="highlight-msg">"預計下個日期係 3月27日..."</div>
                     </div>
                 </div>
                 <div class="card obj-reactivate" id="c-1">
-                    <div class="card-header"><i class="fa-solid fa-brain"></i> <span>Reactivate Hub</span></div>
+                    <div class="card-header"><i class="fa-solid fa-wallet"></i> <span>Reactivate Hub</span></div>
                     <div class="card-body">
-                        <b>Strategy:</b> Value-Swap Offer.<br>
-                        <div class="highlight-msg">"好耐冇見！慶祝妳返嚟..."</div>
+                        <b>Strategy:</b> Value Swap Offer.<br>
+                        <span class="strategy-tag">$12k+ Outstanding</span>
+                        <div class="highlight-msg">"餘額活用：換取最新療程..."</div>
                     </div>
                 </div>
                 <div class="card obj-reconfirm" id="c-2">
-                    <div class="card-header"><i class="fa-solid fa-brain"></i> <span>Inventory Hub</span></div>
+                    <div class="card-header"><i class="fa-solid fa-shield-halved"></i> <span>Inventory Hub</span></div>
                     <div class="card-body">
-                        <b>Strategy:</b> Firm Gating.<br>
-                        <div class="highlight-msg" style="border-color:var(--risk-red)">"名額緊張。請確認..."</div>
+                        <b>Strategy:</b> Raised Urgency.<br>
+                        <div class="highlight-msg" style="border-color:var(--risk-red)">"名額緊張！請即確認..."</div>
                     </div>
                 </div>
                 <div class="card obj-upsell" id="c-3">
-                    <div class="card-header"><i class="fa-solid fa-brain"></i> <span>Upsell Hub</span></div>
+                    <div class="card-header"><i class="fa-solid fa-puzzle-piece"></i> <span>Upsell Hub</span></div>
                     <div class="card-body">
-                        <b>Strategy:</b> Tech-Gap Bridge.<br>
-                        <div class="highlight-msg">"想試埋全身塑形達到 2x..."</div>
+                        <b>Strategy:</b> TX Complement.<br>
+                        <span class="strategy-tag">Next-Best Offer</span>
+                        <div class="highlight-msg">"配搭全身塑形 7 折優惠..."</div>
                     </div>
                 </div>
                 <div class="card obj-referral" id="c-4">
-                    <div class="card-header"><i class="fa-solid fa-brain"></i> <span>Referral Hub</span></div>
+                    <div class="card-header"><i class="fa-solid fa-users-rays"></i> <span>Referral Hub</span></div>
                     <div class="card-body">
                         <b>Strategy:</b> Social Multiplier.<br>
-                        <div class="highlight-msg">"推薦好友變靚，均可獲得 $1000..."</div>
+                        <span class="strategy-tag">Head & Tail Incentive</span>
+                        <div class="highlight-msg">"二人均享 $800 回贈..."</div>
                     </div>
                 </div>
             </div>
@@ -329,126 +393,120 @@
 
         <!-- LAYER 3: ACTION -->
         <div class="layer-section layer-action">
-            <div class="layer-header">Layer 3: Action (Execution Master)</div>
+            <div class="layer-header">Layer 3: Action (Distribution Master)</div>
             <div class="objective-grid">
                 <div class="card obj-retain" id="a-0">
-                    <div class="card-header"><i class="fa-solid fa-bolt"></i> <span>Dispatch</span></div>
-                    <div class="card-body">Status: <b>SEND</b><br>Channel: <b>WhatsApp</b></div>
+                    <div class="card-body">Status: <b>SEND</b><br>Chan: <b>WhatsApp</b></div>
                 </div>
                 <div class="card obj-reactivate" id="a-1">
-                    <div class="card-header"><i class="fa-solid fa-bolt"></i> <span>Dispatch</span></div>
-                    <div class="card-body">Status: <b>SEND</b><br>Channel: <b>WhatsApp</b></div>
+                    <div class="card-body">Status: <b>SEND</b><br>Chan: <b>WhatsApp</b></div>
                 </div>
                 <div class="card obj-reconfirm" id="a-2">
-                    <div class="card-header"><i class="fa-solid fa-bolt"></i> <span>Dispatch</span></div>
-                    <div class="card-body">Status: <b>SEND</b><br>Channel: <b>App Push</b></div>
+                    <div class="card-body">Status: <b>SEND</b><br>Chan: <b>App Push</b></div>
                 </div>
                 <div class="card obj-upsell" id="a-3">
-                    <div class="card-header"><i class="fa-solid fa-bolt"></i> <span>Dispatch</span></div>
-                    <div class="card-body">Status: <b>SEND</b><br>Channel: <b>App Push</b></div>
+                    <div class="card-body">Status: <b>SEND</b><br>Chan: <b>App Push</b></div>
                 </div>
                 <div class="card obj-referral" id="a-4">
-                    <div class="card-header"><i class="fa-solid fa-ban"></i> <span>Gated</span></div>
-                    <div class="card-body">Status: <b>DROP</b><br>Reason: <b>Frequency</b></div>
+                    <div class="card-body">Status: <b>DROP</b><br>Reason: <b>Freq Gate</b></div>
                 </div>
             </div>
         </div>
 
-        <!-- FINAL OUTCOMES (PHONE PREVIEWS) -->
+        <!-- FINAL OUTCOMES -->
         <div class="outcome-footer">
             <div class="phone-mini" id="f-0">
-                <div class="screen">
-                    <div class="screen-top" style="background:var(--c-retain)"><i class="fa-solid fa-user-check"></i></div>
-                    <div class="screen-body"><h5>保養提醒</h5><p>預留咗星期五時間...</p><button class="screen-btn" style="background:var(--c-retain)">預約</button></div>
-                </div>
+                <div class="screen"><div class="screen-top" style="background:var(--c-retain)"><i class="fa-solid fa-calendar-check"></i></div><div class="screen-body"><h5>保養提醒</h5><p>3月27日已預留...</p></div></div>
             </div>
             <div class="phone-mini" id="f-1">
-                <div class="screen">
-                    <div class="screen-top" style="background:var(--c-reactivate)"><i class="fa-solid fa-gift"></i></div>
-                    <div class="screen-body"><h5>好耐冇見！</h5><p>領取 $500 禮券...</p><button class="screen-btn" style="background:var(--c-reactivate)">領取</button></div>
-                </div>
+                <div class="screen"><div class="screen-top" style="background:var(--c-reactivate)"><i class="fa-solid fa-money-bill-transfer"></i></div><div class="screen-body"><h5>餘額活用</h5><p>活用 $12,000 餘額...</p></div></div>
             </div>
             <div class="phone-mini" id="f-2">
-                <div class="screen">
-                    <div class="screen-top" style="background:var(--c-reconfirm)"><i class="fa-solid fa-clock"></i></div>
-                    <div class="screen-body"><h5>名額緊張！</h5><p>請於1小時內確認...</p><button class="screen-btn" style="background:var(--c-reconfirm)">立即確認</button></div>
-                </div>
+                <div class="screen"><div class="screen-top" style="background:var(--c-reconfirm)"><i class="fa-solid fa-hourglass-half"></i></div><div class="screen-body"><h5>最後確認</h5><p>名額極度緊張...</p></div></div>
             </div>
             <div class="phone-mini" id="f-3">
-                <div class="screen">
-                    <div class="screen-top" style="background:var(--c-upsell)"><i class="fa-solid fa-star"></i></div>
-                    <div class="screen-body"><h5>升級效果</h5><p>配合塑形療程可達...</p><button class="screen-btn" style="background:var(--c-upsell)">加購</button></div>
-                </div>
+                <div class="screen"><div class="screen-top" style="background:var(--c-upsell)"><i class="fa-solid fa-sparkles"></i></div><div class="screen-body"><h5>效果加乘</h5><p>全身塑形限時加購...</p></div></div>
             </div>
             <div class="phone-mini gated" id="f-4">
-                <div class="screen">
-                    <div class="screen-top" style="background:#94a3b8"><i class="fa-solid fa-ban"></i></div>
-                    <div class="screen-body"><h5>[GATED]</h5><p>系統自動攔截...</p><button class="screen-btn" style="background:#94a3b8" disabled>No Send</button></div>
-                </div>
+                <div class="screen"><div class="screen-top" style="background:#94a3b8"><i class="fa-solid fa-ban"></i></div><div class="screen-body"><h5>[攔截]</h5><p>自動頻率保護</p></div></div>
             </div>
         </div>
     </div>
 
     <script>
+        const queueContainer = document.getElementById('queue-container');
         const traveler = document.getElementById('traveler');
         const colors = ['var(--c-retain)', 'var(--c-reactivate)', 'var(--c-reconfirm)', 'var(--c-upsell)', 'var(--c-referral)'];
         
+        let queueItems = [];
+
+        function createQueueItem() {
+            const div = document.createElement('div');
+            div.className = 'queued-customer';
+            div.innerHTML = '<i class="fa-solid fa-user"></i>';
+            queueContainer.appendChild(div);
+            return div;
+        }
+
         async function initSimulation() {
-            // Wait a moment before starting loop
-            await new Promise(r => setTimeout(r, 2000));
+            for(let i=0; i<10; i++) queueItems.push(createQueueItem());
+            await new Promise(r => setTimeout(r, 500));
+            
             while (true) {
                 const randomPath = Math.floor(Math.random() * 5);
-                await runPath(randomPath);
-                await new Promise(r => setTimeout(r, 3000));
+                // No await here means overlapping falls (more frequent)
+                runPipelineFromQueue(randomPath);
+                await new Promise(r => setTimeout(r, 1200)); // New customer every 1.2s
             }
         }
 
-        async function runPath(index) {
+        async function runPipelineFromQueue(pathIndex) {
+            const frontPerson = queueItems.shift();
+            if (!frontPerson) return;
+            
+            frontPerson.classList.add('processing');
+            const startRect = frontPerson.getBoundingClientRect();
+            const scrollY = window.scrollY;
+
+            // Shift visual queue
+            queueItems.push(createQueueItem());
+
+            // Create a local traveler for overlapping animations
+            const localTraveler = traveler.cloneNode(true);
+            document.body.appendChild(localTraveler);
+            
+            localTraveler.style.left = startRect.left + 'px';
+            localTraveler.style.top = (startRect.top + scrollY) + 'px';
+            localTraveler.style.opacity = '1';
+            localTraveler.style.borderColor = colors[pathIndex];
+            localTraveler.style.boxShadow = `0 10px 20px rgba(0,0,0,0.1), 0 0 20px ${colors[pathIndex]}`;
+            
+            frontPerson.style.opacity = '0';
+            setTimeout(() => frontPerson.remove(), 300);
+
             const steps = [
-                document.getElementById(`p-${index}`),
-                document.getElementById(`c-${index}`),
-                document.getElementById(`a-${index}`),
-                document.getElementById(`f-${index}`)
+                document.getElementById(`p-${pathIndex}`),
+                document.getElementById(`c-${pathIndex}`),
+                document.getElementById(`a-${pathIndex}`),
+                document.getElementById(`f-${pathIndex}`)
             ];
 
-            const header = document.getElementById('header-ref');
-            const color = colors[index];
-            
-            // Set traveler initial position
-            const hRect = header.getBoundingClientRect();
-            traveler.style.borderColor = color;
-            traveler.style.boxShadow = `0 10px 20px rgba(0,0,0,0.1), 0 0 20px ${color}`;
-            traveler.style.left = (hRect.left + hRect.width / 2 - 20) + 'px';
-            traveler.style.top = '-100px';
-            traveler.style.opacity = '1';
-
-            // Animation timing
-            const duration = 800;
+            const duration = 400; // Speed: 400ms per layer move
 
             for (let i = 0; i < steps.length; i++) {
                 const target = steps[i];
                 const rect = target.getBoundingClientRect();
-                const scrollY = window.scrollY;
 
-                // Move traveler
-                await moveElement(traveler, rect.left + rect.width / 2 - 20, rect.top + rect.height / 2 - 20 + scrollY, duration);
-                
-                // Highlight Node
+                await moveElement(localTraveler, rect.left + rect.width / 2 - 17, rect.top + rect.height / 2 - 17 + scrollY, duration);
                 target.classList.add('active-node');
-                
-                // Visual Pulse
-                traveler.classList.add('traveler-pulse');
-                await new Promise(r => setTimeout(r, 500));
-                traveler.classList.remove('traveler-pulse');
-                
-                // Remove highlight of previous step if needed (optional)
-                if (i > 0) steps[i-1].classList.remove('active-node');
+                localTraveler.classList.add('traveler-pulse');
+                await new Promise(r => setTimeout(r, 200)); // Short pause on card
+                localTraveler.classList.remove('traveler-pulse');
+                target.classList.remove('active-node');
             }
 
-            // End of path
-            traveler.style.opacity = '0';
-            await new Promise(r => setTimeout(r, 1000));
-            steps[steps.length - 1].classList.remove('active-node');
+            localTraveler.style.opacity = '0';
+            setTimeout(() => localTraveler.remove(), 500);
         }
 
         function moveElement(el, x, y, duration) {
@@ -456,29 +514,18 @@
                 const startX = parseFloat(el.style.left) || 0;
                 const startY = parseFloat(el.style.top) || 0;
                 const startTime = performance.now();
-
                 function step(currentTime) {
                     const elapsed = currentTime - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    const ease = easeInOutCubic(progress);
-
-                    el.style.left = startX + (x - startX) * ease + 'px';
-                    el.style.top = startY + (y - startY) * ease + 'px';
-
-                    if (progress < 1) {
-                        requestAnimationFrame(step);
-                    } else {
-                        resolve();
-                    }
+                    const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; // Simpler ease
+                    el.style.left = startX + (x - startX) * ease(progress) + 'px';
+                    el.style.top = startY + (y - startY) * ease(progress) + 'px';
+                    if (progress < 1) requestAnimationFrame(step);
+                    else resolve();
                 }
                 requestAnimationFrame(step);
             });
         }
-
-        function easeInOutCubic(x) {
-            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-        }
     </script>
-
 </body>
 </html>
