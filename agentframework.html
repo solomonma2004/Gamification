@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agentic Framework: High-Velocity Pipeline</title>
+    <title>NEODERM AGENTIC FRAMEWORK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700;800;900&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -313,15 +313,15 @@
     </div>
 
     <header id="header-ref">
-        <h1>Autonomous Revenue Engine v5.4</h1>
+        <h1>NEODERM AGENTIC FRAMEWORK</h1>
         <p style="color:var(--text-sub)">Real-Time Stack: High-Frequency Agent Processing</p>
     </header>
 
     <div class="framework-stack" id="stack-ref">
 
-        <!-- LAYER 1: PERCEPTION -->
+        <!-- LAYER 1: INTENT AGENT -->
         <div class="layer-section layer-perception">
-            <div class="layer-header">Layer 1: Perception (Intent Sensors)</div>
+            <div class="layer-header">Layer 1: Intent Agent</div>
             <div class="objective-grid">
                 <div class="card obj-retain" id="p-0">
                     <div class="card-header"><i class="fa-solid fa-user-check"></i> <span>Retain</span></div>
@@ -350,6 +350,7 @@
         <div class="layer-section layer-cognition">
             <div class="layer-header">Layer 2: Cognition (Strategic Agents)</div>
             <div class="objective-grid">
+                <!-- RETAIN HUB -->
                 <div class="card obj-retain" id="c-0">
                     <div class="card-header"><i class="fa-solid fa-calendar-alt"></i> <span>Retention Hub</span></div>
                     <div class="card-body">
@@ -357,6 +358,7 @@
                         <div class="highlight-msg">"預計下個日期係 3月27日..."</div>
                     </div>
                 </div>
+                <!-- REACTIVATE HUB -->
                 <div class="card obj-reactivate" id="c-1">
                     <div class="card-header"><i class="fa-solid fa-wallet"></i> <span>Reactivate Hub</span></div>
                     <div class="card-body">
@@ -365,6 +367,7 @@
                         <div class="highlight-msg">"餘額活用：換取最新療程..."</div>
                     </div>
                 </div>
+                <!-- INVENTORY HUB -->
                 <div class="card obj-reconfirm" id="c-2">
                     <div class="card-header"><i class="fa-solid fa-shield-halved"></i> <span>Inventory Hub</span></div>
                     <div class="card-body">
@@ -372,6 +375,7 @@
                         <div class="highlight-msg" style="border-color:var(--risk-red)">"名額緊張！請即確認..."</div>
                     </div>
                 </div>
+                <!-- UPSELL HUB -->
                 <div class="card obj-upsell" id="c-3">
                     <div class="card-header"><i class="fa-solid fa-puzzle-piece"></i> <span>Upsell Hub</span></div>
                     <div class="card-body">
@@ -380,6 +384,7 @@
                         <div class="highlight-msg">"配搭全身塑形 7 折優惠..."</div>
                     </div>
                 </div>
+                <!-- REFERRAL HUB -->
                 <div class="card obj-referral" id="c-4">
                     <div class="card-header"><i class="fa-solid fa-users-rays"></i> <span>Referral Hub</span></div>
                     <div class="card-body">
@@ -391,9 +396,9 @@
             </div>
         </div>
 
-        <!-- LAYER 3: ACTION -->
+        <!-- LAYER 3: DISTRIBUTION AGENT -->
         <div class="layer-section layer-action">
-            <div class="layer-header">Layer 3: Action (Distribution Master)</div>
+            <div class="layer-header">Layer 3: Distribution Agent</div>
             <div class="objective-grid">
                 <div class="card obj-retain" id="a-0">
                     <div class="card-body">Status: <b>SEND</b><br>Chan: <b>WhatsApp</b></div>
@@ -454,9 +459,8 @@
             
             while (true) {
                 const randomPath = Math.floor(Math.random() * 5);
-                // No await here means overlapping falls (more frequent)
                 runPipelineFromQueue(randomPath);
-                await new Promise(r => setTimeout(r, 1200)); // New customer every 1.2s
+                await new Promise(r => setTimeout(r, 1200)); 
             }
         }
 
@@ -468,10 +472,8 @@
             const startRect = frontPerson.getBoundingClientRect();
             const scrollY = window.scrollY;
 
-            // Shift visual queue
             queueItems.push(createQueueItem());
 
-            // Create a local traveler for overlapping animations
             const localTraveler = traveler.cloneNode(true);
             document.body.appendChild(localTraveler);
             
@@ -491,7 +493,7 @@
                 document.getElementById(`f-${pathIndex}`)
             ];
 
-            const duration = 400; // Speed: 400ms per layer move
+            const duration = 400; 
 
             for (let i = 0; i < steps.length; i++) {
                 const target = steps[i];
@@ -500,7 +502,7 @@
                 await moveElement(localTraveler, rect.left + rect.width / 2 - 17, rect.top + rect.height / 2 - 17 + scrollY, duration);
                 target.classList.add('active-node');
                 localTraveler.classList.add('traveler-pulse');
-                await new Promise(r => setTimeout(r, 200)); // Short pause on card
+                await new Promise(r => setTimeout(r, 200)); 
                 localTraveler.classList.remove('traveler-pulse');
                 target.classList.remove('active-node');
             }
@@ -517,7 +519,7 @@
                 function step(currentTime) {
                     const elapsed = currentTime - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; // Simpler ease
+                    const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
                     el.style.left = startX + (x - startX) * ease(progress) + 'px';
                     el.style.top = startY + (y - startY) * ease(progress) + 'px';
                     if (progress < 1) requestAnimationFrame(step);
