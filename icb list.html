@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICB 重新啟動儀表板 - 實時生產版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', "Microsoft JhengHei", sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .card { background: white; border-radius: 1.25rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.04); border: 1px solid #e2e8f0; }
+        .status-badge { padding: 0.3rem 0.8rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 800; display: inline-flex; text-transform: uppercase; letter-spacing: 0.025em; }
+        .segment-b { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .segment-c { background-color: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+        #loginGate { background: #ffffff; z-index: 100; }
+        #loadingOverlay { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); z-index: 90; }
+        input::placeholder { color: #cbd5e1; font-weight: 400; letter-spacing: normal; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- 登入頁面 (僅顯示真實數據邏輯) -->
+    <div id="loginGate" class="fixed inset-0 flex items-center justify-center p-6 transition-opacity duration-500">
+        <div class="max-w-md w-full p-10 space-y-8 bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-slate-100">
+            <div class="text-center space-y-4">
+                <div class="inline-flex bg-indigo-600 p-5 rounded-3xl shadow-2xl shadow-indigo-200 mb-2">
+                    <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                </div>
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight">治療師實時平台</h2>
+                <p class="text-slate-400 font-medium text-sm">請輸入您的員工編號以讀取雲端名單</p>
+            </div>
+
+            <!-- 環境提醒 (非 GAS 環境會鎖定) -->
+            <div id="envWarning" class="hidden p-5 bg-rose-50 border border-rose-100 rounded-3xl text-rose-700 text-xs font-bold text-center space-y-2">
+                <p class="flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <span>環境受限 (非雲端環境)</span>
+                </p>
+                <p class="font-normal text-rose-500">此頁面目前未在 Google 網頁應用程式中運行。請點擊您發佈的「網頁應用程式網址」來查看真實數據。</p>
+            </div>
+
+            <form id="loginForm" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Staff ID Identifier</label>
+                    <input type="text" id="staffIdInput" required placeholder="例如: 1681" class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-3xl text-center tracking-[0.2em] text-slate-700">
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    正在連線試算表...
+                </button>
+                <div id="loginError" class="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-[11px] font-bold hidden"></div>
+            </form>
+            
+            <div class="pt-4 border-t border-slate-50 text-center">
+                <span class="text-[9px] text-slate-300 font-bold uppercase tracking-widest">v3.2 | Production Data Sync</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加載中 -->
+    <div id="loadingOverlay" class="fixed inset-0 flex flex-col items-center justify-center hidden">
+        <div class="relative">
+            <div class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-100 border-t-indigo-600"></div>
+        </div>
+        <p class="mt-6 text-slate-900 font-bold tracking-tight">正在提取實時客戶紀錄...</p>
+    </div>
+
+    <!-- 儀表板內容 -->
+    <div id="dashboardContent" class="hidden flex flex-col min-h-screen">
+        <header class="bg-white/80 backdrop-blur-xl sticky top-0 z-40 border-b border-slate-200/60 px-8 py-4">
+            <div class="max-w-[1600px] mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-indigo-600 p-2.5 rounded-xl">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-black text-slate-900">ICB Dashboard</h1>
+                        <p class="text-[10px] text-indigo-600 font-black uppercase tracking-widest" id="currentUserDisplay">USER: -</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="relative">
+                        <input type="text" id="searchInput" oninput="debounceFilter()" placeholder="搜尋編號、中心..." class="px-5 py-2.5 bg-slate-100 border-none rounded-xl text-sm w-72 outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                    </div>
+                    <button onclick="logout()" class="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest transition-colors">登出</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-[1600px] w-full mx-auto px-8 py-8 space-y-6">
+            <!-- 統計數據 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="card p-6"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">總客戶數</p><p class="text-3xl font-black mt-1" id="stat-total">0</p></div>
+                <div class="card p-6"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Segment B</p><p class="text-3xl font-black mt-1" id="stat-segB">0</p></div>
+                <div class="card p-6"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Segment C</p><p class="text-3xl font-black mt-1" id="stat-segC">0</p></div>
+                <div class="card p-6 bg-indigo-600 text-white border-none"><p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest">剩餘價值總計</p><p class="text-3xl font-black mt-1" id="stat-value">$0</p></div>
+            </div>
+
+            <!-- 數據表 -->
+            <div class="card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <tr>
+                                <th class="px-8 py-5">品牌</th>
+                                <th class="px-8 py-5">中心</th>
+                                <th class="px-8 py-5">會員編號</th>
+                                <th class="px-8 py-5">客群</th>
+                                <th class="px-8 py-5">最後購買</th>
+                                <th class="px-8 py-5">最後到訪</th>
+                                <th class="px-8 py-5">剩餘價值</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                <div id="noResults" class="hidden p-32 text-center">
+                    <p class="text-slate-400 font-black uppercase tracking-widest text-sm">此帳號目前無實時名單數據</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let staffMapping = {}; 
+        let currentTherapistName = null;
+        let rawData = [];
+        let filteredData = [];
+        let searchTimeout = null;
+
+        function initApp() {
+            // 真實連線檢查
+            const isGAS = typeof google !== 'undefined' && google.script && google.script.run;
+            
+            if (isGAS) {
+                google.script.run
+                    .withSuccessHandler(res => {
+                        if (res && res.mapping && !res.error) {
+                            staffMapping = res.mapping;
+                            enableLogin();
+                        } else {
+                            showError("雲端載入失敗: " + (res.error || "請檢查分頁設定。"));
+                        }
+                    })
+                    .withFailureHandler(err => showError("伺服器無法連線: " + err.message))
+                    .getStaffMapping();
+            } else {
+                // 如果在測試環境，顯示環境受限提醒
+                const envEl = document.getElementById('envWarning');
+                if (envEl) envEl.classList.remove('hidden');
+                const btn = document.getElementById('loginBtn');
+                if (btn) btn.textContent = "環境受限 (僅限 Web App)";
+            }
+        }
+
+        function enableLogin() {
+            const btn = document.getElementById('loginBtn');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "登入系統";
+                const err = document.getElementById('loginError');
+                if (err) err.classList.add('hidden');
+            }
+        }
+
+        function showError(msg, debug = null) {
+            const err = document.getElementById('loginError');
+            if (!err) return;
+            err.innerHTML = `<div>${msg}</div>`;
+            if (debug) err.innerHTML += `<div class="mt-2 text-[9px] text-rose-400">總行數: ${debug.totalRows}</div>`;
+            err.classList.remove('hidden');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('staffIdInput').value.trim();
+            
+            if (staffMapping[id]) {
+                currentTherapistName = staffMapping[id];
+                document.getElementById('loginGate').classList.add('opacity-0');
+                setTimeout(() => {
+                    document.getElementById('loginGate').classList.add('hidden');
+                    document.getElementById('dashboardContent').classList.remove('hidden');
+                    document.getElementById('currentUserDisplay').textContent = `USER: ${currentTherapistName.toUpperCase()}`;
+                    fetchLatestData();
+                }, 400);
+            } else {
+                showError(`驗證失敗：編號 "${id}" 不存在。`);
+            }
+        });
+
+        function fetchLatestData() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run.withSuccessHandler(data => {
+                    rawData = data || [];
+                    applyFiltersAndRender();
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                }).getSheetData();
+            }
+        }
+
+        function applyFiltersAndRender() {
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            // 真實篩選邏輯：僅顯示對應治療師的數據
+            let result = rawData.filter(row => 
+                row.therapist && row.therapist.toLowerCase().trim() === currentTherapistName.toLowerCase().trim()
+            );
+
+            // 更新統計
+            document.getElementById('stat-total').textContent = result.length.toLocaleString();
+            document.getElementById('stat-segB').textContent = result.filter(r => (r.segment||'').includes('B')).length;
+            document.getElementById('stat-segC').textContent = result.filter(r => (r.segment||'').includes('C')).length;
+            const totalVal = result.reduce((a, b) => a + (b.value || 0), 0);
+            document.getElementById('stat-value').textContent = `$${totalVal.toLocaleString()}`;
+
+            if (search) {
+                result = result.filter(row => row.code.toLowerCase().includes(search) || row.center.toLowerCase().includes(search));
+            }
+
+            filteredData = result;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (filteredData.length === 0) { 
+                document.getElementById('noResults').classList.remove('hidden'); 
+                return; 
+            }
+            
+            document.getElementById('noResults').classList.add('hidden');
+            
+            filteredData.forEach(m => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50/50 transition text-[13px] text-slate-600 border-b border-slate-50";
+                const badgeClass = (m.segment||'').toLowerCase().includes('b') ? 'segment-b' : 'segment-c';
+                
+                row.innerHTML = `
+                    <td class="px-8 py-5 text-slate-400 font-bold text-[10px] uppercase">${m.brand}</td>
+                    <td class="px-8 py-5 font-semibold text-slate-700">${m.center}</td>
+                    <td class="px-8 py-5 font-black text-indigo-600 tracking-tight">${m.code}</td>
+                    <td class="px-8 py-5"><span class="status-badge ${badgeClass}">${m.segment}</span></td>
+                    <td class="px-8 py-5 font-medium text-slate-500">${m.purchase}</td>
+                    <td class="px-8 py-5 font-medium text-slate-500">${m.visit}</td>
+                    <td class="px-8 py-5 font-black text-slate-900">$${(m.value || 0).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function logout() { window.location.reload(); }
+        function debounceFilter() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFiltersAndRender, 300);
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
