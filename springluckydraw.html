@@ -21,30 +21,51 @@
             background: linear-gradient(135deg, #f0f9ff 0%, #fff1f2 100%);
             color: #1e293b;
             min-height: 100vh;
-            margin: 0; padding: 0; overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
 
         /* 櫻花背景 */
-        #sakura-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-        .petal { position: absolute; background: linear-gradient(135deg, #ffdbed 0%, #ffb7d5 100%); border-radius: 150% 0 150% 50%; opacity: 0.5; animation: fall linear infinite; }
-        @keyframes fall { 0% { transform: translate(0, -20px) rotate(0deg) scale(1); } 100% { transform: translate(100px, 110vh) rotate(720deg) scale(0.6); } }
+        #sakura-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
 
-        /* Banner 容器：使用新海報 URL */
+        .petal {
+            position: absolute;
+            background: linear-gradient(135deg, #ffdbed 0%, #ffb7d5 100%);
+            border-radius: 150% 0 150% 50%;
+            opacity: 0.5;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translate(0, -20px) rotate(0deg) scale(1); }
+            100% { transform: translate(100px, 110vh) rotate(720deg) scale(0.6); }
+        }
+
         .banner-container {
             width: 100%;
             background: #fff;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             display: flex;
             justify-content: center;
             overflow: hidden;
             position: relative;
         }
+
         .banner-img {
             width: 100%;
             max-width: 1200px;
             height: auto;
             display: block;
-            object-fit: cover; 
+            object-fit: cover;
         }
 
         .prize-float-badge {
@@ -56,7 +77,7 @@
             backdrop-filter: blur(8px);
             padding: 10px 30px;
             border-radius: 50px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -65,7 +86,6 @@
             box-shadow: 0 10px 25px rgba(3, 105, 161, 0.3);
         }
 
-        /* UI 卡片 */
         .glass-card {
             background: var(--glass-white);
             backdrop-filter: blur(20px);
@@ -83,44 +103,118 @@
             font-weight: 900;
         }
 
-        .pool-tab { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.65; cursor: pointer; }
-        .pool-tab.active { opacity: 1; transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border: 2px solid white; }
+        .pool-tab {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.65;
+            cursor: pointer;
+        }
+
+        .pool-tab.active {
+            opacity: 1;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            border: 2px solid white;
+        }
 
         /* 扭蛋機動畫 */
-        .gacha-container { position: relative; width: 260px; height: 360px; margin: 0 auto; }
+        .gacha-container {
+            position: relative;
+            width: 260px;
+            height: 360px;
+            margin: 0 auto;
+        }
+
         .gacha-glass {
-            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 240px; height: 240px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 240px;
+            height: 240px;
             background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(186, 230, 253, 0.4) 100%);
-            border: 6px solid #fff; border-radius: 50%; overflow: hidden;
-            box-shadow: inset 0 10px 30px rgba(255,255,255,1), 0 15px 30px rgba(0,0,0,0.05);
+            border: 6px solid #fff;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: inset 0 10px 30px rgba(255, 255, 255, 1), 0 15px 30px rgba(0, 0, 0, 0.05);
             z-index: 5;
         }
+
         .gacha-base {
-            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 200px; height: 140px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
-            border-radius: 20px 20px 40px 40px; z-index: 4; border: 3px solid #fff;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 140px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            border-radius: 20px 20px 40px 40px;
+            z-index: 4;
+            border: 3px solid #fff;
         }
-        .gacha-knob { width: 50px; height: 50px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; }
-        .shaking { animation: shake 0.1s infinite; }
-        @keyframes shake { 0%, 100% { transform: translate(-50%, 0); } 25% { transform: translate(-51%, 1px); } 75% { transform: translate(-49%, -1px); } }
+
+        .gacha-knob {
+            width: 50px;
+            height: 50px;
+            background: #fbbf24;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .shaking {
+            animation: shake 0.1s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, 0); }
+            25% { transform: translate(-51%, 1px); }
+            75% { transform: translate(-49%, -1px); }
+        }
 
         .btn-main {
             background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
-            color: white; padding: 16px 48px; border-radius: 100px; font-weight: 800;
-            transition: 0.3s; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+            color: white;
+            padding: 16px 48px;
+            border-radius: 100px;
+            font-weight: 800;
+            transition: 0.3s;
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
         }
-        .btn-main:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 
-        /* 連線狀態 */
-        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .btn-main:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
         .st-online { background: #dcfce7; color: #15803d; }
         .st-online .status-dot { background: #22c55e; }
         .st-loading { background: #fef9c3; color: #a16207; }
         .st-loading .status-dot { background: #eab308; animation: pulse 1s infinite; }
         .st-offline { background: #fee2e2; color: #ef4444; }
         .st-offline .status-dot { background: #ef4444; }
+
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .rule-box {
@@ -154,24 +248,23 @@
 
         <!-- STEP 1: POOL SELECTION -->
         <div id="step-eligibility" class="glass-card p-6 md:p-10 mb-8">
-            <!-- 抽獎規則說明 -->
             <div class="rule-box text-slate-700 text-center text-xs md:text-sm font-medium">
                 每位客人每日於每個品牌消費，均可於<span class="text-sky-600 font-bold">「主抽獎池」</span>獲得最多一次抽獎機會；<br class="hidden md:block">
-                若當日到訪不同品牌，亦可於每個品牌參加<span class="text-pink-600 font-bold">「生日抽獎池」</span>各抽一次。
+                若當日到訪不同品牌，亦可於每個品牌參加<span class="text-pink-600 font-bold">「特選客戶&生日獎池」</span>各抽一次。
             </div>
 
             <div class="text-center mb-8">
                 <h2 class="text-lg font-black text-slate-800 uppercase tracking-wide">請選擇消費彩池</h2>
                 <p class="text-slate-400 text-[10px]">配額資料正在從您的 Google 試算表載入</p>
             </div>
-            
+
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <button onclick="selectPool('gold')" id="tab-gold" class="pool-tab tab-gold p-6 rounded-3xl bg-amber-50 border border-amber-100 flex flex-col items-center gap-2">
                     <span class="text-2xl">✨</span>
                     <span class="font-black text-sm text-amber-800">春日金池</span>
                     <span class="text-[9px] font-bold py-1 px-3 bg-white/60 rounded-full">>= $50,000</span>
                 </button>
-                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver p-6 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col items-center gap-2">
+                <button onclick="selectPool('silver')" id="tab-silver" class="pool-tab tab-silver active p-6 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col items-center gap-2">
                     <span class="text-2xl">🥈</span>
                     <span class="font-black text-sm text-slate-800">春日銀池</span>
                     <span class="text-[9px] font-bold py-1 px-3 bg-white/60 rounded-full">$30K - $49K</span>
@@ -187,8 +280,8 @@
                 <button onclick="selectPool('birthday')" id="tab-birthday" class="pool-tab tab-birthday w-full max-w-md p-6 rounded-3xl bg-pink-50 border border-pink-100 flex items-center justify-center gap-4">
                     <span class="text-3xl">🎂</span>
                     <div class="text-left">
-                        <span class="font-black text-sm block text-pink-800">生日彩池 特別獎勵</span>
-                        <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest text-pink-600">2 / 3 / 4 月生日專享</span>
+                        <span class="font-black text-sm block text-pink-800">特選客戶&生日獎池 特別獎勵</span>
+                        <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest text-pink-600">特選或生日客戶專享</span>
                     </div>
                 </button>
             </div>
@@ -202,11 +295,11 @@
             </div>
 
             <button id="entry-btn" onclick="confirmEntry()" disabled class="w-full btn-main uppercase tracking-widest">請等待連線完成</button>
-            
+
             <button onclick="toggleDashboard()" class="w-full mt-10 text-slate-400 text-[10px] font-bold tracking-widest hover:text-sky-500 uppercase">
                 📊 管理員配額診斷
             </button>
-            
+
             <div id="dashboard" class="hidden mt-6 bg-slate-800 rounded-2xl p-6 shadow-2xl">
                 <div id="dash-auth">
                     <div class="flex gap-2 max-w-xs mx-auto">
@@ -230,39 +323,75 @@
                 <button onclick="location.reload()" class="text-[10px] font-bold text-slate-400 px-4 py-2 bg-white/50 rounded-xl">⬅ 返回重選</button>
                 <div id="pool-name-badge" class="px-5 py-1.5 rounded-full bg-sky-600 text-white text-[10px] font-black uppercase">組別</div>
             </div>
+
             <div class="gacha-container mb-12" id="gacha-box">
                 <div class="gacha-glass"><div id="balls-wrap" class="relative w-full h-full"></div></div>
-                <div class="gacha-base"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"><div class="gacha-knob" onclick="startDraw()">💮</div></div></div>
+                <div class="gacha-base">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <div class="gacha-knob" onclick="startDraw()">💮</div>
+                    </div>
+                </div>
             </div>
             <button id="draw-btn" onclick="startDraw()" class="btn-main animate-bounce">點擊轉動抽獎</button>
         </div>
+    </div>
 
-        <!-- RESULT MODAL -->
-        <div id="res-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6 z-50 hidden">
-            <div class="glass-card p-8 max-w-md w-full text-center">
-                <div class="text-5xl mb-6">🌸</div>
-                <p class="text-xs text-sky-600 font-bold uppercase mb-2">中獎通知</p>
-                <p class="text-2xl font-black text-slate-800 mb-8" id="win-text">獎品</p>
-                <div class="space-y-4 mb-8">
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="in-mmc" oninput="validateForm()" placeholder="MMC 編號" class="px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none w-full">
-                        <input type="text" id="in-inv" oninput="validateForm()" placeholder="Invoice No." class="px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none w-full">
-                    </div>
-                    <select id="in-cse" onchange="validateForm()" class="w-full px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none">
-                        <option value="">負責同事 (CSE)...</option>
-                        <option value="miko.ngan">miko.ngan</option><option value="karykwong">karykwong</option><option value="angel.leungsl">angel.leungsl</option><option value="Helen.hui">Helen.hui</option><option value="sammi.ng">sammi.ng</option><option value="rania.lam">rania.lam</option><option value="winslee.hui">winslee.hui</option><option value="angela.chanhs">angela.chanhs</option><option value="aislin.hui">aislin.hui</option><option value="niki.ng">niki.ng</option><option value="yannux.man">yannux.man</option><option value="crystal.chanhy">crystal.chanhy</option><option value="rebecca.lam">rebecca.lam</option><option value="zoe.sohy">zoe.sohy</option><option value="joanne.chancy">joanne.chancy</option><option value="karena.leung.wt">karena.leung.wt</option><option value="miko.chen">miko.chen</option><option value="abbie.wong.kn">abbie.wong.kn</option><option value="michelle.choi">michelle.choi</option><option value="miki.wong">miki.wong</option><option value="Chrissie.wong">Chrissie.wong</option><option value="fanky.lam">fanky.lam</option><option value="milky.chong">milky.chong</option><option value="winnie.mowy">winnie.mowy</option><option value="ebbie.tam">ebbie.tam</option><option value="sharon.chu">sharon.chu</option><option value="wing.Chau">wing.Chau</option><option value="Angela.ChanHY">Angela.ChanHY</option><option value="Daisy.Wong">Daisy.Wong</option><option value="yandy.lee">yandy.lee</option>
-                    </select>
+    <!-- RESULT MODAL -->
+    <div id="res-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6 z-50 hidden">
+        <div class="glass-card p-8 max-w-md w-full text-center">
+            <div class="text-5xl mb-6">🌸</div>
+            <p class="text-xs text-sky-600 font-bold uppercase mb-2">中獎通知</p>
+            <p class="text-2xl font-black text-slate-800 mb-8" id="win-text">獎品</p>
+            
+            <div class="space-y-4 mb-8">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="in-mmc" oninput="validateForm()" placeholder="MMC 編號" class="px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none w-full">
+                    <input type="text" id="in-inv" oninput="validateForm()" placeholder="Invoice No." class="px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none w-full">
                 </div>
-                <div id="sub-msg" class="text-xs mb-4 hidden font-bold text-emerald-600"></div>
-                <button id="sub-btn" onclick="submitResult()" disabled class="w-full btn-main py-4 rounded-2xl opacity-50">確認存檔並扣除配額</button>
+                <select id="in-cse" onchange="validateForm()" class="w-full px-4 py-3 rounded-xl text-sm border border-slate-200 outline-none">
+                    <option value="">負責同事 (CSE)...</option>
+                    <option value="miko.ngan">miko.ngan</option>
+                    <option value="karykwong">karykwong</option>
+                    <option value="angel.leungsl">angel.leungsl</option>
+                    <option value="Helen.hui">Helen.hui</option>
+                    <option value="sammi.ng">sammi.ng</option>
+                    <option value="rania.lam">rania.lam</option>
+                    <option value="winslee.hui">winslee.hui</option>
+                    <option value="angela.chanhs">angela.chanhs</option>
+                    <option value="aislin.hui">aislin.hui</option>
+                    <option value="niki.ng">niki.ng</option>
+                    <option value="yannux.man">yannux.man</option>
+                    <option value="crystal.chanhy">crystal.chanhy</option>
+                    <option value="rebecca.lam">rebecca.lam</option>
+                    <option value="zoe.sohy">zoe.sohy</option>
+                    <option value="joanne.chancy">joanne.chancy</option>
+                    <option value="karena.leung.wt">karena.leung.wt</option>
+                    <option value="miko.chen">miko.chen</option>
+                    <option value="abbie.wong.kn">abbie.wong.kn</option>
+                    <option value="michelle.choi">michelle.choi</option>
+                    <option value="miki.wong">miki.wong</option>
+                    <option value="Chrissie.wong">Chrissie.wong</option>
+                    <option value="fanky.lam">fanky.lam</option>
+                    <option value="milky.chong">milky.chong</option>
+                    <option value="winnie.mowy">winnie.mowy</option>
+                    <option value="ebbie.tam">ebbie.tam</option>
+                    <option value="sharon.chu">sharon.chu</option>
+                    <option value="wing.Chau">wing.Chau</option>
+                    <option value="Angela.ChanHY">Angela.ChanHY</option>
+                    <option value="Daisy.Wong">Daisy.Wong</option>
+                    <option value="yandy.lee">yandy.lee</option>
+                </select>
             </div>
+            
+            <div id="sub-msg" class="text-xs mb-4 hidden font-bold text-emerald-600"></div>
+            <button id="sub-btn" onclick="submitResult()" disabled class="w-full btn-main py-4 rounded-2xl opacity-50">確認存檔並扣除配額</button>
         </div>
     </div>
 
     <script type="module">
         const scriptURL = "https://script.google.com/macros/s/AKfycbzk4csonS3ILtM8Kye2HaJF2JhKTRCRoLNFHJssHy3fnNgzVwRoheEcKvm6K_6eI9AT/exec";
-        
-        let sheetData = []; 
+
+        let sheetData = [];
         let selectedKey = 'silver';
         let currentPoolPrizes = [];
         let winPrizeName = "";
@@ -272,7 +401,10 @@
             gold: { name: "春日金池 (Premium)", desc: "消費金額達 $50,000 或以上。" },
             silver: { name: "春日銀池 (Elite)", desc: "消費金額介乎 $30,000 至 $49,999。" },
             bronze: { name: "春日銅池 (Standard)", desc: "消費金額介乎 $15,000 至 $29,999。" },
-            birthday: { name: "生日彩池 (Special)", desc: "適用於 2、3、4 月份生日之客戶。" }
+            birthday: { 
+                name: "特選客戶&生日獎池 (Special)", 
+                desc: "特選客戶：兩個月內首次到訪之客戶<br>生日客戶：2、3、4 月份生日之客戶" 
+            }
         };
 
         window.fetchData = async () => {
@@ -287,13 +419,14 @@
                 const response = await fetch(`${scriptURL}?v=${Date.now()}`);
                 if (!response.ok) throw new Error("Connection Error");
                 sheetData = await response.json();
+                
                 if (sheetData.error) throw new Error(sheetData.error);
 
                 badge.className = "status-badge st-online";
                 text.innerText = "Online (Sheet Connected)";
                 entryBtn.disabled = false;
                 entryBtn.innerText = "進入抽獎";
-                
+
                 renderDashboard();
                 updateDesc();
             } catch (err) {
@@ -313,11 +446,12 @@
 
         function updateDesc() {
             const el = document.getElementById('pool-desc');
-            if (sheetData.length === 0) return;
-            el.innerText = poolMeta[selectedKey].desc;
+            if (!sheetData || sheetData.length === 0) return;
+            el.innerHTML = poolMeta[selectedKey].desc;
         }
 
         window.toggleDashboard = () => document.getElementById('dashboard').classList.toggle('hidden');
+        
         window.unlockDash = () => {
             if (document.getElementById('dash-pass').value === "SoloTiff2004") {
                 document.getElementById('dash-auth').classList.add('hidden');
@@ -351,11 +485,13 @@
         };
 
         function setupGacha() {
-            const wrap = document.getElementById('balls-wrap'); wrap.innerHTML = "";
+            const wrap = document.getElementById('balls-wrap'); 
+            wrap.innerHTML = "";
             for(let i=0; i<12; i++) {
                 const b = document.createElement('div');
                 b.className = "absolute w-8 h-8 rounded-full border border-white/20";
-                b.style.left = Math.random()*80 + "%"; b.style.top = Math.random()*70 + "%";
+                b.style.left = Math.random()*80 + "%"; 
+                b.style.top = Math.random()*70 + "%";
                 b.style.background = `radial-gradient(circle at 30% 30%, #fb7185, #0003)`;
                 wrap.appendChild(b);
             }
@@ -364,7 +500,10 @@
         window.startDraw = () => {
             if (isSpinning) return;
             const available = currentPoolPrizes.filter(p => p.remaining > 0);
-            if (available.length === 0) { alert("此彩池獎品已全數抽完！"); return; }
+            if (available.length === 0) { 
+                alert("此彩池獎品已全數抽完！"); 
+                return; 
+            }
 
             isSpinning = true;
             document.getElementById('gacha-box').classList.add('shaking');
@@ -374,7 +513,10 @@
             let rnd = Math.random() * totalRem, cur = 0;
             for (let i = 0; i < available.length; i++) {
                 cur += available[i].remaining;
-                if (rnd <= cur) { winPrizeName = available[i].name; break; }
+                if (rnd <= cur) { 
+                    winPrizeName = available[i].name; 
+                    break; 
+                }
             }
 
             setTimeout(() => {
@@ -386,14 +528,19 @@
         };
 
         window.validateForm = () => {
-            const valid = document.getElementById('in-mmc').value.trim() && document.getElementById('in-inv').value.trim() && document.getElementById('in-cse').value;
+            const valid = document.getElementById('in-mmc').value.trim() && 
+                          document.getElementById('in-inv').value.trim() && 
+                          document.getElementById('in-cse').value;
             const btn = document.getElementById('sub-btn');
-            btn.disabled = !valid; btn.style.opacity = valid ? "1" : "0.5";
+            btn.disabled = !valid; 
+            btn.style.opacity = valid ? "1" : "0.5";
         };
 
         window.submitResult = async () => {
             const btn = document.getElementById('sub-btn');
-            btn.disabled = true; btn.innerText = "Saving to Google Sheet...";
+            btn.disabled = true; 
+            btn.innerText = "Saving to Google Sheet...";
+            
             const payload = {
                 mmc: document.getElementById('in-mmc').value.trim(),
                 invoice_no: document.getElementById('in-inv').value.trim(),
@@ -402,8 +549,15 @@
                 pool_id: selectedKey,
                 prize: winPrizeName
             };
+
             try {
-                await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                // Post to Google Script
+                await fetch(scriptURL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(payload) 
+                });
+                
                 document.getElementById('sub-msg').innerText = "✅ 已成功更新試算表！頁面即將跳轉...";
                 document.getElementById('sub-msg').classList.remove('hidden');
                 setTimeout(() => location.reload(), 2000);
@@ -415,11 +569,15 @@
 
         window.onload = fetchData;
 
+        // Create Petals
         const sc = document.getElementById('sakura-container');
         for (let i = 0; i < 20; i++) {
-            const p = document.createElement('div'); p.className = 'petal w-2 h-2';
-            p.style.left = Math.random() * 100 + 'vw'; p.style.animationDuration = Math.random() * 4 + 4 + 's';
-            p.style.animationDelay = Math.random() * 5 + 's'; sc.appendChild(p);
+            const p = document.createElement('div'); 
+            p.className = 'petal w-2 h-2';
+            p.style.left = Math.random() * 100 + 'vw'; 
+            p.style.animationDuration = Math.random() * 4 + 4 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's'; 
+            sc.appendChild(p);
         }
     </script>
 </body>
