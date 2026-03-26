@@ -76,7 +76,7 @@
                 </div>
                 <div class="space-y-2">
                     <h2 class="text-3xl font-black text-slate-900 tracking-tight">治療師非活躍客戶數據系統</h2>
-                    <p id="authStatus" class="text-slate-400 font-semibold text-sm animate-pulse-soft">正在從遠端 API 獲取授權...</p>
+                    <p id="authStatus" class="text-slate-400 font-semibold text-sm">請輸入 Staff ID 以開始同步...</p>
                 </div>
             </div>
 
@@ -87,8 +87,8 @@
                         class="w-full px-8 py-7 bg-slate-50 border-2 border-transparent rounded-[2rem] focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-4xl text-center tracking-[0.1em] text-slate-700 placeholder:text-slate-200 uppercase">
                 </div>
                 
-                <button type="submit" id="loginBtn" class="w-full bg-indigo-600 text-white py-7 rounded-[2rem] font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all text-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>
-                    正在同步數據...
+                <button type="submit" id="loginBtn" class="w-full bg-indigo-600 text-white py-7 rounded-[2rem] font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all text-xl">
+                    進入系統
                 </button>
                 
                 <div id="loginError" class="p-6 bg-rose-50 border border-rose-100 rounded-[2rem] text-rose-600 text-xs font-bold text-center hidden leading-relaxed"></div>
@@ -103,7 +103,7 @@
     <!-- Data Synchronizing Overlay -->
     <div id="loadingOverlay" class="fixed inset-0 flex flex-col items-center justify-center hidden z-50 bg-white/90 backdrop-blur-xl">
         <div class="animate-spin rounded-full h-16 w-16 border-[6px] border-indigo-50 border-t-indigo-600"></div>
-        <p class="mt-8 text-slate-900 font-black tracking-widest text-sm uppercase">正在同步雲端實時紀錄</p>
+        <p class="mt-8 text-slate-900 font-black tracking-widest text-sm uppercase">正在同步雲端實時紀錄...</p>
     </div>
 
     <!-- Main Dashboard -->
@@ -201,8 +201,21 @@
         let searchTimeout = null;
         let currentSort = { key: 'value', direction: 'desc' };
 
-        async function initApp() {
+        /**
+         * Fetch Data from API on Login
+         */
+        async function fetchDataAndLogin(inputId) {
             const authStatus = document.getElementById('authStatus');
+            const loginBtn = document.getElementById('loginBtn');
+            const errorBox = document.getElementById('loginError');
+            
+            // UI state: Loading
+            loginBtn.disabled = true;
+            loginBtn.textContent = "正在獲取授權...";
+            authStatus.textContent = "正在從遠端 API 獲取數據...";
+            authStatus.classList.add('animate-pulse-soft');
+            errorBox.classList.add('hidden');
+
             try {
                 const response = await fetch(API_URL, {
                     method: 'GET',
@@ -214,60 +227,57 @@
                 const result = await response.json();
                 
                 if (result.error) {
-                    showError("API 錯誤: " + result.error);
-                    return;
+                    throw new Error("API 錯誤: " + result.error);
                 }
 
                 if (result && result.mapping) {
                     staffMapping = result.mapping;
                     rawData = result.data || [];
-                    authStatus.textContent = "身分驗證系統已就緒";
-                    authStatus.classList.remove('animate-pulse-soft');
-                    authStatus.classList.add('text-green-500');
-                    enableLogin();
+                    
+                    // Verify ID against fetched mapping
+                    if (staffMapping[inputId]) {
+                        currentTherapistName = staffMapping[inputId];
+                        proceedToDashboard();
+                    } else {
+                        showError(`身分驗證失敗：此 Staff ID (${inputId}) 未登記。`);
+                    }
                 }
             } catch (err) {
-                console.error("Init Error:", err);
-                showError("無法連線至雲端系統。");
+                console.error("Fetch Error:", err);
+                showError("無法連線至雲端系統。請檢查網路或確認 API 已正確部署。");
+            } finally {
+                if (currentTherapistName === null) {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = "進入系統";
+                    authStatus.classList.remove('animate-pulse-soft');
+                    authStatus.textContent = "請輸入 Staff ID 以開始同步...";
+                }
             }
         }
 
-        function enableLogin() {
-            const btn = document.getElementById('loginBtn');
-            btn.disabled = false;
-            btn.textContent = "進入系統";
+        function proceedToDashboard() {
+            const gate = document.getElementById('loginGate');
+            gate.style.opacity = '0';
+            gate.style.transform = 'translateY(-30px) scale(0.96)';
+            
+            setTimeout(() => {
+                gate.classList.add('hidden');
+                document.getElementById('dashboardContent').classList.remove('hidden');
+                document.getElementById('currentUserDisplay').textContent = `USER: ${currentTherapistName.toUpperCase()}`;
+                applyFiltersAndRender();
+            }, 600);
         }
 
         function showError(msg) {
             const errBox = document.getElementById('loginError');
             errBox.textContent = msg;
             errBox.classList.remove('hidden');
-            const btn = document.getElementById('loginBtn');
-            btn.textContent = "載入失敗";
-            btn.disabled = true;
         }
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const inputId = document.getElementById('staffIdInput').value.trim().toUpperCase();
-            
-            if (staffMapping[inputId]) {
-                currentTherapistName = staffMapping[inputId];
-                const gate = document.getElementById('loginGate');
-                gate.style.opacity = '0';
-                gate.style.transform = 'translateY(-30px) scale(0.96)';
-                
-                setTimeout(() => {
-                    gate.classList.add('hidden');
-                    document.getElementById('dashboardContent').classList.remove('hidden');
-                    document.getElementById('currentUserDisplay').textContent = `USER: ${currentTherapistName.toUpperCase()}`;
-                    applyFiltersAndRender();
-                }, 600);
-            } else {
-                const errorBox = document.getElementById('loginError');
-                errorBox.textContent = `身分驗證失敗：此 Staff ID (${inputId}) 未登記。`;
-                errorBox.classList.remove('hidden');
-            }
+            fetchDataAndLogin(inputId);
         });
 
         function handleSort(key) {
@@ -385,7 +395,9 @@
 
         function logout() { window.location.reload(); }
         function debounceFilter() { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFiltersAndRender, 300); }
-        window.onload = () => { initApp(); updateHeaderUI(); };
+        
+        // Removed automatic initApp on load to save time
+        window.onload = () => { updateHeaderUI(); };
     </script>
 </body>
 </html>
