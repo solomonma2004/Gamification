@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -664,8 +665,14 @@
                         </div>
                         <div>
                             <div class="section-label mb-6">龍尾部分 (TAIL SECTION)</div>
-                            <div class="grid grid-cols-5 gap-3">
-                                ${[{l:"換領 Redeem",v:getVal(prefix+"Redeem")},{l:"預約 Book",v:getVal(prefix+"Book")},{l:"已到期之預約 MTD",v:getVal(prefix+"MTD_Book")},{l:"出席 Show",v:getVal(prefix+"Show")},{l:"金額 Amount",v:getVal(prefix+"Amount")}].map(s=>`<div class="grid-item py-6 ${s.l.includes('Amount')?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}"><span class="mini-label mb-2 text-xs">${s.l}</span><span class="text-3xl font-black ${s.l.includes('Amount')?'text-emerald-400':'text-white'} leading-none">${s.v.toLocaleString()}</span></div>`).join('')}
+                            <div class="grid grid-cols-6 gap-3">
+                                ${[
+								{l:"換領 Redeem",v:getVal(prefix+"Redeem")},
+								{l:"預約 Book",v:getVal(prefix+"Book")},
+								{l:"已到期之預約 MTD",v:getVal(prefix+"MTD_Book")},
+								{l:"出席 Show",v:getVal(prefix+"Show")},
+								{l:"簽單 Sign",v:getVal(prefix+"Sign")},
+								{l:"金額 Amount",v:getVal(prefix+"Amount")}].map(s=>`<div class="grid-item py-6 ${s.l.includes('Amount')?'bg-emerald-500/10 border-emerald-500/20':'bg-white/5'}"><span class="mini-label mb-2 text-xs">${s.l}</span><span class="text-3xl font-black ${s.l.includes('Amount')?'text-emerald-400':'text-white'} leading-none">${s.v.toLocaleString()}</span></div>`).join('')}
                             </div>
                         </div>
                     </div>
