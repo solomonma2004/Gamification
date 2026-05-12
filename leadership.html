@@ -928,7 +928,7 @@
 
       table {
         width: 100%;
-        min-width: 1120px;
+        min-width: 1350px;
         border-collapse: collapse;
       }
 
@@ -1206,7 +1206,7 @@
           <aside class="mission-panel" aria-label="Program focus">
             <h2>計劃重點</h2>
             <ul>
-              <li><span>01</span> 識別核心領袖及未來人才池</li>
+              <li><span>01</span> Identify High Po 及未來人才池</li>
               <li><span>02</span> 對比現有團隊與理想架構</li>
               <li><span>03</span> 記錄評估、教練及承諾進度</li>
             </ul>
@@ -1218,7 +1218,7 @@
         <section id="leaders" class="section">
           <div class="section-heading">
             <p class="eyebrow">第一部分</p>
-            <h2>識別核心領袖</h2>
+            <h2>Identify High Po</h2>
             <p>以組織圖方式檢視關鍵 KPI、現有團隊架構，並標記高潛人才作下一階段規劃。</p>
           </div>
 
@@ -1300,7 +1300,7 @@
         <section id="assessment" class="section">
           <div class="section-heading">
             <p class="eyebrow">第二部分</p>
-            <h2>評估及承諾</h2>
+            <h2>Assessment and Monitor</h2>
             <p>TA 團隊可檢視已完成評估的人員，並按職位、品牌及樓層篩選及跟進。</p>
           </div>
 
@@ -1334,7 +1334,9 @@
                   <th>本月成績</th>
                   <th>對上 3個月成績</th>
                   <th>5月後招聘進度</th>
-                  <th>跟進</th>
+                  <th>Offer target</th>
+                  <th>Assessment date time</th>
+                  <th>Carried out by</th>
                 </tr>
               </thead>
               <tbody id="staffTable"></tbody>
@@ -1486,31 +1488,31 @@
           apr: 91, mar: 96, feb: 89, jan: 88, avg6: 92, catCurrent: 6, catPast3: 18, flagged: false
         },
         {
-          brand: "DERMES", center: "Tsim Sha Tsui", floor: "5F", as: "Ivy Yip", team: "Pulse", tl: "Jade Lam",
+          brand: "DERMES", center: "D-Tsim Sha Tsui", floor: "D-5F", as: "Ivy Yip", team: "Pulse", tl: "Jade Lam",
           therapist: "Jade Lam", staffId: "D0011", kpi: 90, position: "TL", hrTitle: "Assistant Supervisor", misMismatch: true,
           serviceMonths: 76, lastJoinDate: "2019-12-02", target: 310000, currentSales: 326000,
           apr: 105, mar: 110, feb: 104, jan: 102, avg6: 105, catCurrent: 13, catPast3: 38, flagged: true
         },
         {
-          brand: "DERMES", center: "Tsim Sha Tsui", floor: "5F", as: "Ivy Yip", team: "Pulse", tl: "Jade Lam",
+          brand: "DERMES", center: "D-Tsim Sha Tsui", floor: "D-5F", as: "Ivy Yip", team: "Pulse", tl: "Jade Lam",
           therapist: "Kathy So", staffId: "D0037", kpi: 88, position: "E1", hrTitle: "Therapist", misMismatch: false,
           serviceMonths: 29, lastJoinDate: "2023-12-04", target: 210000, currentSales: 225000,
           apr: 107, mar: 104, feb: 103, jan: 97, avg6: 103, catCurrent: 9, catPast3: 26, flagged: false
         },
         {
-          brand: "DERMES", center: "Tsim Sha Tsui", floor: "6F", as: "Ivy Yip", team: "Pulse", tl: "Jade Lam",
+          brand: "DERMES", center: "D-Tsim Sha Tsui", floor: "D-6F", as: "Ivy Yip", team: "Pulse", tl: "Jade Lam",
           therapist: "Lana Ma", staffId: "D0049", kpi: 95, position: "E1", hrTitle: "Therapist", misMismatch: false,
           serviceMonths: 37, lastJoinDate: "2023-04-19", target: 225000, currentSales: 277000,
           apr: 123, mar: 116, feb: 112, jan: 106, avg6: 114, catCurrent: 13, catPast3: 34, flagged: true
         },
         {
-          brand: "DERMES", center: "Mong Kok", floor: "9F", as: "Ivy Yip", team: "Spark", tl: "Mandy Kwok",
+          brand: "DERMES", center: "D-Mong Kok", floor: "D-9F", as: "Ivy Yip", team: "Spark", tl: "Mandy Kwok",
           therapist: "Mandy Kwok", staffId: "D0028", kpi: 86, position: "TL", hrTitle: "Team Leader", misMismatch: false,
           serviceMonths: 58, lastJoinDate: "2021-07-12", target: 285000, currentSales: 276000,
           apr: 97, mar: 101, feb: 95, jan: 100, avg6: 98, catCurrent: 11, catPast3: 33, flagged: false
         },
         {
-          brand: "DERMES", center: "Mong Kok", floor: "9F", as: "Ivy Yip", team: "Spark", tl: "Mandy Kwok",
+          brand: "DERMES", center: "D-Mong Kok", floor: "D-9F", as: "Ivy Yip", team: "Spark", tl: "Mandy Kwok",
           therapist: "Nora Cheung", staffId: "D0063", kpi: 87, position: "E1", hrTitle: "Therapist", misMismatch: false,
           serviceMonths: 26, lastJoinDate: "2024-03-15", target: 205000, currentSales: 218000,
           apr: 106, mar: 103, feb: 98, jan: 95, avg6: 101, catCurrent: 8, catPast3: 23, flagged: false
@@ -1684,6 +1686,8 @@
         const keyEnrollDate = headers[normHeaders.findIndex(h => h.includes("enroll date") || h === "enroll")];
         const keyDate = headers[normHeaders.findIndex(h => h.includes("target completion date"))];
         const keyCarriedOutBy = headers[normHeaders.findIndex(h => h.includes("carried out by"))];
+        const keyOfferTarget = headers[normHeaders.findIndex(h => h.includes("offer target"))];
+        const keyAssessmentDateTime = headers[normHeaders.findIndex(h => h.includes("assessment date time"))];
 
         if (!keyStaffNo) return;
 
@@ -1705,7 +1709,9 @@
             offerGap: row[keyGap] || "",
             enrollDate: keyEnrollDate ? (row[keyEnrollDate] || "") : "",
             targetCompletionDate: row[keyDate] || "",
-            carriedOutBy: keyCarriedOutBy ? (row[keyCarriedOutBy] || "") : ""
+            carriedOutBy: keyCarriedOutBy ? (row[keyCarriedOutBy] || "") : "",
+            offerTarget: keyOfferTarget ? (row[keyOfferTarget] || "") : "",
+            assessmentDateTime: keyAssessmentDateTime ? (row[keyAssessmentDateTime] || "") : ""
           };
         });
 
@@ -1854,7 +1860,7 @@
         return {
           brand,
           center,
-          floor: center,
+          floor: center, // Map directly to center dynamically
           asTeamId: asName,
           tlTeamId: tlName,
           as: `${asName} | ${center}`,
@@ -1933,15 +1939,47 @@
       function fillSelect(select, values) {
         const current = select.value;
         select.innerHTML = values.map((value) => `<option value="${value}">${value}</option>`).join("");
-        if (values.includes(current)) select.value = current;
+        if (values.includes(current)) {
+            select.value = current;
+        } else if (values.length > 0) {
+            select.value = values[0];
+        }
+      }
+
+      // 動態篩選：根據「品牌」過濾符合字頭的「中心」與「樓層」選項
+      function updateDependentFilters() {
+        const filterByPrefix = (brandValue, allValues) => {
+          if (brandValue === "All") return allValues;
+          const brandUpper = brandValue.toUpperCase();
+          
+          return allValues.filter(val => {
+            if (val === "All") return true;
+            const valStrUpper = String(val).trim().toUpperCase();
+            
+            // 按照需求判斷字頭
+            if (brandUpper === "DERMES") return valStrUpper.startsWith("D");
+            if (brandUpper === "REENEX") return valStrUpper.startsWith("R");
+            if (brandUpper === "ELYZE") return valStrUpper.startsWith("E");
+            
+            // 其他品牌維持原貌或全選
+            return true;
+          });
+        };
+
+        const allCenters = uniqueValues("center");
+        fillSelect(elements.centerFilter, filterByPrefix(elements.brandFilter.value, allCenters));
+
+        const allFloors = uniqueValues("floor");
+        fillSelect(elements.floorFilter, filterByPrefix(elements.assessmentBrandFilter.value, allFloors));
       }
 
       function initFilters() {
         fillSelect(elements.brandFilter, uniqueValues("brand"));
-        fillSelect(elements.centerFilter, uniqueValues("center"));
-        fillSelect(elements.positionFilter, uniqueValues("position"));
         fillSelect(elements.assessmentBrandFilter, uniqueValues("brand"));
-        fillSelect(elements.floorFilter, uniqueValues("floor"));
+        fillSelect(elements.positionFilter, uniqueValues("position"));
+        
+        // 觸發一次動態字頭篩選
+        updateDependentFilters();
       }
 
       function isFlagged(person) {
@@ -2135,7 +2173,7 @@
       }
 
       function renderPotentialButton(person) {
-        return `<button class="talent-button compact" data-flag="${person.staffId}" aria-pressed="${isFlagged(person)}">${isFlagged(person) ? "高潛人才" : "標記高潛"}</button>`;
+        return `<button class="talent-button compact" data-flag="${person.staffId}" aria-pressed="${isFlagged(person)}">${isFlagged(person) ? "High Po" : "Mark as High Po"}</button>`;
       }
 
       function renderPersonalDetails(person, assessmentContext = {}) {
@@ -2203,7 +2241,7 @@
         });
 
         if (!rows.length) {
-          elements.staffTable.innerHTML = `<tr><td colspan="8">沒有已完成評估的人員符合目前篩選條件。</td></tr>`;
+          elements.staffTable.innerHTML = `<tr><td colspan="10">沒有已完成評估的人員符合目前篩選條件。</td></tr>`;
           return;
         }
 
@@ -2247,10 +2285,9 @@
                   On board: ${formatPlain(person.onboardSince2026)}
                 </div>
               </td>
-              <td>
-                <button type="button" class="assessment-button" onclick="openAssessmentForm('${person.staffId}', '', 0)">評估</button>
-                <div class="coach-note" style="margin-top: 8px;">加入：${assessment.willingJoin || "-"} | ${assessment.targetTierLabel || assessment.targetTier || "未設定層級目標"}</div>
-              </td>
+              <td><strong style="color: #fff;">${assessment.offerTarget !== undefined && assessment.offerTarget !== "" ? assessment.offerTarget : "-"}</strong></td>
+              <td><span class="staff-meta">${assessment.assessmentDateTime || "-"}</span></td>
+              <td><span class="staff-meta">${assessment.carriedOutBy || "-"}</span></td>
             </tr>
           `;
         }).join("");
@@ -2358,6 +2395,8 @@
           targetTierLabel: tierLabel(elements.assTargetTier.value),
           currentCount: count,
           offerGap: elements.assOfferGap.value.trim(),
+          offerTarget: offerTarget,
+          assessmentDateTime: assessmentDateTime,
           enrollDate: enrollDate,
           targetCompletionDate: elements.assTargetDate.value,
           carriedOutBy: elements.assCarriedOutBy.value.trim(),
@@ -2415,15 +2454,22 @@
       });
 
       function bindEvents() {
+        // 觸發品牌更改時，動態更新中心及樓層列表
         [
           elements.brandFilter,
+          elements.assessmentBrandFilter
+        ].forEach((element) => element.addEventListener("change", () => {
+          updateDependentFilters();
+          renderAll();
+        }));
+
+        [
           elements.centerFilter,
           elements.viewFilter,
           elements.performanceMetricFilter,
           elements.performanceStatusFilter,
           elements.flagFilter,
           elements.positionFilter,
-          elements.assessmentBrandFilter,
           elements.floorFilter
         ].forEach((element) => element.addEventListener("change", renderAll));
         
