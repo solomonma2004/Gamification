@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commission & Salary Calculator</title>
+    
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 載入 React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 載入 Babel (用於在瀏覽器端編譯 JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50">
+    <!-- React 應用的掛載點 -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- SVG Icons (取代原本的 lucide-react，確保單一檔案可運行) ---
+        const Calculator = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
+        const Users = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+        const TargetIcon = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+        const DollarSign = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+        const Award = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>;
+        const CheckCircle2 = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
+
+        function App() {
+            // --- 狀態管理 (State) ---
+            const [brand, setBrand] = useState('Evvus');
+            const [title, setTitle] = useState('Clinical Advisor');
+            const [basicSalary, setBasicSalary] = useState(10000);
+            const [attendanceBonus, setAttendanceBonus] = useState(1800);
+            
+            // 個人業績
+            const [personalSales, setPersonalSales] = useState(250000);
+            
+            // 團隊設定 (有無帶人)
+            const [hasTeam, setHasTeam] = useState(false);
+            const [teamInputMode, setTeamInputMode] = useState('amount'); // 'amount' | 'percent' 切換
+            
+            // 按組員達標度獨立計錢 (By Individual) 的設定 - 最多 14 人 (預設 14 人全開，Target 200k)
+            const [individualMembers, setIndividualMembers] = useState(
+                Array.from({ length: 14 }, (_, i) => ({
+                id: i + 1,
+                isActive: true,  // 預設 14 個人全部 Active
+                target: 200000,  // 預設最大 Target: 200k
+                sales: 320000    // 預設最大 Achieve 160% (200k * 1.6)
+                }))
+            );
+
+            const updateMember = (id, field, value) => {
+                setIndividualMembers(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
+            };
+            
+            // DRE ACS 團隊設定 (Floor Target 預設 3.2M，Sales 預設 121% = 3,872,000)
+            const [teamTarget, setTeamTarget] = useState(3200000);
+            const [teamSales, setTeamSales] = useState(3872000);
+
+            // --- 佣金階梯設定 (分開基本佣金與 Jump Bar) ---
+            const evvusBaseRate = 0.035; // EVVUS 基本 3.5%
+            const dreBaseRate = 0.050;   // DRE 基本 5.0%
+
+            const evvusJumpTiers = [
+                { max: 200000, extraRate: 0.01 }, // Total 4.5% -> 額外 1%
+                { max: 300000, extraRate: 0.03 }, // Total 6.5% -> 額外 3%
+                { max: 350000, extraRate: 0.04 }, // Total 7.5% -> 額外 4%
+                { max: 400000, extraRate: 0.05 }, // Total 8.5% -> 額外 5%
+                { max: 600000, extraRate: 0.06 }, // Total 9.5% -> 額外 6%
+                { max: Infinity, extraRate: 0.06 } // 600k 封頂，最多出 6%
+            ];
+
+            const dreJumpTiers = [
+                { max: 200000, extraRate: 0.00 }, // Base 5%
+                { max: 250000, extraRate: 0.04 }, // Total 9% -> 額外 4%
+                { max: 300000, extraRate: 0.05 }, // Total 10% -> 額外 5%
+                { max: 350000, extraRate: 0.06 }, // Total 11% -> 額外 6%
+                { max: 400000, extraRate: 0.07 }, // Total 12% -> 額外 7%
+                { max: 450000, extraRate: 0.08 }, // Total 13% -> 額外 8%
+                { max: 500000, extraRate: 0.09 }, // Total 14% -> 額外 9%
+                { max: Infinity, extraRate: 0.00 } // 500k 打後無 Jump Bar，只有基本 5%
+            ];
+
+            // --- 切換職級時自動更新預設底薪與帶人設定 ---
+            useEffect(() => {
+                if (brand === 'Evvus') {
+                    if (title === 'Clinical Advisor') {
+                        setBasicSalary(10000);
+                        setAttendanceBonus(1800);
+                        setHasTeam(false);
+                    } else if (title === 'Senior Clinical Advisor') {
+                        setBasicSalary(15000);
+                        setAttendanceBonus(0);
+                        setHasTeam(false);
+                    } else if (title === 'Senior Clinical Advisor (TL)') {
+                        setBasicSalary(15000);
+                        setAttendanceBonus(0);
+                        setHasTeam(true); 
+                    }
+                } else {
+                    if (title === 'Team Leader') {
+                        setBasicSalary(11000);
+                        setAttendanceBonus(0);
+                        setHasTeam(true);
+                    } else if (title === 'Assistant Centre Supervisor') {
+                        setBasicSalary(14200); 
+                        setAttendanceBonus(0);
+                        setHasTeam(true);
+                    }
+                }
+            }, [brand, title]);
+
+            // --- 計算邏輯 ---
+            const currentBaseRate = brand === 'Evvus' ? evvusBaseRate : dreBaseRate;
+            const baseCommission = personalSales * currentBaseRate;
+
+            let jumpBarCommission = 0;
+            let jumpBarBreakdown = [];
+            
+            if (brand === 'Evvus') {
+                // EVVUS: Retroactive Jump (計 JUMP - 全單一個 Rate)
+                // JUMP BAR AMOUNT CAPPED AT 600K (最高只計頭 600k)
+                const jumpBarApplicableSales = Math.min(personalSales, 600000);
+                
+                let appliedTier = evvusJumpTiers[0];
+                let prevMax = 0;
+                let appliedRange = "0 - 200k";
+                
+                // 找出達到的最高階梯 (按實際 Sales 判定)
+                for (const tier of evvusJumpTiers) {
+                    if (personalSales > prevMax) {
+                        appliedTier = tier;
+                        appliedRange = `${prevMax === 0 ? '0' : (prevMax / 1000) + 'k'} - ${tier.max === Infinity ? 'Infinity' : (tier.max / 1000) + 'k'}`;
+                    }
+                    prevMax = tier.max;
+                }
+
+                // 將最高階梯的 Rate 乘上受限於 600k 的 Actual Sales
+                if (appliedTier.extraRate > 0) {
+                    jumpBarCommission = jumpBarApplicableSales * appliedTier.extraRate;
+                    
+                    let rangeText = `全數跳級 (${appliedRange})`;
+                    if (personalSales > 600000) {
+                        rangeText += ` *封頂 600k`;
+                    }
+
+                    jumpBarBreakdown.push({
+                        range: rangeText,
+                        amount: jumpBarApplicableSales,
+                        extraRate: appliedTier.extraRate,
+                        commission: jumpBarCommission
+                    });
+                }
+            } else {
+                // DRE: Progressive Tiers (計階梯 - 分層計算)
+                let prevMax = 0;
+                for (const tier of dreJumpTiers) {
+                    const amountInTier = Math.min(Math.max(0, personalSales - prevMax), tier.max - prevMax);
+                    if (amountInTier > 0 && tier.extraRate > 0) {
+                        const comm = amountInTier * tier.extraRate;
+                        jumpBarCommission += comm;
+                        jumpBarBreakdown.push({
+                            range: `${prevMax === 0 ? '0' : (prevMax / 1000) + 'k'} - ${tier.max === Infinity ? 'Infinity' : (tier.max / 1000) + 'k'}`,
+                            amount: amountInTier,
+                            extraRate: tier.extraRate,
+                            commission: comm
+                        });
+                    }
+                    prevMax = tier.max;
+                    if (personalSales <= prevMax) break;
+                }
+            }
+
+            const totalCommission = baseCommission + jumpBarCommission;
+
+            // 3. 團隊 Leadership Bonus 計算 
+            let leadershipBonus = 0;
+            let teamAchievePercent = 0;
+            let teamMultiplier = 0;
+            let individualLeadershipBreakdown = [];
+            let acsBaseTotal = 0;
+            let acsLeadershipBreakdown = [];
+            
+            const isEvvusTL = brand === 'Evvus' && title === 'Senior Clinical Advisor (TL)';
+            const isDreTL = brand === 'DRE' && title === 'Team Leader';
+            const isIndividualLeadership = isEvvusTL || isDreTL;
+            
+            const isDreACS = brand === 'DRE' && title === 'Assistant Centre Supervisor';
+
+            if (hasTeam) {
+                if (isIndividualLeadership) {
+                    individualMembers.slice(0, 6).forEach(member => {
+                        if (member.isActive && member.target > 0) {
+                            const achievePercent = (member.sales / member.target) * 100;
+                            let multiplier = 0;
+                            if (achievePercent >= 160) multiplier = 1.3;
+                            else if (achievePercent >= 130) multiplier = 1.15;
+                            else if (achievePercent >= 100) multiplier = 1.0;
+
+                            if (multiplier > 0) {
+                                const baseIncentive = member.target * 0.01;
+                                const bonus = baseIncentive * multiplier;
+                                leadershipBonus += bonus;
+
+                                individualLeadershipBreakdown.push({
+                                    id: member.id,
+                                    target: member.target,
+                                    sales: member.sales,
+                                    achievePercent,
+                                    multiplier,
+                                    bonus
+                                });
+                            }
+                        }
+                    });
+                } else if (isDreACS) {
+                    teamAchievePercent = teamTarget > 0 ? (teamSales / teamTarget) * 100 : 0;
+                    
+                    // ACS 專屬 Multiplier 邏輯：>=120% 出 1.5倍, >=100% 出 1.0倍
+                    if (teamAchievePercent >= 120) teamMultiplier = 1.5;
+                    else if (teamAchievePercent >= 100) teamMultiplier = 1.0;
+                    else teamMultiplier = 0;
+                    
+                    individualMembers.forEach(member => {
+                        if (member.isActive && member.target > 0) {
+                            const baseInc = member.target * 0.008; // ACS Base 依然為 Target * 0.8%
+                            acsBaseTotal += baseInc;
+                            acsLeadershipBreakdown.push({
+                                id: member.id,
+                                target: member.target,
+                                base: baseInc
+                            });
+                        }
+                    });
+                    leadershipBonus = acsBaseTotal * teamMultiplier;
+                }
+            }
+
+            const totalPayout = basicSalary + attendanceBonus + totalCommission + leadershipBonus;
+
+            const formatCurrency = (num) => {
+                return new Intl.NumberFormat('zh-HK', { style: 'currency', currency: 'HKD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
+            };
+
+            return (
+                <div className="min-h-screen p-4 md:p-8 font-sans text-slate-800">
+                <div className="max-w-6xl mx-auto space-y-6">
+                    
+                    {/* Header */}
+                    <header className="flex items-center space-x-3 mb-8">
+                    <div className="p-3 bg-indigo-600 rounded-xl shadow-lg">
+                        <Calculator className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">整體薪酬計算機</h1>
+                        <p className="text-slate-500 font-medium">Overall Scheme Commission Simulator</p>
+                    </div>
+                    </header>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    {/* 左側：輸入區域 */}
+                    <div className="lg:col-span-7 space-y-6">
+                        
+                        {/* Section 1: 基本資料 */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-lg font-bold flex items-center mb-4 text-indigo-900">
+                            <TargetIcon className="w-5 h-5 mr-2 text-indigo-500" />
+                            1. 職位與基本設定
+                        </h2>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                            <label className="block text-sm font-semibold text-slate-600 mb-1.5">Brand (品牌)</label>
+                            <select 
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                value={brand} 
+                                onChange={(e) => setBrand(e.target.value)}
+                            >
+                                <option value="Evvus">Evvus</option>
+                                <option value="DRE">DRE / 3 Brand</option>
+                            </select>
+                            </div>
+                            <div>
+                            <label className="block text-sm font-semibold text-slate-600 mb-1.5">Title (職級)</label>
+                            <select 
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                value={title} 
+                                onChange={(e) => setTitle(e.target.value)}
+                            >
+                                {brand === 'Evvus' ? (
+                                <>
+                                    <option value="Clinical Advisor">Clinical Advisor</option>
+                                    <option value="Senior Clinical Advisor">Senior Clinical Advisor</option>
+                                    <option value="Senior Clinical Advisor (TL)">Senior Clinical Advisor (TL)</option>
+                                </>
+                                ) : (
+                                <>
+                                    <option value="Team Leader">Team Leader</option>
+                                    <option value="Assistant Centre Supervisor">Assistant Centre Supervisor</option>
+                                </>
+                                )}
+                            </select>
+                            </div>
+                            
+                            <div>
+                            <label className="block text-sm font-semibold text-slate-600 mb-1.5">Basic Salary (底薪)</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-2.5 text-slate-400">$</span>
+                                <input 
+                                type="number" 
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                value={basicSalary}
+                                onChange={(e) => setBasicSalary(Number(e.target.value))}
+                                />
+                            </div>
+                            </div>
+                            <div>
+                            <label className="block text-sm font-semibold text-slate-600 mb-1.5">Attendance Bonus (勤工)</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-2.5 text-slate-400">$</span>
+                                <input 
+                                type="number" 
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                value={attendanceBonus}
+                                onChange={(e) => setAttendanceBonus(Number(e.target.value))}
+                                />
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        {/* Section 2: 個人業績 */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-lg font-bold flex items-center mb-4 text-emerald-900">
+                            <DollarSign className="w-5 h-5 mr-2 text-emerald-500" />
+                            2. 個人業績 (Personal Achieve)
+                        </h2>
+                        <div>
+                            <label className="block text-sm font-semibold text-slate-600 mb-1.5">Actual Sales (實做數)</label>
+                            <input 
+                            type="number" 
+                            className="w-full bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold"
+                            value={personalSales}
+                            onChange={(e) => setPersonalSales(Number(e.target.value))}
+                            />
+                        </div>
+                        </div>
+
+                        {/* Section 3: 團隊業績 */}
+                        {!hasTeam ? (
+                        <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6 opacity-60">
+                            <div className="flex items-center text-slate-500 font-bold">
+                            <Users className="w-5 h-5 mr-2" />
+                            <span>3. 團隊管理 (此職級無帶人獎金)</span>
+                            </div>
+                        </div>
+                        ) : (
+                        <div className="bg-white rounded-2xl shadow-sm border border-indigo-200 transition-all duration-300 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-lg font-bold flex items-center text-indigo-900">
+                                <Users className="w-5 h-5 mr-2 text-indigo-500" />
+                                3. 團隊管理 (Leadership)
+                            </h2>
+                            </div>
+
+                            {isIndividualLeadership && (
+                            <div className="space-y-4">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between p-3 bg-indigo-50 text-indigo-800 text-sm rounded-lg border border-indigo-100 font-medium gap-3">
+                                    <div>
+                                        💡 帶人獎金：最多 6 個 Headcount。需輸入每位組員的 <b>Target</b> 及 <b>業績</b> 獨立計算。<br/>
+                                        <span className="text-xs text-indigo-600 opacity-80">* 每個組員的基礎獎金為其 Target 的 1% (例：Target 200k = Base $2,000)</span>
+                                    </div>
+                                    <div className="flex bg-white rounded-md p-1 border border-indigo-200 shrink-0 shadow-sm">
+                                        <button 
+                                            type="button"
+                                            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${teamInputMode === 'amount' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+                                            onClick={() => setTeamInputMode('amount')}
+                                        >
+                                            入 Sales ($)
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${teamInputMode === 'percent' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+                                            onClick={() => setTeamInputMode('percent')}
+                                        >
+                                            入 Achieve (%)
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {individualMembers.slice(0, 6).map((member) => (
+                                    <div key={member.id} className={`p-3 rounded-xl border transition-all ${member.isActive ? 'bg-slate-50 border-indigo-200' : 'bg-slate-50/50 border-slate-200 grayscale opacity-60'}`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="flex items-center cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                                            checked={member.isActive} 
+                                            onChange={(e) => updateMember(member.id, 'isActive', e.target.checked)} 
+                                        />
+                                        <span className="ml-2 font-bold text-slate-700 text-sm">組員 {member.id}</span>
+                                        </label>
+                                        {member.isActive && member.target > 0 && (
+                                        <span className={`text-xs font-bold ${member.sales/member.target >= 1 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                            {((member.sales / member.target) * 100).toFixed(1)}% 達標
+                                        </span>
+                                        )}
+                                    </div>
+
+                                    {member.isActive && (
+                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                        <div>
+                                            <label className="block text-[10px] uppercase tracking-wider font-semibold text-slate-500 mb-1">Target</label>
+                                            {brand === 'DRE' ? (
+                                            <select 
+                                                className="w-full bg-white border border-slate-200 rounded px-1 py-[5px] focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                                                value={member.target}
+                                                onChange={(e) => updateMember(member.id, 'target', Number(e.target.value))}
+                                            >
+                                                {![75000, 100000, 150000, 200000].includes(member.target) && (
+                                                <option value={member.target} disabled hidden>{member.target}</option>
+                                                )}
+                                                <option value={75000}>75,000</option>
+                                                <option value={100000}>100,000</option>
+                                                <option value={150000}>150,000</option>
+                                                <option value={200000}>200,000</option>
+                                            </select>
+                                            ) : (
+                                            <input 
+                                                type="number" 
+                                                className="w-full bg-white border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                                value={member.target}
+                                                onChange={(e) => updateMember(member.id, 'target', Number(e.target.value))}
+                                            />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase tracking-wider font-semibold text-slate-500 mb-1">
+                                                {teamInputMode === 'amount' ? 'Actual Sales ($)' : 'Achieve (%)'}
+                                            </label>
+                                            {teamInputMode === 'amount' ? (
+                                                <input 
+                                                    type="number" 
+                                                    className="w-full bg-white border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold text-indigo-700"
+                                                    value={Math.round(member.sales)}
+                                                    onChange={(e) => updateMember(member.id, 'sales', Number(e.target.value))}
+                                                />
+                                            ) : (
+                                                <div className="relative">
+                                                    <input 
+                                                        type="number" 
+                                                        className="w-full bg-white border border-slate-200 rounded pl-2 pr-6 py-1 focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-bold text-emerald-600"
+                                                        value={member.target > 0 ? Number(((member.sales / member.target) * 100).toFixed(2)) : 0}
+                                                        onChange={(e) => {
+                                                            const newPercent = Number(e.target.value);
+                                                            updateMember(member.id, 'sales', member.target * (newPercent / 100));
+                                                        }}
+                                                    />
+                                                    <span className="absolute right-2 top-1.5 text-xs font-bold text-emerald-600/50">%</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        </div>
+                                    )}
+                                    </div>
+                                ))}
+                                </div>
+                                
+                                <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-xl border border-indigo-100 mt-2">
+                                <div className="text-indigo-800 font-bold">總帶人獎金 (Leadership Bonus)</div>
+                                <div className="text-xl font-bold text-indigo-600">+{formatCurrency(leadershipBonus)}</div>
+                                </div>
+                            </div>
+                            )}
+                            
+                            {isDreACS && (
+                            <div className="space-y-5">
+                                <div className="p-3 bg-indigo-50 text-indigo-800 text-sm rounded-lg border border-indigo-100 font-medium">
+                                💡 ACS 帶人獎金：最多 14 個 Headcount。<br/>
+                                1. 先輸入 <b>Floor Target</b> 及 <b>Floor Actual Sales</b> 以獲取 Multiplier (達標 100% = x1.0, 120% 或以上 = x1.5)。<br/>
+                                2. 在下方表格勾選成員並選擇 <b>Target</b>，系統將自動計算 Incentive。
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Floor Target</label>
+                                    <input 
+                                    type="number" 
+                                    className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    value={teamTarget}
+                                    onChange={(e) => setTeamTarget(Number(e.target.value))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Floor Actual Sales</label>
+                                    <input 
+                                    type="number" 
+                                    className="w-full bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none font-bold"
+                                    value={teamSales}
+                                    onChange={(e) => setTeamSales(Number(e.target.value))}
+                                    />
+                                </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <div>
+                                    <p className="text-sm text-slate-500">Floor Achieve Rate</p>
+                                    <p className="text-xl font-bold text-slate-800">{teamAchievePercent.toFixed(1)}%</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm text-slate-500">Floor Multiplier</p>
+                                    <p className="text-xl font-bold text-indigo-600">x {teamMultiplier}</p>
+                                </div>
+                                </div>
+
+                                {/* 專業 Table 介面取代原本的 Grid */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-3">團隊成員 Target 設定 (最多 14 人)</label>
+                                    <div className="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+                                                <tr>
+                                                    <th className="px-4 py-3 font-semibold w-24">HC</th>
+                                                    <th className="px-4 py-3 font-semibold w-32">Target</th>
+                                                    <th className="px-4 py-3 font-semibold text-right">Base Incentive</th>
+                                                    <th className="px-4 py-3 font-semibold text-right">Final Incentive</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {individualMembers.map((member) => {
+                                                    const base = member.isActive ? member.target * 0.008 : 0;
+                                                    const finalInc = base * teamMultiplier;
+                                                    return (
+                                                        <tr key={member.id} className={`transition-colors ${member.isActive ? 'bg-white hover:bg-slate-50' : 'bg-slate-50/50 opacity-60'}`}>
+                                                            <td className="px-4 py-2.5">
+                                                                <label className="flex items-center cursor-pointer">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                                                                        checked={member.isActive} 
+                                                                        onChange={(e) => updateMember(member.id, 'isActive', e.target.checked)} 
+                                                                    />
+                                                                    <span className="ml-2 font-bold text-slate-700 whitespace-nowrap">HC {member.id}</span>
+                                                                </label>
+                                                            </td>
+                                                            <td className="px-4 py-2.5">
+                                                                {member.isActive ? (
+                                                                    <select 
+                                                                        className="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500 outline-none text-xs font-medium text-slate-700"
+                                                                        value={member.target}
+                                                                        onChange={(e) => updateMember(member.id, 'target', Number(e.target.value))}
+                                                                    >
+                                                                        {![75000, 100000, 150000, 200000].includes(member.target) && (
+                                                                        <option value={member.target} disabled hidden>{member.target}</option>
+                                                                        )}
+                                                                        <option value={75000}>75,000</option>
+                                                                        <option value={100000}>100,000</option>
+                                                                        <option value={150000}>150,000</option>
+                                                                        <option value={200000}>200,000</option>
+                                                                    </select>
+                                                                ) : (
+                                                                    <span className="text-slate-400 text-xs">-</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-2.5 text-right text-slate-600 font-medium">
+                                                                {member.isActive ? formatCurrency(base) : '-'}
+                                                            </td>
+                                                            <td className="px-4 py-2.5 text-right font-bold text-indigo-600">
+                                                                {member.isActive && teamMultiplier > 0 ? `+${formatCurrency(finalInc)}` : '-'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-xl border border-indigo-100 mt-2">
+                                <div>
+                                    <div className="text-sm text-indigo-500 font-semibold mb-1">Total Base: {formatCurrency(acsBaseTotal)} × {teamMultiplier}</div>
+                                    <div className="text-indigo-800 font-bold text-lg">總帶人獎金 (Leadership Bonus)</div>
+                                </div>
+                                <div className="text-2xl md:text-3xl font-black text-indigo-600">+{formatCurrency(leadershipBonus)}</div>
+                                </div>
+                            </div>
+                            )}
+                        </div>
+                        )}
+
+                    </div>
+
+                    {/* 右側：結果與拆解 */}
+                    <div className="lg:col-span-5 space-y-6">
+                        
+                        <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl shadow-xl overflow-hidden text-white">
+                        <div className="p-8 text-center relative">
+                            <div className="absolute top-0 right-0 p-4 opacity-20">
+                            <Award className="w-24 h-24" />
+                            </div>
+                            <p className="text-indigo-200 font-medium tracking-wider mb-2 relative z-10">最後出幾多錢 (Total Payout)</p>
+                            <h2 className="text-5xl font-extrabold tracking-tight relative z-10">
+                            {formatCurrency(totalPayout)}
+                            </h2>
+                        </div>
+                        
+                        <div className="bg-white/10 backdrop-blur-md p-6 space-y-3 text-sm font-medium">
+                            <div className="flex justify-between items-center">
+                            <span className="text-slate-300">Basic Salary (底薪)</span>
+                            <span>{formatCurrency(basicSalary)}</span>
+                            </div>
+                            {attendanceBonus > 0 && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-300">Attendance (勤工)</span>
+                                <span>{formatCurrency(attendanceBonus)}</span>
+                            </div>
+                            )}
+                            <div className="flex justify-between items-center text-emerald-300 border-t border-white/10 pt-2 mt-2">
+                            <span>Base Commission (基本佣金)</span>
+                            <span>+ {formatCurrency(baseCommission)}</span>
+                            </div>
+                            {jumpBarCommission > 0 && (
+                            <div className="flex justify-between items-center text-emerald-200">
+                                <span>Jump Bar (額外佣金)</span>
+                                <span>+ {formatCurrency(jumpBarCommission)}</span>
+                            </div>
+                            )}
+                            {hasTeam && leadershipBonus > 0 && (
+                            <div className="flex justify-between items-center text-amber-300 border-t border-white/10 pt-2 mt-2">
+                                <span>Leadership Bonus (帶人獎金)</span>
+                                <span>+ {formatCurrency(leadershipBonus)}</span>
+                            </div>
+                            )}
+                        </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h3 className="font-bold text-slate-800 mb-4 flex items-center">
+                            <CheckCircle2 className="w-5 h-5 mr-2 text-emerald-500" />
+                            佣金拆解 (Commission Breakdown)
+                        </h3>
+                        
+                        <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                            <div className="flex justify-between items-center mb-1 text-sm text-emerald-700">
+                                <span>基本佣金 (Base {brand === 'Evvus' ? '3.5%' : '5%'})</span>
+                                <span>{formatCurrency(personalSales)} x {(currentBaseRate * 100).toFixed(1)}%</span>
+                            </div>
+                            <div className="flex justify-between items-center font-bold text-lg text-emerald-800">
+                                <span>Base Commission</span>
+                                <span>{formatCurrency(baseCommission)}</span>
+                            </div>
+                            </div>
+
+                            <div className="space-y-2">
+                            <p className="text-sm font-bold text-slate-500 px-1">
+                                {brand === 'Evvus' ? 'Jump Bar 級別 (全數計 JUMP, 封頂 600k)' : 'Jump Bar 階梯 (漸進式計算, 封頂 500k)'}
+                            </p>
+                            {jumpBarBreakdown.map((tier, index) => (
+                                <div key={index} className="flex flex-col p-3 rounded-lg bg-slate-50 border border-slate-100 text-sm">
+                                <div className="flex justify-between text-slate-500 mb-1">
+                                    <span>Tier: {tier.range}</span>
+                                    <span>Extra Rate: +{(tier.extraRate * 100).toFixed(1)}%</span>
+                                </div>
+                                <div className="flex justify-between font-bold text-slate-800">
+                                    <span>Sales in Tier: {formatCurrency(tier.amount)}</span>
+                                    <span className="text-emerald-600">+{formatCurrency(tier.commission)}</span>
+                                </div>
+                                </div>
+                            ))}
+                            
+                            {jumpBarBreakdown.length === 0 && (
+                                <div className="text-center p-4 text-sm text-slate-400 bg-slate-50 rounded-lg border border-slate-100">
+                                未達 Jump Bar 門檻
+                                </div>
+                            )}
+                            </div>
+                            
+                            <div className="pt-4 mt-2 border-t-2 border-slate-100 flex justify-between items-center font-black text-xl text-slate-800">
+                            <span>總佣金 (Total Commission)</span>
+                            <span className="text-emerald-600">{formatCurrency(totalCommission)}</span>
+                            </div>
+                        </div>
+
+                        {hasTeam && isIndividualLeadership && individualLeadershipBreakdown.length > 0 && (
+                            <div className="mt-5 pt-5 border-t border-slate-200">
+                            <h4 className="font-bold text-slate-700 mb-3 flex items-center text-sm">
+                                <Users className="w-4 h-4 mr-2 text-indigo-500" />
+                                帶人獎金拆解 (Leadership Breakdown)
+                            </h4>
+                            <div className="space-y-2">
+                                {individualLeadershipBreakdown.map((m, i) => (
+                                <div key={i} className="flex justify-between items-center bg-indigo-50/70 border border-indigo-100 p-3 rounded-lg text-sm">
+                                    <div>
+                                    <span className="font-bold text-slate-700">組員 {m.id}</span>
+                                    <span className="text-slate-500 ml-2">({m.achievePercent.toFixed(1)}% 達標)</span>
+                                    </div>
+                                    <div className="text-right">
+                                    <span className="text-xs font-bold text-slate-500 mr-2 bg-white px-2 py-0.5 rounded border border-slate-200">x {m.multiplier}</span>
+                                    <span className="font-bold text-indigo-600">+{formatCurrency(m.bonus)}</span>
+                                    </div>
+                                </div>
+                                ))}
+                            </div>
+                            </div>
+                        )}
+
+                        {hasTeam && isDreACS && acsLeadershipBreakdown.length > 0 && (
+                            <div className="mt-5 pt-5 border-t border-slate-200">
+                            <h4 className="font-bold text-slate-700 mb-3 flex items-center text-sm">
+                                <Users className="w-4 h-4 mr-2 text-indigo-500" />
+                                帶人獎金拆解 (ACS Leadership Breakdown)
+                            </h4>
+                            <div className="space-y-2 mb-3">
+                                {acsLeadershipBreakdown.map((m, i) => (
+                                <div key={i} className="flex justify-between items-center bg-slate-50 border border-slate-100 p-2 rounded-lg text-sm">
+                                    <span className="font-medium text-slate-600">HC {m.id} (Target: {m.target / 1000}k)</span>
+                                    <span className="font-bold text-slate-700">{formatCurrency(m.base)} Base</span>
+                                </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-between items-center bg-indigo-50 border border-indigo-100 p-3 rounded-lg text-sm">
+                                <span className="font-bold text-indigo-800">Total Base × Multiplier</span>
+                                <span className="font-bold text-indigo-600">{formatCurrency(acsBaseTotal)} × {teamMultiplier} = +{formatCurrency(leadershipBonus)}</span>
+                            </div>
+                            </div>
+                        )}
+                        </div>
+
+                    </div>
+
+                    </div>
+                </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
