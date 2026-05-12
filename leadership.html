@@ -77,8 +77,8 @@
       }
 
       .hero {
-        min-height: 92vh;
-        padding: 24px clamp(16px, 4vw, 60px) 64px;
+        min-height: auto;
+        padding: 18px clamp(16px, 4vw, 52px) 34px;
       }
 
       .topbar {
@@ -91,14 +91,14 @@
       .brand-lockup {
         display: inline-flex;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
         min-width: 0;
       }
 
       .brand-mark {
         position: relative;
-        width: 44px;
-        height: 44px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         border: 1px solid rgba(242, 198, 106, 0.35);
         background: radial-gradient(circle, rgba(242, 198, 106, 0.28), rgba(242, 198, 106, 0.04));
@@ -108,26 +108,26 @@
       .brand-mark::after {
         position: absolute;
         bottom: 11px;
-        width: 15px;
-        height: 25px;
+        width: 13px;
+        height: 21px;
         content: "";
         border-radius: 100% 0 100% 0;
         background: linear-gradient(145deg, var(--gold-soft), var(--gold));
       }
 
       .brand-mark::before {
-        left: 8px;
+        left: 7px;
         transform: rotate(-22deg);
       }
 
       .brand-mark::after {
-        right: 8px;
+        right: 7px;
         transform: scaleX(-1) rotate(-22deg);
       }
 
       .brand-lockup strong {
         display: block;
-        font-size: clamp(1.25rem, 2.4vw, 2rem);
+        font-size: clamp(1.15rem, 2vw, 1.7rem);
         letter-spacing: 0.08em;
       }
 
@@ -142,7 +142,7 @@
 
       .nav-actions {
         display: flex;
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
         justify-content: flex-end;
       }
@@ -164,43 +164,44 @@
       .nav-actions a {
         display: inline-flex;
         align-items: center;
-        padding: 0 14px;
+        min-height: 36px;
+        padding: 0 12px;
       }
 
       .hero-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.45fr);
-        gap: clamp(24px, 5vw, 64px);
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.36fr);
+        gap: clamp(18px, 3vw, 38px);
         align-items: end;
         max-width: 1420px;
-        min-height: calc(92vh - 92px);
+        min-height: 0;
         margin: 0 auto;
-        padding-top: 8vh;
+        padding-top: clamp(24px, 5vh, 54px);
       }
 
       .hero-copy h1 {
-        max-width: 980px;
-        margin: 14px 0 18px;
+        max-width: 840px;
+        margin: 10px 0 12px;
         color: var(--gold-soft);
-        font-size: clamp(3rem, 8vw, 7.6rem);
-        line-height: 0.95;
+        font-size: clamp(2.5rem, 5.8vw, 5.1rem);
+        line-height: 0.92;
         letter-spacing: 0;
         text-shadow: 0 0 24px rgba(179, 99, 255, 0.48);
       }
 
       .hero-lede {
-        max-width: 720px;
+        max-width: 680px;
         margin: 0;
         color: #ded7ed;
-        font-size: clamp(1.05rem, 2vw, 1.42rem);
-        line-height: 1.55;
+        font-size: clamp(1rem, 1.6vw, 1.24rem);
+        line-height: 1.45;
       }
 
       .hero-metrics {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 180px));
-        gap: 14px;
-        margin-top: 34px;
+        grid-template-columns: repeat(2, minmax(0, 150px));
+        gap: 10px;
+        margin-top: 22px;
       }
 
       .hero-metrics div,
@@ -214,27 +215,27 @@
       }
 
       .hero-metrics div {
-        min-height: 108px;
-        padding: 20px;
+        min-height: 82px;
+        padding: 14px 16px;
         border-radius: 8px;
       }
 
       .hero-metrics strong {
         display: block;
         color: var(--gold);
-        font-size: clamp(2rem, 4vw, 3rem);
+        font-size: clamp(1.8rem, 3.2vw, 2.5rem);
         line-height: 1;
       }
 
       .hero-metrics span {
         display: block;
-        margin-top: 12px;
+        margin-top: 8px;
         color: var(--muted);
       }
 
       .mission-panel {
         border-radius: 8px;
-        padding: 24px;
+        padding: 18px;
       }
 
       .mission-panel h2,
@@ -245,16 +246,16 @@
 
       .mission-panel ul {
         display: grid;
-        gap: 18px;
+        gap: 12px;
         padding: 0;
-        margin: 22px 0 0;
+        margin: 16px 0 0;
         list-style: none;
       }
 
       .mission-panel li {
         display: grid;
-        grid-template-columns: 42px 1fr;
-        gap: 14px;
+        grid-template-columns: 34px 1fr;
+        gap: 10px;
         align-items: center;
         color: #e6def3;
         line-height: 1.45;
@@ -263,8 +264,8 @@
       .mission-panel li span {
         display: grid;
         place-items: center;
-        width: 42px;
-        height: 42px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
         color: var(--gold);
         border: 1px solid var(--line-strong);
@@ -275,17 +276,17 @@
       .section {
         max-width: 1500px;
         margin: 0 auto;
-        padding: 76px clamp(16px, 4vw, 60px);
+        padding: 42px clamp(16px, 4vw, 52px);
       }
 
       .section-heading {
         max-width: 820px;
-        margin-bottom: 26px;
+        margin-bottom: 18px;
       }
 
       .section-heading h2 {
         color: var(--gold-soft);
-        font-size: clamp(2rem, 4.4vw, 4.2rem);
+        font-size: clamp(1.8rem, 3.6vw, 3.2rem);
         line-height: 1;
       }
 
@@ -377,7 +378,7 @@
 
       .formation-panel {
         display: grid;
-        grid-template-columns: minmax(260px, 0.8fr) minmax(360px, 1.2fr) minmax(300px, 1fr);
+        grid-template-columns: minmax(220px, 0.7fr) minmax(360px, 0.95fr) minmax(420px, 1.35fr);
         gap: 18px;
         align-items: center;
         margin-bottom: 18px;
@@ -408,6 +409,13 @@
         background: rgba(255, 255, 255, 0.05);
       }
 
+      .ratio-grid small span {
+        display: block;
+        margin-top: 4px;
+        color: var(--gold-soft);
+        font-weight: 800;
+      }
+
       .ratio-icon {
         display: grid;
         grid-row: span 2;
@@ -431,20 +439,38 @@
 
       .formation-summary {
         display: grid;
-        grid-template-columns: repeat(2, minmax(120px, 1fr));
-        gap: 10px 14px;
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        gap: 10px;
       }
 
       .summary-item {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
+        display: grid;
+        gap: 6px;
+        min-height: 70px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
         color: var(--muted);
-        font-size: 0.92rem;
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
       }
 
       .summary-item strong {
         color: var(--gold-soft);
+        font-size: 1.2rem;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .summary-item em {
+        color: var(--muted);
+        font-size: 0.68rem;
+        font-style: normal;
+        letter-spacing: 0;
+        text-transform: none;
       }
 
       .org-chart {
@@ -509,10 +535,14 @@
 
       .team-branches {
         position: relative;
-        display: grid;
+        display: none;
         grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
         gap: 16px;
         padding-top: 16px;
+      }
+
+      .org-tree.is-expanded > .team-branches {
+        display: grid;
       }
 
       .team-branches::before {
@@ -591,14 +621,102 @@
 
       .personal-details {
         grid-column: 1 / -1;
-        display: grid;
-        grid-template-columns: repeat(4, minmax(120px, 1fr)) auto;
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start;
         gap: 8px;
         width: 100%;
         min-width: 0;
         margin: 4px 0 0;
-        padding: 8px;
+        padding: 6px 0 0;
         border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .details-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+      }
+
+      .details-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 12px;
+        border: 1px solid rgba(178, 105, 255, 0.32);
+        border-radius: 8px;
+        color: var(--gold-soft);
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 0.76rem;
+        font-weight: 850;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .branch-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 11px;
+        border: 1px solid rgba(242, 198, 106, 0.36);
+        border-radius: 8px;
+        color: var(--gold-soft);
+        background: rgba(242, 198, 106, 0.08);
+        font-size: 0.74rem;
+        font-weight: 850;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .branch-toggle::after {
+        content: "+";
+        margin-left: 8px;
+        color: var(--gold);
+        font-size: 0.95rem;
+        line-height: 1;
+      }
+
+      .org-tree.is-expanded > .org-node .branch-toggle::after,
+      .team-branch.is-expanded > .org-node .branch-toggle::after {
+        content: "-";
+      }
+
+      .details-toggle::after {
+        content: "+";
+        margin-left: 8px;
+        color: var(--gold);
+        font-size: 0.95rem;
+        line-height: 1;
+      }
+
+      .personal-details.is-expanded {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 8px;
+      }
+
+      .personal-details.is-expanded .details-actions {
+        justify-content: flex-end;
+      }
+
+      .personal-details.is-expanded .details-toggle::after {
+        content: "-";
+      }
+
+      .detail-panels {
+        display: none;
+      }
+
+      .personal-details.is-expanded .detail-panels {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
       }
 
       .detail-group {
@@ -625,34 +743,14 @@
         line-height: 1.2;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        cursor: pointer;
-      }
-
-      .detail-group.is-collapsible .detail-toggle::after {
-        content: "+";
-        color: var(--gold-soft);
-        font-size: 0.9rem;
-        line-height: 1;
-      }
-
-      .detail-group.is-collapsible.is-expanded .detail-toggle::after {
-        content: "-";
-      }
-
-      .detail-group.is-collapsible dl {
-        display: none;
-      }
-
-      .detail-group.is-collapsible.is-expanded dl {
-        display: grid;
-        margin-top: 8px;
+        cursor: default;
       }
 
       .detail-group dl {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
         gap: 8px;
-        margin: 0;
+        margin: 8px 0 0;
       }
 
       .detail-group:nth-child(2) dl {
@@ -690,12 +788,6 @@
 
       .sales-risk {
         color: var(--red) !important;
-      }
-
-      .assessment-action {
-        display: flex;
-        justify-content: flex-end;
-        align-items: start;
       }
 
       .assessment-button {
@@ -780,6 +872,11 @@
         background: rgba(255, 119, 119, 0.1);
       }
 
+      .title-mismatch-chip {
+        justify-self: start;
+        white-space: normal;
+      }
+
       .staff-meta,
       .coach-note {
         color: var(--muted);
@@ -855,9 +952,13 @@
 
       .therapist-list {
         position: relative;
-        display: grid;
+        display: none;
         gap: 8px;
         padding-left: 16px;
+      }
+
+      .team-branch.is-expanded > .therapist-list {
+        display: grid;
       }
 
       .therapist-list::before {
@@ -1075,11 +1176,11 @@
       }
 
       @media (max-width: 1260px) {
-        .personal-details {
+        .personal-details.is-expanded .detail-panels {
           grid-template-columns: repeat(2, minmax(140px, 1fr));
         }
 
-        .assessment-action {
+        .details-actions {
           justify-content: flex-start;
         }
       }
@@ -1091,7 +1192,7 @@
           grid-template-columns: 1fr;
         }
 
-        .personal-details {
+        .personal-details.is-expanded .detail-panels {
           grid-template-columns: 1fr;
         }
 
@@ -1132,8 +1233,7 @@
         .hero-metrics,
         .kpi-grid,
         .org-node,
-        .therapist-node,
-        .personal-details {
+        .therapist-node {
           grid-template-columns: 1fr;
         }
 
@@ -1181,6 +1281,7 @@
           <div class="nav-actions">
             <a href="#leaders">領袖地圖</a>
             <a href="#assessment">評估</a>
+            <a href="https://solomonma2004.github.io/Gamification/Salary">薪酬計算機</a>
           </div>
         </nav>
 
@@ -1234,7 +1335,7 @@
               檢視
               <select id="viewFilter">
                 <option value="all">全部領袖</option>
-                <option value="mismatch">只顯示職位不一致</option>
+                <option value="mismatch">只顯示 Title mismatch</option>
               </select>
             </label>
             <label>
@@ -1278,14 +1379,14 @@
             </div>
             <div class="ratio-grid">
               <div>
-                <span class="ratio-icon">AS</span>
-                <strong>2 隊 TL</strong>
-                <small>14 HC 不包括本人</small>
+                <span class="ratio-icon">TL</span>
+                <strong>TL standard</strong>
+                <small>1 TL should support <span>6 E1 HC</span></small>
               </div>
               <div>
-                <span class="ratio-icon">TL</span>
-                <strong>6 E1</strong>
-                <small>6 E1 不包括本人</small>
+                <span class="ratio-icon">AS</span>
+                <strong>AS standard</strong>
+                <small>1 AS should support <span>2 TL / 14 HC</span></small>
               </div>
             </div>
             <div id="formationSummary" class="formation-summary"></div>
@@ -1332,8 +1433,9 @@
                   <th>Team Size</th>
                   <th>本月成績</th>
                   <th>對上 3個月成績</th>
-                  <th>5月後招聘進度</th>
+                  <th>2026後招聘</th>
                   <th>Offer target</th>
+                  <th>Offer target completion</th>
                   <th>Assessment date time</th>
                   <th>Carried out by</th>
                 </tr>
@@ -1840,6 +1942,11 @@
         return strDate;
       }
 
+      function isTitleMismatchValue(value) {
+        const text = String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+        return text !== "" && !["match", "matched", "no", "n", "false", "-"].includes(text);
+      }
+
       function normalizeSheetRecord(record) {
         const therapist = readCell(record, ["Therapist"]);
         const staffId = readCell(record, ["Staff ID", "Staff ID ", "Therapist Staff No"]);
@@ -1850,11 +1957,13 @@
         const asName = readCell(record, ["AS NAME", "AS Team"]) || "Unassigned";
         const tlName = readCell(record, ["TL NAME", "TL Team"]) || "Unassigned";
         const position = readCell(record, ["KPI Position", "Position"]) || "Unassigned";
-        const target = parseNumber(readCell(record, ["Current Sales Target", "Current Sales Target", "MTD Target"]));
+        const target = parseNumber(readCell(record, ["Full month Target", "Current Sales Target", "MTD Target"]));
         const currentSales = parseNumber(readCell(record, ["Current month Sales", "Current month Sales", "Actual Sales (MTD)"]));
         const mayMtdValue = readCell(record, ["This Month Sales %", "May MTD %", "MTD%", "本月成績"]);
         const currentSalesPercent = target ? Math.round((currentSales / target) * 100) : parseSalesPercent(mayMtdValue);
         const mayMtd = mayMtdValue === "" ? currentSalesPercent : parseSalesPercent(mayMtdValue);
+
+        const titleMismatch = readCell(record, ["Title mis match", "Title mis matach", "Title mismatch"]);
 
         return {
           brand,
@@ -1870,7 +1979,8 @@
           kpi: position === "NJ" ? 0 : currentSalesPercent,
           position,
           hrTitle: readCell(record, ["HR Position"]) || "Unassigned",
-          misMismatch: /miss|mismatch/i.test(readCell(record, ["Title mis matach", "Title mismatch"])),
+          titleMismatch,
+          misMismatch: isTitleMismatchValue(titleMismatch),
           serviceMonths: parseNumber(readCell(record, ["Total Service time (Months)"])),
           lastJoinDate: formatJoinDate(readCell(record, ["Last Join Date"])),
           target,
@@ -1880,7 +1990,7 @@
           mar: parseSalesPercent(readCell(record, ["M-2 Sales %", "Sales % March 26", "對上 2個月成績"])),
           feb: parseSalesPercent(readCell(record, ["M-3 Sales %", "Sales % Feb 26", "對上 3個月成績"])),
           jan: parseSalesPercent(readCell(record, ["M-4 Sales %", "Sales % Jan 26", "對上 4個月成績"])),
-          avg6: parseNumber(readCell(record, ["Past 6 month Average sales", "P6M Average Sales (Raw) along Brand, PIC, Center"])),
+          avg6: parseNumber(readCell(record, ["Past 3 month Average Sales", "Past 3 month Average sales"])),
           catCurrent: parsePercent(readCell(record, ["Current Cat1/2", "Current Cat1/2", "Cat 1/2"])),
           catPast3: parseNumber(readCell(record, ["Past 3 month Cat 1/2"])),
           cvSince2026: parseNumber(readCell(record, ["Number of upcoming CV Since 2026", "CV Since 2026", "CV"])),
@@ -1929,6 +2039,22 @@
 
       function normalizeRole(value) {
         return String(value || "").replace(/\s+/g, "").trim().toUpperCase();
+      }
+
+      function displayRole(value) {
+        const text = String(value || "").trim();
+        const normalized = normalizeRole(text);
+        if (["S", "AS", "TL", "E1"].includes(normalized)) return normalized;
+        if (/team leader/i.test(text)) return "TL";
+        if (/assistant supervisor|assistant centre supervisor|assistant center supervisor/i.test(text)) return "AS";
+        if (/floor supervisor|supervisor/i.test(text)) return "S";
+        if (/therapist/i.test(text)) return "E1";
+        return text || "-";
+      }
+
+      function titleMismatchLabel(person) {
+        if (!person.misMismatch) return "";
+        return `<span class="status-chip warning title-mismatch-chip">Title mismatch: Title ${displayRole(person.hrTitle)} / Function ${displayRole(person.position)}</span>`;
       }
 
       function uniqueValues(key, source = staff) {
@@ -2035,18 +2161,22 @@
         const teamMembers = source.filter((person) => (isTeamLeader(person) || isTherapistContributor(person)) && hasTlAssignment(person));
         const teams = groupBy(teamMembers, "team");
         const asGroups = groupBy(source, "as");
-        const asNames = new Set(Object.keys(asGroups));
-        const tlNames = source.filter(isTeamLeader).length;
-        const idealTlCount = asNames.size * 2;
+        const asCount = Object.keys(asGroups).length;
+        const tlTeamCount = Object.keys(teams).length;
+        const selectedBrand = String(elements.brandFilter.value || "All").trim().toUpperCase();
+        const asTargets = { ALL: 50, DERMES: 13, ELYZE: 13, REENEX: 25 };
+        const tlTargets = { ALL: 100, DERMES: 25, ELYZE: 25, REENEX: 50 };
+        const asTarget = asTargets[selectedBrand] ?? asTargets.ALL;
+        const tlTarget = tlTargets[selectedBrand] ?? tlTargets.ALL;
         const completeTlTeams = Object.values(teams).filter((members) => members.filter(isTherapistContributor).length >= 6).length;
         const completeAsTeams = Object.values(asGroups).filter((members) => members.filter((person) => !isTopLeader(person)).length >= 14).length;
+        const targetNote = selectedBrand === "ALL" ? "all-brand target" : `${selectedBrand} target`;
         elements.formationSummary.innerHTML = [
-          ["AS 領袖", asNames.size],
-          ["現有 TL", tlNames],
-          ["理想 TL", idealTlCount],
-          ["TL 團隊 >= 6 E1", `${completeTlTeams}/${Object.keys(teams).length}`],
-          ["AS 團隊 >= 14 HC", `${completeAsTeams}/${Object.keys(asGroups).length}`]
-        ].map(([label, value]) => `<div class="summary-item"><span>${label}</span><strong>${value}</strong></div>`).join("");
+          ["AS HC", `${asCount}/${asTarget}`, targetNote],
+          ["AS team >= 14 HC", `${completeAsTeams} of ${asCount}`, "teams meeting standard"],
+          ["TL HC", `${tlTeamCount}/${tlTarget}`, targetNote],
+          ["TL team >= 6 E1", `${completeTlTeams} of ${tlTeamCount}`, "teams meeting standard"]
+        ].map(([label, value, note]) => `<div class="summary-item"><span>${label}</span><strong>${value}</strong><em>${note}</em></div>`).join("");
       }
 
       function groupBy(source, key) {
@@ -2087,6 +2217,11 @@
           const teamCount = Object.keys(teams).length;
           const topLeader = asMembers.find(isTopLeader);
           const roleLabel = topLeader ? String(topLeader.position).toUpperCase() : "S/AS";
+          const asHcCount = asMembers.filter((person) => !isTopLeader(person)).length;
+          const asHcTarget = 15;
+          const asStatus = teamCount < 2
+            ? "需建立 TL 梯隊"
+            : (asHcCount < asHcTarget ? "需建立 HC" : "符合 AS 比例");
           return `
             <article class="org-tree ${asFlagged ? "is-flagged" : ""} ${asMismatch ? "mismatch" : ""}">
               <div class="org-node as-node">
@@ -2095,15 +2230,16 @@
                   <strong>${asName}</strong>
                   <small>${membersMeta(asMembers)}</small>
                 </div>
+                ${topLeader ? titleMismatchLabel(topLeader) : ""}
                 <div class="node-kpis">
-                  <span>HC ${asMembers.filter((person) => !isTopLeader(person)).length}/14</span>
+                  <span>HC ${asHcCount}/${asHcTarget}</span>
                 </div>
-                <span class="status-chip ${teamCount < 2 || asMembers.filter((person) => !isTopLeader(person)).length < 14 ? "warning" : ""}">${teamCount >= 2 && asMembers.filter((person) => !isTopLeader(person)).length >= 14 ? "符合 AS 比例" : "需建立 TL 梯隊"}</span>
-                ${topLeader ? renderPotentialButton(topLeader) : ""}
+                <span class="status-chip ${teamCount < 2 || asHcCount < asHcTarget ? "warning" : ""}">${asStatus}</span>
+                ${teamCards ? `<button class="branch-toggle" type="button" data-branch-toggle="as" aria-expanded="false">Team Leaders ${teamCount}</button>` : ""}
                 ${topLeader ? assessmentLabel(topLeader) : ""}
                 ${topLeader ? renderPersonalDetails(topLeader, {
                   suggestedTier: "as",
-                  currentCount: asMembers.filter((person) => !isTopLeader(person)).length
+                  currentCount: asHcCount
                 }) : ""}
               </div>
               ${teamCards ? `<div class="team-branches">${teamCards}</div>` : ""}
@@ -2132,11 +2268,12 @@
                 <strong>${leader ? leader.therapist : "未設定 TL"}</strong>
                 <small>${teamName}</small>
               </div>
+              ${leader ? titleMismatchLabel(leader) : ""}
               <div class="node-kpis">
                 <span>E1 ${e1Count}/6</span>
               </div>
               <span class="status-chip ${e1Count < 6 || !leader ? "warning" : ""}">${leader ? (e1Count >= 6 ? "符合 TL 比例" : "需建立團隊") : "需指定 TL"}</span>
-              ${leader ? renderPotentialButton(leader) : ""}
+              ${childMembers.length ? `<button class="branch-toggle" type="button" data-branch-toggle="tl" aria-expanded="false">Therapists ${e1Count}</button>` : ""}
               ${leader ? assessmentLabel(leader) : ""}
               ${leader ? renderPersonalDetails(leader, {
                 suggestedTier: "tl",
@@ -2154,14 +2291,12 @@
             <span class="node-dot" aria-hidden="true"></span>
             <div class="therapist-copy">
               <strong>${person.therapist}</strong>
-              <small>${person.position} | ${person.staffId}${person.misMismatch ? " | MIS mismatch" : ""}</small>
+              <small>${person.position} | ${person.staffId}</small>
             </div>
             <div class="mini-kpis">
-              <span>KPI ${person.kpi}%</span>
               <span class="${salesStatusClass(person.mayMtd ?? salesPercent(person))}">銷售 ${formatPercent(person.mayMtd ?? salesPercent(person))}</span>
-              <span>Cat ${person.catCurrent}</span>
             </div>
-            ${renderPotentialButton(person)}
+            ${titleMismatchLabel(person)}
             ${assessmentLabel(person)}
             ${renderPersonalDetails(person, {
               suggestedTier: "tl",
@@ -2171,15 +2306,11 @@
         `;
       }
 
-      function renderPotentialButton(person) {
-        return `<button class="talent-button compact" data-flag="${person.staffId}" aria-pressed="${isFlagged(person)}">${isFlagged(person) ? "High Po" : "Mark as High Po"}</button>`;
-      }
-
       function renderPersonalDetails(person, assessmentContext = {}) {
         const profileDetails = [
           ["年資", `${formatPlain(person.serviceMonths)} 月`],
           ["入職日", person.lastJoinDate || "-"],
-          ["目標", formatMoneyOrDash(person.target)],
+          ["Full month Target", formatMoneyOrDash(person.target)],
           ["銷售", formatMoneyOrDash(person.currentSales)]
         ];
         const salesDetails = [
@@ -2188,7 +2319,7 @@
           ["M-2", formatPercent(person.mar), salesStatusClass(person.mar)],
           ["M-3", formatPercent(person.feb), salesStatusClass(person.feb)],
           ["M-4", formatPercent(person.jan), salesStatusClass(person.jan)],
-          ["6M 平均", formatMoneyOrDash(person.avg6)]
+          ["3M avg sales", formatMoneyOrDash(person.avg6)]
         ];
         const categoryDetails = [
           ["現時", formatPercent(person.catCurrent)],
@@ -2202,12 +2333,15 @@
 
         return `
           <div class="personal-details">
-            ${renderDetailGroup("個人資料", profileDetails)}
-            ${renderDetailGroup("銷售表現", salesDetails)}
-            ${renderDetailGroup("招聘", recruitmentDetails)}
-            ${renderDetailGroup("Cat 1/2", categoryDetails)}
-            <div class="assessment-action">
+            <div class="details-actions">
+              <button class="details-toggle" type="button" aria-expanded="false">Performance Data</button>
               <button type="button" class="assessment-button" onclick="openAssessmentForm('${person.staffId}', '${assessmentContext.suggestedTier || ''}', ${assessmentContext.currentCount || 0})">評估</button>
+            </div>
+            <div class="detail-panels">
+              ${renderDetailGroup("個人資料", profileDetails)}
+              ${renderDetailGroup("銷售表現", salesDetails)}
+              ${renderDetailGroup("2026後招聘", recruitmentDetails)}
+              ${renderDetailGroup("Cat 1/2", categoryDetails)}
             </div>
           </div>
         `;
@@ -2215,8 +2349,8 @@
 
       function renderDetailGroup(title, details) {
         return `
-          <section class="detail-group is-collapsible">
-            <button class="detail-toggle" type="button" aria-expanded="false">${title}</button>
+          <section class="detail-group">
+            <div class="detail-toggle">${title}</div>
             <dl>
               ${details.map(([label, value, statusClass]) => `<div><dt>${label}</dt><dd class="${statusClass || ""}">${value}</dd></div>`).join("")}
             </dl>
@@ -2240,7 +2374,7 @@
         });
 
         if (!rows.length) {
-          elements.staffTable.innerHTML = `<tr><td colspan="10">沒有已完成評估的人員符合目前篩選條件。</td></tr>`;
+          elements.staffTable.innerHTML = `<tr><td colspan="11">沒有已完成評估的人員符合目前篩選條件。</td></tr>`;
           return;
         }
 
@@ -2257,6 +2391,10 @@
             const e1s = staff.filter(p => p.team === person.team && normalizeRole(p.position) === "E1").length;
             teamSizeStr = `E1: ${e1s}`;
           }
+          const offerTarget = parseNumber(assessment.offerTarget);
+          const offerTargetCompletion = offerTarget > 0
+            ? `${Math.floor((person.offerSince2026 / offerTarget) * 100)}%`
+            : "-";
 
           return `
             <tr class="${isFlagged(person) ? "flagged-row" : ""}">
@@ -2267,7 +2405,7 @@
                 ${assessmentLabel(person)}
               </td>
               <td>${person.brand}<br><span class="staff-meta">${person.center} | ${person.floor}</span></td>
-              <td>${person.position}<br><span class="staff-meta">HR: ${person.hrTitle}</span>${person.misMismatch ? `<br><span class="status-chip warning">職位不一致</span>` : ""}</td>
+              <td>${person.position}<br><span class="staff-meta">HR: ${person.hrTitle}</span>${person.misMismatch ? `<br>${titleMismatchLabel(person)}` : ""}</td>
               <td>${teamSizeStr}</td>
               <td><strong class="${salesStatusClass(person.mayMtd ?? salesPercent(person))}">${formatPercent(person.mayMtd ?? salesPercent(person))}</strong></td>
               <td>
@@ -2285,6 +2423,7 @@
                 </div>
               </td>
               <td><strong style="color: #fff;">${assessment.offerTarget !== undefined && assessment.offerTarget !== "" ? assessment.offerTarget : "-"}</strong></td>
+              <td><strong style="color: #fff;">${offerTargetCompletion}</strong></td>
               <td><span class="staff-meta">${assessment.assessmentDateTime || "-"}</span></td>
               <td><span class="staff-meta">${assessment.carriedOutBy || "-"}</span></td>
             </tr>
@@ -2483,19 +2622,18 @@
         });
 
         document.addEventListener("click", (event) => {
-          const flagButton = event.target.closest("[data-flag]");
           const editButton = event.target.closest("[data-edit]");
-          if (flagButton) {
-            const staffId = flagButton.dataset.flag;
-            state.flags[staffId] = !state.flags[staffId];
-            saveJson("talentFlags", state.flags);
-            renderAll();
+          const branchButton = event.target.closest("[data-branch-toggle]");
+          if (branchButton) {
+            const branch = branchButton.closest(".org-tree, .team-branch");
+            const isExpanded = branch.classList.toggle("is-expanded");
+            branchButton.setAttribute("aria-expanded", String(isExpanded));
           }
-          const toggleButton = event.target.closest(".detail-toggle");
-          if (toggleButton) {
-            const group = toggleButton.closest(".detail-group");
-            const isExpanded = group.classList.toggle("is-expanded");
-            toggleButton.setAttribute("aria-expanded", String(isExpanded));
+          const detailsButton = event.target.closest(".details-toggle");
+          if (detailsButton) {
+            const details = detailsButton.closest(".personal-details");
+            const isExpanded = details.classList.toggle("is-expanded");
+            detailsButton.setAttribute("aria-expanded", String(isExpanded));
           }
           if (editButton) openCoachDialog(editButton.dataset.edit);
         });
