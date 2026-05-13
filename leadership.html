@@ -274,6 +274,14 @@
         line-height: 1;
       }
 
+      .section-heading h2 span {
+        display: block;
+        margin-top: 10px;
+        color: var(--text);
+        font-size: clamp(1.15rem, 2vw, 1.7rem);
+        line-height: 1.2;
+      }
+
       .section-heading p:last-child {
         color: var(--muted);
         font-size: 1.05rem;
@@ -362,7 +370,7 @@
 
       .formation-panel {
         display: grid;
-        grid-template-columns: minmax(220px, 0.7fr) minmax(360px, 0.95fr) minmax(420px, 1.35fr);
+        grid-template-columns: minmax(180px, 0.5fr) minmax(260px, 0.55fr) minmax(620px, 1.8fr);
         gap: 18px;
         align-items: center;
         margin-bottom: 18px;
@@ -377,20 +385,21 @@
 
       .ratio-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
-        gap: 12px;
+        grid-template-columns: 1fr;
+        gap: 8px;
       }
 
       .ratio-grid div {
         display: grid;
-        grid-template-columns: 54px 1fr;
-        gap: 4px 14px;
+        grid-template-columns: 34px 1fr;
+        gap: 2px 10px;
         align-items: center;
-        min-height: 84px;
-        padding: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        min-height: 52px;
+        padding: 9px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
         border-radius: 8px;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.025);
+        opacity: 0.72;
       }
 
       .ratio-grid small span {
@@ -404,8 +413,8 @@
         display: grid;
         grid-row: span 2;
         place-items: center;
-        width: 54px;
-        height: 54px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
         color: var(--gold);
         border: 1px solid var(--line-strong);
@@ -417,33 +426,57 @@
         color: #fff;
       }
 
+      .ratio-grid strong {
+        font-size: 0.86rem;
+      }
+
       .ratio-grid small {
         color: var(--muted);
+        font-size: 0.74rem;
       }
 
       .formation-summary {
         display: grid;
-        grid-template-columns: repeat(2, minmax(150px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+        gap: 12px;
+      }
+
+      .summary-group {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid rgba(178, 105, 255, 0.24);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .summary-group-title {
+        grid-column: 1 / -1;
+        color: var(--gold);
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
       }
 
       .summary-item {
         display: grid;
         gap: 6px;
-        min-height: 70px;
-        padding: 12px;
+        min-height: 78px;
+        padding: 10px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 8px;
         color: var(--muted);
         background: rgba(255, 255, 255, 0.04);
-        font-size: 0.78rem;
+        font-size: 0.68rem;
         text-transform: uppercase;
         letter-spacing: 0.06em;
       }
 
       .summary-item strong {
         color: var(--gold-soft);
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         line-height: 1;
         letter-spacing: 0;
         text-transform: none;
@@ -780,6 +813,19 @@
         grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
       }
 
+      .recruitment-group dl {
+        grid-template-columns: repeat(3, minmax(58px, 1fr));
+      }
+
+      .detail-subtitle {
+        grid-column: 1 / -1;
+        color: var(--gold-soft);
+        font-size: 0.72rem;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
       .detail-group div {
         min-width: 0;
       }
@@ -1052,29 +1098,61 @@
 
       table {
         width: 100%;
-        min-width: 1350px;
+        min-width: 1120px;
         border-collapse: collapse;
+        table-layout: fixed;
       }
 
       th,
       td {
-        padding: 15px 14px;
+        padding: 10px 12px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         text-align: left;
         vertical-align: top;
+        line-height: 1.35;
       }
 
       th {
         color: var(--gold);
-        font-size: 0.76rem;
+        font-size: 0.68rem;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.06em;
         background: rgba(255, 255, 255, 0.05);
       }
 
       td {
         color: #efeaf8;
+        font-size: 0.88rem;
       }
+
+      th:nth-child(1),
+      td:nth-child(1) { width: 18%; }
+
+      th:nth-child(2),
+      td:nth-child(2) { width: 14%; }
+
+      th:nth-child(3),
+      td:nth-child(3) { width: 10%; }
+
+      th:nth-child(4),
+      td:nth-child(4),
+      th:nth-child(5),
+      td:nth-child(5),
+      th:nth-child(8),
+      td:nth-child(8),
+      th:nth-child(9),
+      td:nth-child(9) { width: 8%; }
+
+      th:nth-child(6),
+      td:nth-child(6),
+      th:nth-child(7),
+      td:nth-child(7) { width: 11%; }
+
+      th:nth-child(10),
+      td:nth-child(10) { width: 10%; }
+
+      th:nth-child(11),
+      td:nth-child(11) { width: 8%; }
 
       tr.flagged-row td {
         background: rgba(242, 198, 106, 0.065);
@@ -1228,6 +1306,10 @@
         .formation-summary {
           grid-template-columns: 1fr;
         }
+
+        .summary-group {
+          grid-template-columns: 1fr;
+        }
       }
 
       @media (max-width: 720px) {
@@ -1317,21 +1399,22 @@
             </p>
             <div class="hero-metrics" aria-label="Program headline metrics">
               <div>
-                <strong id="metricPotential">0</strong>
-                <span>已標記人才</span>
+                <strong id="metricSignupTl">0</strong>
+                <span>currently sign up to TL</span>
               </div>
               <div>
-                <strong id="metricTeams">0</strong>
-                <span>現有團隊</span>
+                <strong id="metricSignupAs">0</strong>
+                <span>currently sign up to AS</span>
               </div>
             </div>
           </div>
           <aside class="mission-panel" aria-label="Program focus">
             <h2>計劃重點</h2>
             <ul>
-              <li><span>01</span> Identify High Po 及未來人才池</li>
-              <li><span>02</span> 對比現有團隊與理想架構</li>
-              <li><span>03</span> 記錄評估、教練及承諾進度</li>
+              <li><span>01</span> 識別潛力人才</li>
+              <li><span>02</span> 評估及承諾</li>
+              <li><span>03</span> 追蹤進度</li>
+              <li><span>04</span> 邁向下一層級！</li>
             </ul>
           </aside>
         </section>
@@ -1341,8 +1424,8 @@
         <section id="leaders" class="section">
           <div class="section-heading">
             <p class="eyebrow">第一部分</p>
-            <h2>Identify High Po</h2>
-            <p>以組織圖方式檢視關鍵 KPI、現有團隊架構，並標記高潛人才作下一階段規劃。</p>
+            <h2>Identify Leadership Gap &amp; Discover High Potential Individual<br><span>識別領導梯隊差距及發掘高潛力人才</span></h2>
+            <p>以組織圖方式檢視團隊架構、領導比例及個人表現，找出梯隊缺口與具發展潛力的人才。</p>
           </div>
 
           <div class="control-row" aria-label="Leader controls">
@@ -1423,7 +1506,7 @@
         <section id="assessment" class="section">
           <div class="section-heading">
             <p class="eyebrow">第二部分</p>
-            <h2>Assessment and Monitor</h2>
+            <h2>Assessment and Monitor<br><span>評估及進度監察</span></h2>
             <p>TA 團隊可檢視已完成評估的人員，並按職位、品牌及樓層篩選及跟進。</p>
           </div>
 
@@ -1451,7 +1534,7 @@
               <thead>
                 <tr>
                   <th>名</th>
-                  <th>Brand / 中心</th>
+                  <th>Brand / Center</th>
                   <th>職位</th>
                   <th>Team Size</th>
                   <th>本月成績</th>
@@ -1669,8 +1752,8 @@
         floorFilter: document.querySelector("#floorFilter"),
         searchInput: document.querySelector("#searchInput"),
         staffTable: document.querySelector("#staffTable"),
-        metricPotential: document.querySelector("#metricPotential"),
-        metricTeams: document.querySelector("#metricTeams"),
+        metricSignupTl: document.querySelector("#metricSignupTl"),
+        metricSignupAs: document.querySelector("#metricSignupAs"),
         dialog: document.querySelector("#coachDialog"),
         coachForm: document.querySelector("#coachForm"),
         dialogTitle: document.querySelector("#dialogTitle"),
@@ -2019,6 +2102,9 @@
           cvSince2026: parseNumber(readCell(record, ["Number of upcoming CV Since 2026", "CV Since 2026", "CV"])),
           offerSince2026: parseNumber(readCell(record, ["Number of upcoming offer Since 2026", "offer Since 2026", "Offer"])),
           onboardSince2026: parseNumber(readCell(record, ["Number of upcoming on board Since 2026", "on board Since 2026", "On board"])),
+          cvSinceMay2026: parseNumber(readCell(record, ["CV Since May 2026"])),
+          offerSinceMay2026: parseNumber(readCell(record, ["offer Since May 2026", "Offer Since May 2026"])),
+          onboardSinceMay2026: parseNumber(readCell(record, ["on board Since May 2026", "On board Since May 2026"])),
           flagged: false
         };
       }
@@ -2174,10 +2260,11 @@
       }
 
       function renderMetrics() {
-        const flaggedCount = staff.filter(isFlagged).length;
-        const teams = new Set(staff.map((person) => person.team)).size;
-        elements.metricPotential.textContent = flaggedCount;
-        elements.metricTeams.textContent = teams;
+        const assessments = Object.values(state.assessments);
+        const signedToTl = assessments.filter((item) => item.targetTier === "tl").length;
+        const signedToAs = assessments.filter((item) => item.targetTier === "as").length;
+        elements.metricSignupTl.textContent = signedToTl;
+        elements.metricSignupAs.textContent = signedToAs;
       }
 
       function renderFormationSummary(source) {
@@ -2193,13 +2280,34 @@
         const tlTarget = tlTargets[selectedBrand] ?? tlTargets.ALL;
         const completeTlTeams = Object.values(teams).filter((members) => members.filter(isTherapistContributor).length >= 6).length;
         const completeAsTeams = Object.values(asGroups).filter((members) => members.filter((person) => !isTopLeader(person)).length >= 14).length;
+        const asAverageHc = asCount
+          ? (Object.values(asGroups).reduce((total, members) => total + members.filter((person) => !isTopLeader(person)).length, 0) / asCount).toFixed(1)
+          : "0";
+        const tlAverageHc = tlTeamCount
+          ? (Object.values(teams).reduce((total, members) => total + members.filter(isTherapistContributor).length, 0) / tlTeamCount).toFixed(1)
+          : "0";
         const targetNote = selectedBrand === "ALL" ? "all-brand target" : `${selectedBrand} target`;
-        elements.formationSummary.innerHTML = [
+        const asItems = [
           ["AS HC", `${asCount}/${asTarget}`, targetNote],
-          ["AS team >= 14 HC", `${completeAsTeams} of ${asCount}`, "teams meeting standard"],
+          ["Current avg AS HC", asAverageHc, "HC per AS group"],
+          ["AS team >= 14 HC", `${completeAsTeams} of ${asCount}`, "teams meeting standard"]
+        ];
+        const tlItems = [
           ["TL HC", `${tlTeamCount}/${tlTarget}`, targetNote],
+          ["Current avg TL HC", tlAverageHc, "E1 per TL team"],
           ["TL team >= 6 E1", `${completeTlTeams} of ${tlTeamCount}`, "teams meeting standard"]
-        ].map(([label, value, note]) => `<div class="summary-item"><span>${label}</span><strong>${value}</strong><em>${note}</em></div>`).join("");
+        ];
+        const renderSummaryItem = ([label, value, note]) => `<div class="summary-item"><span>${label}</span><strong>${value}</strong><em>${note}</em></div>`;
+        elements.formationSummary.innerHTML = `
+          <div class="summary-group">
+            <div class="summary-group-title">AS</div>
+            ${asItems.map(renderSummaryItem).join("")}
+          </div>
+          <div class="summary-group">
+            <div class="summary-group-title">TL</div>
+            ${tlItems.map(renderSummaryItem).join("")}
+          </div>
+        `;
       }
 
       function groupBy(source, key) {
@@ -2239,6 +2347,7 @@
           const asFlagged = asMembers.some(isFlagged);
           const teamCards = Object.entries(teams).map(([teamName, members]) => renderTeamCard(teamName, members)).join("");
           const teamCount = Object.keys(teams).length;
+          const e1Count = asMembers.filter(isTherapistContributor).length;
           const topLeader = asMembers.find(isTopLeader);
           const roleLabel = topLeader ? String(topLeader.position).toUpperCase() : "S/AS";
           const asHcCount = asMembers.filter((person) => !isTopLeader(person)).length;
@@ -2259,7 +2368,7 @@
                   <span>HC ${asHcCount}/${asHcTarget}</span>
                 </div>
                 <span class="status-chip ${teamCount < 2 || asHcCount < asHcTarget ? "warning" : ""}">${asStatus}</span>
-                <button class="branch-toggle" type="button" data-branch-toggle="as" aria-expanded="false">Team Leaders ${teamCount}${directReports.length ? ` / Direct E1 ${directReports.length}` : ""}</button>
+                <button class="branch-toggle" type="button" data-branch-toggle="as" aria-expanded="false">TL ${teamCount} / E1 ${e1Count}</button>
                 ${topLeader ? assessmentLabel(topLeader) : ""}
                 ${topLeader ? renderPersonalDetails(topLeader, {
                   suggestedTier: "as",
@@ -2350,11 +2459,18 @@
           ["現時", formatPercent(person.catCurrent)],
           ["過去 3M", formatPlain(person.catPast3)]
         ];
-        const recruitmentDetails = [
-          ["CV", formatPlain(person.cvSince2026)],
-          ["Offer", formatPlain(person.offerSince2026)],
-          ["入職", formatPlain(person.onboardSince2026)]
-        ];
+        const recruitmentDetails = {
+          fullYear: [
+            ["CV", formatPlain(person.cvSince2026)],
+            ["Offer", formatPlain(person.offerSince2026)],
+            ["入職", formatPlain(person.onboardSince2026)]
+          ],
+          afterMay: [
+            ["CV", formatPlain(person.cvSinceMay2026)],
+            ["Offer", formatPlain(person.offerSinceMay2026)],
+            ["入職", formatPlain(person.onboardSinceMay2026)]
+          ]
+        };
 
         return `
           <div class="personal-details">
@@ -2365,7 +2481,7 @@
             <div class="detail-panels">
               ${renderDetailGroup("個人資料", profileDetails)}
               ${renderDetailGroup("銷售表現", salesDetails)}
-              ${renderDetailGroup("2026後招聘", recruitmentDetails)}
+              ${renderRecruitmentGroup(recruitmentDetails)}
               ${renderDetailGroup("Cat 1/2", categoryDetails)}
             </div>
           </div>
@@ -2378,6 +2494,21 @@
             <div class="detail-toggle">${title}</div>
             <dl>
               ${details.map(([label, value, statusClass]) => `<div><dt>${label}</dt><dd class="${statusClass || ""}">${value}</dd></div>`).join("")}
+            </dl>
+          </section>
+        `;
+      }
+
+      function renderRecruitmentGroup(details) {
+        const renderRows = (items) => items.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("");
+        return `
+          <section class="detail-group recruitment-group">
+            <div class="detail-toggle">2026招聘</div>
+            <dl>
+              <div class="detail-subtitle">2026 全年</div>
+              ${renderRows(details.fullYear)}
+              <div class="detail-subtitle">2026 5月後</div>
+              ${renderRows(details.afterMay)}
             </dl>
           </section>
         `;
@@ -2418,8 +2549,11 @@
           }
           const offerTarget = parseNumber(assessment.offerTarget);
           const offerTargetCompletion = offerTarget > 0
-            ? `${Math.floor((person.offerSince2026 / offerTarget) * 100)}%`
+            ? `${Math.floor((person.offerSinceMay2026 / offerTarget) * 100)}%`
             : "-";
+          const locationText = person.floor && person.floor !== person.center
+            ? `${person.center} | ${person.floor}`
+            : person.center;
 
           return `
             <tr class="${isFlagged(person) ? "flagged-row" : ""}">
@@ -2429,7 +2563,7 @@
                 ${isFlagged(person) ? `<span class="role-chip">高潛人才</span>` : ""}
                 ${assessmentLabel(person)}
               </td>
-              <td>${person.brand}<br><span class="staff-meta">${person.center} | ${person.floor}</span></td>
+              <td>${person.brand}<br><span class="staff-meta">${locationText}</span></td>
               <td>${person.position}<br><span class="staff-meta">HR: ${person.hrTitle}</span>${person.misMismatch ? `<br>${titleMismatchLabel(person)}` : ""}</td>
               <td>${teamSizeStr}</td>
               <td><strong class="${salesStatusClass(person.mayMtd ?? salesPercent(person))}">${formatPercent(person.mayMtd ?? salesPercent(person))}</strong></td>
@@ -2442,9 +2576,9 @@
               </td>
               <td>
                 <div class="staff-meta">
-                  CV: ${formatPlain(person.cvSince2026)}<br>
-                  Offer: ${formatPlain(person.offerSince2026)}<br>
-                  On board: ${formatPlain(person.onboardSince2026)}
+                  CV: ${formatPlain(person.cvSinceMay2026)}<br>
+                  Offer: ${formatPlain(person.offerSinceMay2026)}<br>
+                  On board: ${formatPlain(person.onboardSinceMay2026)}
                 </div>
               </td>
               <td><strong style="color: #fff;">${assessment.offerTarget !== undefined && assessment.offerTarget !== "" ? assessment.offerTarget : "-"}</strong></td>
@@ -2653,6 +2787,20 @@
             const branch = branchButton.closest(".org-tree, .team-branch");
             const isExpanded = branch.classList.toggle("is-expanded");
             branchButton.setAttribute("aria-expanded", String(isExpanded));
+            if (branchButton.dataset.branchToggle === "as") {
+              branch.querySelectorAll(".team-branch").forEach((teamBranch) => {
+                teamBranch.classList.toggle("is-expanded", isExpanded);
+              });
+              branch.querySelectorAll('[data-branch-toggle="tl"]').forEach((tlButton) => {
+                tlButton.setAttribute("aria-expanded", String(isExpanded));
+              });
+              branch.querySelectorAll(".personal-details").forEach((details) => {
+                details.classList.toggle("is-expanded", isExpanded);
+              });
+              branch.querySelectorAll(".details-toggle").forEach((detailsButton) => {
+                detailsButton.setAttribute("aria-expanded", String(isExpanded));
+              });
+            }
           }
           const detailsButton = event.target.closest(".details-toggle");
           if (detailsButton) {
