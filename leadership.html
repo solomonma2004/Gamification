@@ -61,11 +61,43 @@
       }
 
       .hero {
+        position: relative;
+        overflow: hidden;
         min-height: auto;
-        padding: 18px clamp(16px, 4vw, 52px) 34px;
+        padding: 18px clamp(16px, 4vw, 52px) 40px;
+        background:
+          linear-gradient(90deg, rgba(255, 244, 255, 0.94) 0%, rgba(255, 226, 238, 0.86) 38%, rgba(168, 110, 255, 0.78) 100%),
+          var(--bg);
+        color: #1c0a4a;
+      }
+
+      .hero::before {
+        position: absolute;
+        inset: 0;
+        content: "";
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 73% 48%, rgba(255, 189, 69, 0.82), transparent 8rem),
+          radial-gradient(circle at 74% 48%, rgba(238, 50, 139, 0.66), transparent 5rem),
+          radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.72), transparent 9rem),
+          radial-gradient(circle at 62% 28%, rgba(255, 255, 255, 0.48), transparent 10rem);
+        mix-blend-mode: screen;
+      }
+
+      .hero::after {
+        position: absolute;
+        inset: auto 0 0;
+        height: 92px;
+        content: "";
+        pointer-events: none;
+        background: linear-gradient(90deg, rgba(64, 21, 128, 0.94), rgba(121, 38, 162, 0.9), rgba(58, 22, 126, 0.94));
+        border-top: 1px solid rgba(255, 255, 255, 0.28);
+        opacity: 0.95;
       }
 
       .topbar {
+        position: relative;
+        z-index: 1;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -150,9 +182,13 @@
         align-items: center;
         min-height: 36px;
         padding: 0 12px;
+        color: #fff;
+        background: rgba(55, 17, 111, 0.28);
       }
 
       .hero-grid {
+        position: relative;
+        z-index: 1;
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(300px, 0.36fr);
         gap: clamp(18px, 3vw, 38px);
@@ -166,18 +202,109 @@
       .hero-copy h1 {
         max-width: 840px;
         margin: 10px 0 12px;
-        color: var(--gold-soft);
+        color: #2a0b62;
         font-size: clamp(2.5rem, 5.8vw, 5.1rem);
         line-height: 0.92;
         letter-spacing: 0;
-        text-shadow: 0 0 24px rgba(179, 99, 255, 0.48);
+        text-shadow: 0 2px 18px rgba(255, 255, 255, 0.34);
+      }
+
+      .hero-copy .eyebrow {
+        color: #6b2389;
+        text-shadow: 0 1px 8px rgba(255, 255, 255, 0.45);
+      }
+
+      .hero-visual {
+        display: grid;
+        gap: 14px;
+        max-width: 820px;
+        margin-bottom: 22px;
+      }
+
+      .hero-target {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: #30105f;
+        font-weight: 950;
+        line-height: 0.9;
+      }
+
+      .hero-target strong {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: clamp(3rem, 8vw, 7rem);
+        letter-spacing: 0;
+      }
+
+      .hero-target small {
+        color: #3b176c;
+        font-size: clamp(1.5rem, 3vw, 3rem);
+        font-weight: 950;
+      }
+
+      .hero-target .plus {
+        color: #f39b19;
+        font-size: clamp(2rem, 4vw, 4.2rem);
+      }
+
+      .hero-slogan {
+        color: #2b0c62;
+        font-size: clamp(1.9rem, 4vw, 4.3rem);
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .hero-pill-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .hero-pill {
+        min-width: 148px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        color: #37106f;
+        background: rgba(255, 255, 255, 0.62);
+        box-shadow: 0 10px 30px rgba(67, 31, 121, 0.14);
+        font-weight: 850;
+      }
+
+      .hero-pill span {
+        display: block;
+        margin-top: 4px;
+        color: #151023;
+        font-size: 0.82rem;
+        font-weight: 760;
+      }
+
+      .hero-network {
+        position: absolute;
+        right: clamp(20px, 5vw, 90px);
+        top: 86px;
+        width: min(42vw, 560px);
+        aspect-ratio: 1.4;
+        pointer-events: none;
+        opacity: 0.85;
+        background:
+          radial-gradient(circle at 55% 52%, rgba(255, 77, 146, 0.78) 0 11%, rgba(255, 182, 64, 0.4) 12%, transparent 24%),
+          radial-gradient(circle at 24% 36%, rgba(255,255,255,0.95) 0 3px, transparent 4px),
+          radial-gradient(circle at 42% 22%, rgba(255,255,255,0.9) 0 3px, transparent 4px),
+          radial-gradient(circle at 70% 18%, rgba(255,255,255,0.9) 0 3px, transparent 4px),
+          radial-gradient(circle at 83% 42%, rgba(255,255,255,0.9) 0 3px, transparent 4px),
+          radial-gradient(circle at 35% 70%, rgba(255,255,255,0.9) 0 3px, transparent 4px),
+          radial-gradient(circle at 74% 76%, rgba(255,255,255,0.9) 0 3px, transparent 4px);
       }
 
       .hero-lede {
         max-width: 680px;
         margin: 0;
-        color: #ded7ed;
+        color: #2b1950;
         font-size: clamp(1rem, 1.6vw, 1.24rem);
+        font-weight: 760;
         line-height: 1.45;
       }
 
@@ -214,12 +341,18 @@
       .hero-metrics span {
         display: block;
         margin-top: 8px;
-        color: var(--muted);
+        color: #d9d2ea;
       }
 
       .mission-panel {
+        color: #f8f2ff;
+        background: linear-gradient(145deg, rgba(18, 13, 46, 0.96), rgba(13, 12, 36, 0.94));
         border-radius: 8px;
         padding: 18px;
+      }
+
+      .mission-panel h2 {
+        color: #f7efff;
       }
 
       .mission-panel h2,
@@ -241,7 +374,8 @@
         grid-template-columns: 34px 1fr;
         gap: 10px;
         align-items: center;
-        color: #e6def3;
+        color: #f4eefc;
+        font-weight: 820;
         line-height: 1.45;
       }
 
@@ -1268,6 +1402,34 @@
         gap: 18px;
       }
 
+      .followup-readonly {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .followup-readonly div {
+        min-width: 0;
+      }
+
+      .followup-readonly dt {
+        color: var(--muted);
+        font-size: 0.68rem;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .followup-readonly dd {
+        margin: 4px 0 0;
+        color: #fff;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+      }
+
       .assessment-form .dialog-actions {
         margin-top: 4px;
       }
@@ -1331,6 +1493,14 @@
           padding-top: 48px;
         }
 
+        .hero-network {
+          display: none;
+        }
+
+        .hero-visual {
+          margin-bottom: 18px;
+        }
+
         .hero-copy h1 {
           font-size: clamp(2.5rem, 15vw, 4rem);
         }
@@ -1392,6 +1562,20 @@
 
         <section id="top" class="hero-grid">
           <div class="hero-copy">
+            <div class="hero-visual" aria-label="Leadership target visual">
+              <div class="hero-target">
+                <strong>100 <small>TL</small></strong>
+                <span class="plus">+</span>
+                <strong>50 <small>AS</small></strong>
+              </div>
+              <div class="hero-slogan">量子太陽領袖</div>
+              <div class="hero-pill-row">
+                <div class="hero-pill">Groom leadership<span>培育領導人才</span></div>
+                <div class="hero-pill">Build HC<span>建立人才與組織</span></div>
+                <div class="hero-pill">Drive replication<span>推動客戶基礎複製</span></div>
+              </div>
+            </div>
+            <div class="hero-network" aria-hidden="true"></div>
             <p class="eyebrow">領導・同步・複製・主導</p>
             <h1>NEODERM 次世代領袖培育計劃</h1>
             <p class="hero-lede">
@@ -1544,6 +1728,7 @@
                   <th>Offer target completion</th>
                   <th>Assessment date time</th>
                   <th>Carried out by</th>
+                  <th>評估 / Follow up</th>
                 </tr>
               </thead>
               <tbody id="staffTable"></tbody>
@@ -1582,6 +1767,32 @@
           <div class="dialog-actions">
             <button class="secondary-button" value="cancel" type="submit">取消</button>
             <button id="saveCoach" class="primary-button" value="default" type="button">儲存</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="followUpDialog" class="coach-dialog">
+        <form method="dialog" id="followUpForm">
+          <div class="dialog-head">
+            <div>
+              <p class="eyebrow">評估 / FOLLOW UP</p>
+              <h2 id="followUpTitle">Follow up</h2>
+            </div>
+            <button class="icon-button" value="cancel" aria-label="Close dialog" type="submit">x</button>
+          </div>
+          <input type="hidden" id="followUpStaffId">
+          <dl id="followUpReadonly" class="followup-readonly"></dl>
+          <label>
+            2nd assessment Remarks
+            <textarea id="followUpRemarks" rows="4" placeholder="輸入 follow-up remarks"></textarea>
+          </label>
+          <label>
+            2nd Commitment Date
+            <input id="followUpDate" type="date">
+          </label>
+          <div class="dialog-actions">
+            <button class="secondary-button" value="cancel" type="submit">取消</button>
+            <button id="saveFollowUp" class="primary-button" value="default" type="button">儲存 Follow up</button>
           </div>
         </form>
       </dialog>
@@ -1630,6 +1841,11 @@
             <label>
               Carried out by
               <input id="carriedOutBy" type="text" placeholder="輸入評估負責人">
+            </label>
+
+            <label>
+              1st assessment Remarks
+              <textarea id="firstAssessmentRemarks" rows="4" placeholder="輸入第一次評估 remarks"></textarea>
             </label>
 
             <div class="dialog-actions">
@@ -1776,7 +1992,15 @@
         assTargetTier: document.querySelector("#targetTier"),
         assOfferGap: document.querySelector("#offerGap"),
         assTargetDate: document.querySelector("#targetCompletionDate"),
-        assCarriedOutBy: document.querySelector("#carriedOutBy")
+        assCarriedOutBy: document.querySelector("#carriedOutBy"),
+        assFirstRemarks: document.querySelector("#firstAssessmentRemarks"),
+        followUpDialog: document.querySelector("#followUpDialog"),
+        followUpTitle: document.querySelector("#followUpTitle"),
+        followUpStaffId: document.querySelector("#followUpStaffId"),
+        followUpReadonly: document.querySelector("#followUpReadonly"),
+        followUpRemarks: document.querySelector("#followUpRemarks"),
+        followUpDate: document.querySelector("#followUpDate"),
+        saveFollowUp: document.querySelector("#saveFollowUp")
       };
 
       function loadJson(key, fallback) {
@@ -1867,7 +2091,11 @@
       }
 
       function parseEnrollmentDetails(rows) {
-        if (!rows || rows.length < 2) return;
+        if (!rows || rows.length < 2) {
+          state.assessments = {};
+          saveJson("programAssessments", state.assessments);
+          return;
+        }
         
         let headers = [];
         let data = [];
@@ -1895,6 +2123,12 @@
         const keyCarriedOutBy = headers[normHeaders.findIndex(h => h.includes("carried out by"))];
         const keyOfferTarget = headers[normHeaders.findIndex(h => h.includes("offer target"))];
         const keyAssessmentDateTime = headers[normHeaders.findIndex(h => h.includes("assessment date time"))];
+        const keyCurrentTeamSize = headers[normHeaders.findIndex(h => h.includes("current team size"))];
+        const keyTargetTeamSize = headers[normHeaders.findIndex(h => h.includes("target team size"))];
+        const keyFirstRemarks = headers[normHeaders.findIndex(h => h.includes("1st assessment") && (h.includes("remarks") || h.includes("reamarks")))];
+        const keyFirstAssessmentDate = headers[normHeaders.findIndex(h => h.includes("1st assessment") && h.includes("date"))];
+        const keySecondRemarks = headers[normHeaders.findIndex(h => h.includes("2nd assessment") && h.includes("remarks"))];
+        const keySecondCommitmentDate = headers[normHeaders.findIndex(h => h.includes("2nd") && h.includes("commitment") && h.includes("date"))];
 
         if (!keyStaffNo) return;
 
@@ -1918,12 +2152,18 @@
             targetCompletionDate: row[keyDate] || "",
             carriedOutBy: keyCarriedOutBy ? (row[keyCarriedOutBy] || "") : "",
             offerTarget: keyOfferTarget ? (row[keyOfferTarget] || "") : "",
-            assessmentDateTime: keyAssessmentDateTime ? (row[keyAssessmentDateTime] || "") : ""
+            assessmentDateTime: keyAssessmentDateTime ? (row[keyAssessmentDateTime] || "") : "",
+            currentTeamSize: keyCurrentTeamSize ? (row[keyCurrentTeamSize] || "") : "",
+            targetTeamSize: keyTargetTeamSize ? (row[keyTargetTeamSize] || "") : "",
+            firstRemarks: keyFirstRemarks ? (row[keyFirstRemarks] || "") : "",
+            firstAssessmentDate: keyFirstAssessmentDate ? (row[keyFirstAssessmentDate] || "") : "",
+            secondRemarks: keySecondRemarks ? (row[keySecondRemarks] || "") : "",
+            secondCommitmentDate: keySecondCommitmentDate ? (row[keySecondCommitmentDate] || "") : ""
           };
         });
 
-        // 將試算表資料合併到本地狀態中
-        state.assessments = { ...state.assessments, ...newAssessments };
+        // Google Sheet is the source of truth for the assessment table.
+        state.assessments = newAssessments;
         saveJson("programAssessments", state.assessments);
       }
 
@@ -2329,6 +2569,11 @@
         return Math.round((person.currentSales / person.target) * 100);
       }
 
+      function hcGapStatus(current, target) {
+        const gap = Math.max(target - current, 0);
+        return gap > 0 ? `需建立 HC / 需要招聘補齊 ${gap} 人` : "";
+      }
+
       function renderOrgChart() {
         const source = leaderFilteredStaff();
         const byAs = groupBy(source, "as");
@@ -2352,9 +2597,10 @@
           const roleLabel = topLeader ? String(topLeader.position).toUpperCase() : "S/AS";
           const asHcCount = asMembers.filter((person) => !isTopLeader(person)).length;
           const asHcTarget = 15;
+          const asHcGapStatus = hcGapStatus(asHcCount, asHcTarget);
           const asStatus = teamCount < 2
             ? "需建立 TL 梯隊"
-            : (asHcCount < asHcTarget ? "需建立 HC" : "符合 AS 比例");
+            : (asHcGapStatus || "符合 AS 比例");
           return `
             <article class="org-tree ${asFlagged ? "is-flagged" : ""} ${asMismatch ? "mismatch" : ""}">
               <div class="org-node as-node">
@@ -2394,6 +2640,10 @@
         const teamMismatch = members.some((person) => person.misMismatch);
         const flagged = members.some(isFlagged);
         const e1Count = childMembers.length;
+        const tlHcTarget = 6;
+        const tlStatus = leader
+          ? (hcGapStatus(e1Count, tlHcTarget) || "符合 TL 比例")
+          : "需指定 TL";
         return `
           <article class="team-branch ${flagged ? "is-flagged" : ""} ${teamMismatch ? "mismatch" : ""}">
             <div class="org-node tl-node">
@@ -2404,9 +2654,9 @@
               </div>
               ${leader ? titleMismatchLabel(leader) : ""}
               <div class="node-kpis">
-                <span>E1 ${e1Count}/6</span>
+                <span>E1 ${e1Count}/${tlHcTarget}</span>
               </div>
-              <span class="status-chip ${e1Count < 6 || !leader ? "warning" : ""}">${leader ? (e1Count >= 6 ? "符合 TL 比例" : "需建立團隊") : "需指定 TL"}</span>
+              <span class="status-chip ${e1Count < tlHcTarget || !leader ? "warning" : ""}">${tlStatus}</span>
               ${childMembers.length ? `<button class="branch-toggle" type="button" data-branch-toggle="tl" aria-expanded="false">Therapists ${e1Count}</button>` : ""}
               ${leader ? assessmentLabel(leader) : ""}
               ${leader ? renderPersonalDetails(leader, {
@@ -2530,7 +2780,7 @@
         });
 
         if (!rows.length) {
-          elements.staffTable.innerHTML = `<tr><td colspan="11">沒有已完成評估的人員符合目前篩選條件。</td></tr>`;
+          elements.staffTable.innerHTML = `<tr><td colspan="12">沒有已完成評估的人員符合目前篩選條件。</td></tr>`;
           return;
         }
 
@@ -2585,9 +2835,49 @@
               <td><strong style="color: #fff;">${offerTargetCompletion}</strong></td>
               <td><span class="staff-meta">${assessment.assessmentDateTime || "-"}</span></td>
               <td><span class="staff-meta">${assessment.carriedOutBy || "-"}</span></td>
+              <td><button class="secondary-button" type="button" data-followup="${person.staffId}">評估 / FOLLOW UP</button></td>
             </tr>
           `;
         }).join("");
+      }
+
+      function renderFollowUpReadonly(person, assessment) {
+        const items = [
+          ["Staff No.", person.staffId],
+          ["Name", person.therapist],
+          ["Join", assessment.willingJoin || "-"],
+          ["Commitment Tier", assessment.targetTierLabel || tierLabel(assessment.targetTier) || "-"],
+          ["Offer Gap", assessment.offerGap || "-"],
+          ["Enroll date", assessment.enrollDate || "-"],
+          ["Target completion Date", assessment.targetCompletionDate || "-"],
+          ["Current Team size", assessment.currentTeamSize || "-"],
+          ["Target team size", assessment.targetTeamSize || "-"],
+          ["Offer target", assessment.offerTarget || "-"],
+          ["Assessment date time", assessment.assessmentDateTime || "-"],
+          ["Carried out by", assessment.carriedOutBy || "-"],
+          ["1st assessment Remarks", assessment.firstRemarks || "-"],
+          ["1st assessment Date", assessment.firstAssessmentDate || "-"]
+        ];
+        return items.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("");
+      }
+
+      function openFollowUpDialog(staffId) {
+        const person = staff.find((item) => item.staffId === staffId);
+        const assessment = state.assessments[staffId] || {};
+        if (!person || !assessment.staffId) return;
+        elements.followUpStaffId.value = staffId;
+        elements.followUpTitle.textContent = `${person.therapist} | ${staffId}`;
+        elements.followUpReadonly.innerHTML = renderFollowUpReadonly(person, assessment);
+        elements.followUpRemarks.value = assessment.secondRemarks || "";
+        elements.followUpDate.value = normalizeDateInput(assessment.secondCommitmentDate);
+        elements.followUpDialog.showModal();
+      }
+
+      function normalizeDateInput(value) {
+        const text = String(value || "").trim();
+        if (!text) return "";
+        if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
+        return "";
       }
 
       function openCoachDialog(staffId) {
@@ -2782,6 +3072,7 @@
 
         document.addEventListener("click", (event) => {
           const editButton = event.target.closest("[data-edit]");
+          const followUpButton = event.target.closest("[data-followup]");
           const branchButton = event.target.closest("[data-branch-toggle]");
           if (branchButton) {
             const branch = branchButton.closest(".org-tree, .team-branch");
@@ -2808,7 +3099,49 @@
             const isExpanded = details.classList.toggle("is-expanded");
             detailsButton.setAttribute("aria-expanded", String(isExpanded));
           }
+          if (followUpButton) openFollowUpDialog(followUpButton.dataset.followup);
           if (editButton) openCoachDialog(editButton.dataset.edit);
+        });
+
+        elements.saveFollowUp.addEventListener("click", async () => {
+          const staffId = elements.followUpStaffId.value;
+          const assessment = state.assessments[staffId] || {};
+          assessment.secondRemarks = elements.followUpRemarks.value.trim();
+          assessment.secondCommitmentDate = elements.followUpDate.value;
+          state.assessments[staffId] = assessment;
+          saveJson("programAssessments", state.assessments);
+
+          const originalText = elements.saveFollowUp.textContent;
+          elements.saveFollowUp.textContent = "正在同步...";
+          elements.saveFollowUp.disabled = true;
+
+          try {
+            if (SHEET_CONFIG.appsScriptUrl) {
+              await fetch(SHEET_CONFIG.appsScriptUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                  "Content-Type": "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify({
+                  action: "saveFollowUp",
+                  sheetName: "enrollment detail",
+                  data: {
+                    "Staff No.": staffId,
+                    "2nd assessment Remarks": assessment.secondRemarks,
+                    "2nd Commitment Date": assessment.secondCommitmentDate
+                  }
+                })
+              });
+            }
+          } catch (error) {
+            console.error("同步 follow-up 至試算表時發生錯誤：", error);
+          } finally {
+            elements.saveFollowUp.textContent = originalText;
+            elements.saveFollowUp.disabled = false;
+            elements.followUpDialog.close();
+            renderStaffTable();
+          }
         });
 
         elements.saveCoach.addEventListener("click", () => {
