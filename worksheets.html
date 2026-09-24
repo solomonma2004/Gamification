@@ -30,6 +30,19 @@
 .icon-umbrella {--picture-ink:#6752c8}.icon-umbrella path:last-child{fill:#a993ff}
 .colouring-picture .worksheet-icon,.colouring-picture .worksheet-icon * {stroke:#17243a;fill:none}
 @media print {.colouring-picture .worksheet-icon,.colouring-picture .worksheet-icon * {stroke:#000;fill:none}}
+
+/* Phone layout: readable controls, generous touch targets, full-width paper. */
+.mobile-settings{display:none}
+@media screen and (max-width:750px){
+ html{scroll-padding-top:12px}body{ -webkit-text-size-adjust:100% }
+ .topbar{height:68px;padding:0 16px}.brand{font-size:18px;gap:9px}.brand small{font-size:9px}.mark{width:38px;height:38px}.edition b{display:none}
+ .workspace{padding:20px 12px 36px}.controls{padding:0 4px}.controls h1{font-size:27px;margin:6px 0 8px}.intro{font-size:14px;line-height:1.65;margin-bottom:18px}
+ fieldset{margin-bottom:16px}.field{margin:16px 0}legend,.field>span{margin-bottom:9px}.age-options label>span{min-height:58px}
+ select{font-size:16px;min-height:50px;max-width:100%}.primary{margin-top:20px;min-height:54px}.local-note{margin:10px 0 16px}.parent-note{margin:16px 0;padding-left:12px}.parent-note p{font-size:13px;line-height:1.65}.guide{margin:16px 0 20px}.guide summary{min-height:44px;padding:10px 0}
+ .result{margin-top:24px;min-width:0;scroll-margin-top:12px}.toolbar{display:grid;grid-template-columns:1fr auto;gap:12px}.mobile-settings{display:inline-flex;align-items:center;justify-content:center;font-size:14px;min-height:44px;padding:8px;text-decoration:none}.toolbar-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;width:100%;margin:0}.toolbar button{min-height:48px;font-size:15px}.status{font-size:13px;margin:12px 2px}
+ .paper{padding:20px 14px}.paper-top{letter-spacing:0;font-size:9px;gap:6px}.sheet-heading{margin:20px 0 12px;align-items:flex-start}.sheet-heading>div{min-width:0}.sheet-heading h2{font-size:24px;letter-spacing:0}.sheet-heading .eyebrow{font-size:11px;line-height:1.7}.sheet-badge{width:58px;min-height:58px;font-size:15px;padding:9px 6px}.sheet-meta{gap:8px;font-size:11px}.activity-head{gap:8px}.activity h3{flex:1;min-width:0;font-size:17px}.replace{min-width:72px;min-height:44px;padding:8px;font-size:13px}.activity p{font-size:16px}.activity .parent-cue{font-size:13px}.picture-option{min-width:0;padding:7px}.picture-caption{overflow-wrap:anywhere}.match-gap{min-width:20px}.match-item{gap:6px}.choice{max-width:100%;font-size:18px;padding:8px 12px}.pattern{padding:12px 8px;font-size:22px;letter-spacing:1px}.equation{font-size:25px;letter-spacing:1px}.paper-footer{flex-wrap:wrap}.print-tip{font-size:13px}
+}
+@media screen and (max-width:360px){.edition{display:none}.paper{padding:16px 10px}.sheet-heading h2{font-size:22px}.worksheet-icon{width:42px;height:42px}.picture-options{gap:6px}.match-item .worksheet-icon{width:40px;height:40px}}
 </style>
 <!-- Lucide icon licence
 ISC License
@@ -79,9 +92,9 @@ SOFTWARE.
 -->
 </head>
 <body>
-<header class="topbar"><a class="brand" href="./"><span class="mark" aria-hidden="true">小</span><span>小步學堂 <small>LITTLE STEPS</small></span></a><span class="edition">家庭練習室 <b>01</b></span></header>
+<header class="topbar"><a class="brand" href="#worksheet-settings"><span class="mark" aria-hidden="true">小</span><span>小步學堂 <small>LITTLE STEPS</small></span></a><span class="edition">家庭練習室 <b>01</b></span></header>
 <main class="workspace">
-  <aside class="controls" aria-label="工作紙設定">
+  <aside class="controls" id="worksheet-settings" aria-label="工作紙設定">
     <div class="eyebrow">每天一小步</div><h1>今日，學啲乜？</h1><p class="intro">一張紙，一支筆。<br>圈選、配對、塗畫，全部喺紙上完成。</p>
     <form id="settings">
       <fieldset><legend><span class="step">01</span> 小朋友幾多歲？</legend><div class="age-options">
@@ -101,8 +114,8 @@ SOFTWARE.
     <div class="parent-note"><strong>跟住孩子嘅步伐</strong><p id="parent-note">唔使一次做晒。想停就停，講出想法同做啱答案一樣重要。</p></div>
     <details class="guide"><summary>設計依據與使用提示</summary><p>年齡係起點，並非能力評分。所有題目均在紙上完成，不需要實物、外出觀察或身體活動。2–3 歲可指選或自由塗畫，家長可代圈，唔要求寫字。建議時間係家庭使用設定，唔係官方功課時數。校內已有功課可減量。</p><p>本版使用固定題庫同組合變化，唔會即時用 AI 創作。題目可能喺多次生成後重複。</p><a href="https://www.edb.gov.hk/tc/edu-system/preprimary-kindergarten/quality-assurance-framework/dos-donts-for-kindergartens/index.html" target="_blank" rel="noopener">教育局：幼稚園應做和不應做的事項 ↗</a><a href="https://www.edb.gov.hk/tc/curriculum-development/major-level-of-edu/preprimary/index.html" target="_blank" rel="noopener">教育局：幼稚園學習範疇 ↗</a><a href="https://www.fhs.gov.hk/tc_chi/health_info/child/15670.html" target="_blank" rel="noopener">衞生署：兩至三歲兒童發展 ↗</a><a href="https://www.edb.gov.hk/tc/curriculum-development/kla/overview.html" target="_blank" rel="noopener">教育局：小學科目安排 ↗</a><p class="icon-credit">題目線圖：Lucide（ISC 授權）。</p></details>
   </aside>
-  <section class="result" aria-label="工作紙預覽">
-    <div class="toolbar"><div class="preview-label">工作紙預覽 <span id="sheet-count">01</span></div><div class="toolbar-actions"><button id="answers-toggle" aria-expanded="false" aria-controls="answer-sheet">家長答案</button><button id="print-button" class="print-button">列印 / PDF</button></div></div>
+  <section class="result" id="worksheet-preview" tabindex="-1" aria-label="工作紙預覽">
+    <div class="toolbar"><div class="preview-label">工作紙預覽 <span id="sheet-count">01</span></div><a class="mobile-settings" href="#worksheet-settings">修改設定 ↑</a><div class="toolbar-actions"><button id="answers-toggle" aria-expanded="false" aria-controls="answer-sheet">家長答案</button><button id="print-button" class="print-button">列印 / PDF</button></div></div>
     <div id="status" class="status" role="status" aria-live="polite">已準備好今日練習。</div>
     <article id="worksheet" class="paper">
       <div class="paper-top"><span class="paper-brand">小步學堂 / LITTLE STEPS</span><span id="sheet-date"></span></div>
@@ -241,7 +254,7 @@ function render(){
  $('answer-sheet').hidden=!showAnswers;$('answers-toggle').setAttribute('aria-expanded',String(showAnswers));$('answers-toggle').textContent=showAnswers?'隱藏答案':'家長答案';
 }
 function generateNow(c=config()){validate(c);current={...c};activities=generate(current,activities);serial++;render();$('status').classList.remove('pending');$('status').textContent='已生成 '+current.age+' 歲 · '+CATEGORIES[current.ability][0]+' · '+LANGS[current.language]+'，共 '+activities.length+' 個活動。';return {age:current.age,ability:current.ability,language:current.language,activities:activities.map(a=>({title:a.title,prompt:a.prompt})),number:serial};}
-$('settings').addEventListener('submit',e=>{e.preventDefault();generateNow();});
+$('settings').addEventListener('submit',e=>{e.preventDefault();generateNow();if(window.matchMedia('(max-width:750px)').matches){$('worksheet-preview').focus({preventScroll:true});$('worksheet-preview').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});}});
 $('settings').addEventListener('change',()=>{updateHints();$('status').classList.add('pending');$('status').textContent='設定已更改。按「生成一份新工作紙」套用；下方仍是上一份。';});
 $('activities').addEventListener('click',e=>{const button=e.target.closest('[data-replace]');if(!button)return;const i=Number(button.dataset.replace),old=activities[i];let next;for(let n=0;n<30;n++){next=make(current,old.category,rand(3));if(!activities.some(a=>a.key===next.key))break;}activities[i]=next;render();$('status').textContent='已更換第 '+(i+1)+' 題，家長答案已同步更新。';$('activities').querySelector('[data-replace="'+i+'"]')?.focus();});
 $('answers-toggle').addEventListener('click',()=>{showAnswers=!showAnswers;render();});
