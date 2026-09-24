@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Smart Casual Color Matcher</title>
+<style>
+  :root{
+    --bg:#f6f4ef;
+    --card:#ffffff;
+    --ink:#1f2430;
+    --muted:#6c7280;
+    --line:#e7e2d9;
+    --good:#2f7d4a;
+    --warn:#a36a00;
+    --bad:#9b3434;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .wrap{max-width:1100px;margin:auto;padding:24px}
+  h1{font-size:30px;margin:0 0 6px}
+  .sub{color:var(--muted);margin:0 0 24px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:18px;box-shadow:0 4px 18px rgba(0,0,0,.04)
+  }
+  .row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  select,input[type=color]{
+    width:100%;height:42px;border:1px solid var(--line);border-radius:10px;
+    background:#fff;padding:7px 10px;font-size:14px
+  }
+  .garment{display:flex;flex-direction:column;gap:8px}
+  .swatch{height:72px;border-radius:14px;border:1px solid rgba(0,0,0,.08)}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  button{
+    border:0;border-radius:10px;padding:10px 14px;font-weight:650;cursor:pointer
+  }
+  .primary{background:#1f2430;color:#fff}
+  .ghost{background:#eeeae2;color:#2d313b}
+  .scorebox{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .score{
+    width:88px;height:88px;border-radius:50%;display:grid;place-items:center;
+    font-size:26px;font-weight:800;border:8px solid #dfe6df
+  }
+  .verdict{font-size:22px;font-weight:800}
+  .why{color:var(--muted);line-height:1.5}
+  .preview{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px
+  }
+  .look{
+    min-height:290px;border-radius:16px;background:#f1efe9;display:flex;
+    align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden
+  }
+  .figure{width:120px;display:flex;flex-direction:column;align-items:center}
+  .head{width:44px;height:44px;border-radius:50%;background:#c59a7d;margin-bottom:4px}
+  .blazer{
+    width:108px;height:104px;border-radius:18px 18px 10px 10px;position:relative;
+    clip-path:polygon(0 0,40% 0,50% 35%,60% 0,100% 0,93% 100%,7% 100%)
+  }
+  .tee{
+    width:62px;height:64px;border-radius:8px 8px 4px 4px;margin-top:-94px;z-index:2
+  }
+  .pants{display:flex;gap:10px;margin-top:34px}
+  .leg{width:40px;height:108px;border-radius:3px 3px 8px 8px}
+  .shoes{display:flex;gap:12px;margin-top:4px}
+  .shoe{width:43px;height:16px;border-radius:12px 12px 5px 5px}
+  .list{margin:12px 0 0;padding-left:18px;color:#3d4350;line-height:1.65}
+  .small{font-size:12px;color:var(--muted);margin-top:10px}
+  .chipbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .chip{padding:6px 10px;border-radius:999px;background:#f0ede7;font-size:12px;cursor:pointer}
+
+  /* Mobile-friendly refinements */
+  html,body{max-width:100%;overflow-x:hidden}
+  button,select,input{font:inherit}
+  button,select,input[type=color]{min-height:44px}
+  .wrap{width:100%}
+
+  @media(max-width:900px){
+    .wrap{padding:18px}
+    .grid{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr 1fr}
+    .preview{grid-template-columns:1fr}
+    .look{min-height:250px}
+  }
+
+  @media(max-width:640px){
+    .wrap{padding:12px}
+    h1{font-size:24px;line-height:1.15}
+    .sub{font-size:14px;margin-bottom:16px}
+    .card{padding:14px;border-radius:14px}
+    .row{grid-template-columns:1fr}
+    .garment{gap:7px}
+    .swatch{height:54px}
+    select,input[type=color]{height:46px}
+    .btns{display:grid;grid-template-columns:1fr;gap:8px}
+    button{width:100%;padding:12px 14px}
+    .chipbar{
+      display:flex;
+      overflow-x:auto;
+      flex-wrap:nowrap;
+      padding-bottom:4px;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    .chipbar::-webkit-scrollbar{display:none}
+    .chip{flex:0 0 auto;padding:8px 12px}
+    .scorebox{align-items:flex-start}
+    .score{width:74px;height:74px;font-size:22px;border-width:7px;flex:0 0 auto}
+    .verdict{font-size:19px}
+    .why{font-size:14px}
+    .preview{grid-template-columns:1fr;gap:10px}
+    .look{min-height:220px;padding:12px}
+    .figure{transform:scale(.9)}
+    .list{font-size:14px;padding-left:20px}
+    .small{font-size:11px}
+  }
+
+  @media(max-width:380px){
+    .wrap{padding:10px}
+    .card{padding:12px}
+    h1{font-size:22px}
+    .figure{transform:scale(.82)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Smart Casual Color Matcher</h1>
+  <p class="sub">Built for outfits like <b>blazer + T-shirt/shirt + chinos + shoes</b>. Pick colors and get a harmony score, contrast check, and practical styling advice.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="row">
+        <div class="garment">
+          <label>Blazer</label>
+          <select id="blazerPreset"></select>
+          <input id="blazer" type="color" value="#18233A" aria-label="Blazer color">
+          <div id="blazerSwatch" class="swatch"></div>
+        </div>
+        <div class="garment">
+          <label>Top</label>
+          <select id="topPreset"></select>
+          <input id="top" type="color" value="#B9AA90" aria-label="Top color">
+          <div id="topSwatch" class="swatch"></div>
+        </div>
+        <div class="garment">
+          <label>Trousers</label>
+          <select id="pantsPreset"></select>
+          <input id="pants" type="color" value="#6D7050" aria-label="Trousers color">
+          <div id="pantsSwatch" class="swatch"></div>
+        </div>
+        <div class="garment">
+          <label>Shoes</label>
+          <select id="shoesPreset"></select>
+          <input id="shoes" type="color" value="#B57A4C" aria-label="Shoes color">
+          <div id="shoesSwatch" class="swatch"></div>
+        </div>
+      </div>
+
+      <div class="chipbar">
+        <span class="chip" data-set="navy-sand-od-brown">Navy + Sand + OD + Brown</span>
+        <span class="chip" data-set="navy-white-od-white">Navy + White + OD + White</span>
+        <span class="chip" data-set="navy-grey-stone-brown">Navy + Grey + Stone + Brown</span>
+        <span class="chip" data-set="charcoal-white-navy-brown">Charcoal + White + Navy + Brown</span>
+      </div>
+
+      <div class="btns">
+        <button class="primary" onclick="analyse()">Analyse outfit</button>
+        <button class="ghost" onclick="randomGood()">Give me a safe combo</button>
+      </div>
+
+      <div class="preview">
+        <div class="look">
+          <div class="figure">
+            <div class="head"></div>
+            <div class="blazer" id="pvBlazer"></div>
+            <div class="tee" id="pvTop"></div>
+            <div class="pants"><div class="leg" id="pvPant1"></div><div class="leg" id="pvPant2"></div></div>
+            <div class="shoes"><div class="shoe" id="pvShoe1"></div><div class="shoe" id="pvShoe2"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="small">Quick read</div>
+          <ul class="list" id="quickRead"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="scorebox">
+        <div class="score" id="score">88</div>
+        <div>
+          <div class="verdict" id="verdict">Very good</div>
+          <div class="why" id="summary">Muted warm neutrals work well against a dark navy anchor.</div>
+        </div>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+      <div id="detail"></div>
+      <div class="small">Rule of thumb: one dark anchor + one or two muted neutrals + controlled shoe contrast usually looks more polished than four equally strong colors.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const palette = {
+  "Dark navy":"#18233A",
+  "Mid navy":"#243A5A",
+  "Charcoal":"#34363C",
+  "Black":"#151515",
+  "White":"#F4F2EA",
+  "Off-white":"#EAE4D8",
+  "Sand / Taupe":"#B9AA90",
+  "Stone":"#AAA28F",
+  "Light grey":"#C7C7C3",
+  "Olive drab":"#6D7050",
+  "Khaki":"#9A8B64",
+  "Dark olive":"#4F563D",
+  "Navy trousers":"#26364D",
+  "Light brown":"#B57A4C",
+  "Dark brown":"#68452F",
+  "White leather":"#EEEDE8",
+  "Black leather":"#1C1C1C"
+};
+
+const presetIds = ["blazerPreset","topPreset","pantsPreset","shoesPreset"];
+const allowed = {
+  blazerPreset:["Dark navy","Mid navy","Charcoal","Black"],
+  topPreset:["White","Off-white","Sand / Taupe","Stone","Light grey","Mid navy","Black"],
+  pantsPreset:["Olive drab","Dark olive","Khaki","Stone","Navy trousers","Charcoal"],
+  shoesPreset:["Light brown","Dark brown","White leather","Black leather"]
+};
+
+function fillPresets(){
+  presetIds.forEach(id=>{
+    const sel=document.getElementById(id);
+    allowed[id].forEach(n=>{
+      const o=document.createElement("option"); o.text=n; o.value=palette[n]; sel.add(o);
+    });
+    sel.onchange=()=>{ document.getElementById(id.replace("Preset","")).value=sel.value; analyse(); };
+  });
+  document.getElementById("blazerPreset").value="#18233A";
+  document.getElementById("topPreset").value="#B9AA90";
+  document.getElementById("pantsPreset").value="#6D7050";
+  document.getElementById("shoesPreset").value="#B57A4C";
+}
+
+function hexToRgb(h){
+  h=h.replace("#","");
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  let max=Math.max(r,g,b),min=Math.min(r,g,b),h=0,s=0,l=(max+min)/2;
+  if(max!==min){
+    let d=max-min;
+    s=l>.5?d/(2-max-min):d/(max+min);
+    switch(max){
+      case r:h=(g-b)/d+(g<b?6:0);break;
+      case g:h=(b-r)/d+2;break;
+      case b:h=(r-g)/d+4;break;
+    }
+    h*=60;
+  }
+  return [h,s,l];
+}
+function info(hex){
+  const [r,g,b]=hexToRgb(hex);
+  const [h,s,l]=rgbToHsl(r,g,b);
+  return {r,g,b,h,s,l};
+}
+function hueDiff(a,b){
+  let d=Math.abs(a.h-b.h); return Math.min(d,360-d);
+}
+function lum(c){
+  const vals=[c.r,c.g,c.b].map(v=>{v/=255; return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});
+  return .2126*vals[0]+.7152*vals[1]+.0722*vals[2];
+}
+function contrast(a,b){
+  let A=lum(a),B=lum(b); return (Math.max(A,B)+.05)/(Math.min(A,B)+.05);
+}
+function isNeutral(c){return c.s<0.22;}
+function isMuted(c){return c.s<0.48;}
+function warmth(c){
+  // rough warm/cool classifier
+  return ((c.h<70 || c.h>330) ? 1 : (c.h>80 && c.h<250 ? -1 : 0));
+}
+
+function pairScore(a,b){
+  let s=72;
+  const hd=hueDiff(a,b), cr=contrast(a,b);
+  if(isNeutral(a)||isNeutral(b)) s+=10;
+  if(isMuted(a)&&isMuted(b)) s+=6;
+  if(hd<35) s+=5;                 // analogous
+  if(hd>145 && hd<215) s+=6;      // complementary-ish
+  if(cr>1.4 && cr<5.5) s+=6;
+  if(cr<1.15) s-=12;
+  if(a.s>.65 && b.s>.65) s-=10;
+  return Math.max(45,Math.min(100,s));
+}
+
+function analyse(){
+  const ids=["blazer","top","pants","shoes"];
+  const hx=Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value]));
+  const c=Object.fromEntries(ids.map(id=>[id,info(hx[id])]));
+
+  document.getElementById("blazerSwatch").style.background=hx.blazer;
+  document.getElementById("topSwatch").style.background=hx.top;
+  document.getElementById("pantsSwatch").style.background=hx.pants;
+  document.getElementById("shoesSwatch").style.background=hx.shoes;
+  document.getElementById("pvBlazer").style.background=hx.blazer;
+  document.getElementById("pvTop").style.background=hx.top;
+  document.getElementById("pvPant1").style.background=hx.pants;
+  document.getElementById("pvPant2").style.background=hx.pants;
+  document.getElementById("pvShoe1").style.background=hx.shoes;
+  document.getElementById("pvShoe2").style.background=hx.shoes;
+
+  const pairs=[
+    ["Blazer ↔ Top",c.blazer,c.top],
+    ["Top ↔ Trousers",c.top,c.pants],
+    ["Trousers ↔ Shoes",c.pants,c.shoes],
+    ["Blazer ↔ Trousers",c.blazer,c.pants]
+  ];
+  let base=pairs.reduce((a,p)=>a+pairScore(p[1],p[2]),0)/pairs.length;
+
+  // Practical menswear adjustments
+  const darkAnchor = c.blazer.l<0.28;
+  const topLighter = c.top.l > c.blazer.l + 0.12;
+  const pantsMuted = c.pants.s < .5;
+  const shoeGrounded = c.shoes.l < .75;
+
+  if(darkAnchor) base+=3;
+  if(topLighter) base+=3;
+  if(pantsMuted) base+=2;
+  if(shoeGrounded) base+=1;
+
+  const score=Math.round(Math.max(50,Math.min(98,base)));
+  document.getElementById("score").textContent=score;
+
+  let verdict, color;
+  if(score>=90){verdict="Excellent";color="var(--good)"}
+  else if(score>=82){verdict="Very good";color="var(--good)"}
+  else if(score>=74){verdict="Works";color="var(--warn)"}
+  else {verdict="Needs adjustment";color="var(--bad)"}
+  document.getElementById("verdict").textContent=verdict;
+  document.getElementById("score").style.borderColor=color;
+
+  let notes=[];
+  if(darkAnchor && topLighter) notes.push("Good hierarchy: the blazer anchors the outfit and the top lifts it.");
+  if(isMuted(c.top) && isMuted(c.pants)) notes.push("The top and trousers are muted, so the outfit feels refined rather than loud.");
+  if(warmth(c.shoes)>=0 && (c.pants.h>45 && c.pants.h<130)) notes.push("Brown shoes sit naturally with olive/khaki trousers.");
+  if(contrast(c.blazer,c.top)<1.25) notes.push("Blazer and top are very close in value; a lighter top would create cleaner separation.");
+  if(c.shoes.s>.65) notes.push("The shoes are quite saturated; a more muted leather tone would look more premium.");
+  if(c.top.s>.6 && c.pants.s>.6) notes.push("Both top and trousers are strong colors; tone one of them down.");
+
+  document.getElementById("summary").textContent = notes[0] || "The palette is balanced enough for smart casual.";
+  document.getElementById("detail").innerHTML =
+    "<b>Why it works / what to tweak</b><ul class='list'>" +
+    (notes.length?notes:["Balanced palette with no major clashes."]).map(x=>"<li>"+x+"</li>").join("") +
+    "</ul>";
+
+  const q=document.getElementById("quickRead");
+  q.innerHTML = [
+    darkAnchor ? "Dark blazer = strong anchor" : "Consider a darker blazer for more structure",
+    topLighter ? "Top has enough separation" : "Top could be lighter than blazer",
+    pantsMuted ? "Trousers are easy to combine" : "Trousers are visually strong",
+    (c.shoes.l<.65) ? "Shoes ground the outfit" : "Very light shoes make the look more casual"
+  ].map(x=>"<li>"+x+"</li>").join("");
+}
+
+function setLook(vals){
+  ["blazer","top","pants","shoes"].forEach((id,i)=>document.getElementById(id).value=vals[i]);
+  analyse();
+}
+document.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{
+  const k=ch.dataset.set;
+  const looks={
+    "navy-sand-od-brown":["#18233A","#B9AA90","#6D7050","#B57A4C"],
+    "navy-white-od-white":["#18233A","#F4F2EA","#6D7050","#EEEDE8"],
+    "navy-grey-stone-brown":["#18233A","#C7C7C3","#AAA28F","#68452F"],
+    "charcoal-white-navy-brown":["#34363C","#F4F2EA","#26364D","#68452F"]
+  };
+  setLook(looks[k]);
+});
+
+function randomGood(){
+  const looks=[
+    ["#18233A","#B9AA90","#6D7050","#B57A4C"],
+    ["#18233A","#EAE4D8","#4F563D","#68452F"],
+    ["#34363C","#F4F2EA","#26364D","#68452F"],
+    ["#243A5A","#C7C7C3","#AAA28F","#B57A4C"],
+    ["#18233A","#F4F2EA","#6D7050","#EEEDE8"]
+  ];
+  setLook(looks[Math.floor(Math.random()*looks.length)]);
+}
+
+fillPresets();
+["blazer","top","pants","shoes"].forEach(id=>document.getElementById(id).addEventListener("input",analyse));
+analyse();
+</script>
+</body>
+</html>
