@@ -95,7 +95,7 @@ SOFTWARE.
 <header class="topbar"><a class="brand" href="#worksheet-settings"><span class="mark" aria-hidden="true">小</span><span>小步學堂 <small>LITTLE STEPS</small></span></a><span class="edition">家庭練習室 <b>01</b></span></header>
 <main class="workspace">
   <aside class="controls" id="worksheet-settings" aria-label="工作紙設定">
-    <div class="eyebrow">每天一小步</div><h1>今日，學啲乜？</h1><p class="intro">一張紙，一支筆。<br>圈選、配對、塗畫，全部喺紙上完成。</p>
+    <div class="eyebrow">每天一小步</div><h1>今日，學啲乜？</h1><p class="intro">一張紙，一支筆。<br>同一重點練習 3 次，熟習後先進入下一個內容。</p>
     <form id="settings">
       <fieldset><legend><span class="step">01</span> 小朋友幾多歲？</legend><div class="age-options">
         <label><input type="radio" name="age" value="2"><span>2<small>歲</small></span></label>
@@ -112,7 +112,7 @@ SOFTWARE.
       <p class="local-note">紙上完成 · 內置題庫 · 毋須 AI 帳戶</p>
     </form>
     <div class="parent-note"><strong>跟住孩子嘅步伐</strong><p id="parent-note">唔使一次做晒。想停就停，講出想法同做啱答案一樣重要。</p></div>
-    <details class="guide"><summary>設計依據與使用提示</summary><p>年齡係起點，並非能力評分。所有題目均在紙上完成，不需要實物、外出觀察或身體活動。2–3 歲可指選或自由塗畫，家長可代圈，唔要求寫字。建議時間係家庭使用設定，唔係官方功課時數。校內已有功課可減量。</p><p>本版使用固定題庫同組合變化，唔會即時用 AI 創作。題目可能喺多次生成後重複。</p><a href="https://www.edb.gov.hk/tc/edu-system/preprimary-kindergarten/quality-assurance-framework/dos-donts-for-kindergartens/index.html" target="_blank" rel="noopener">教育局：幼稚園應做和不應做的事項 ↗</a><a href="https://www.edb.gov.hk/tc/curriculum-development/major-level-of-edu/preprimary/index.html" target="_blank" rel="noopener">教育局：幼稚園學習範疇 ↗</a><a href="https://www.fhs.gov.hk/tc_chi/health_info/child/15670.html" target="_blank" rel="noopener">衞生署：兩至三歲兒童發展 ↗</a><a href="https://www.edb.gov.hk/tc/curriculum-development/kla/overview.html" target="_blank" rel="noopener">教育局：小學科目安排 ↗</a><p class="icon-credit">題目線圖：Lucide（ISC 授權）。</p></details>
+    <details class="guide"><summary>設計依據與使用提示</summary><p>年齡係起點，並非能力評分。每份工作紙集中練習一個重點；同一重點連續做 3 份，之後先轉下一個內容。進度只會保存在這部裝置的瀏覽器。所有題目均在紙上完成，不需要實物、外出觀察或身體活動。2–3 歲可指選或自由塗畫，家長可代圈，唔要求寫字。建議時間係家庭使用設定，唔係官方功課時數。校內已有功課可減量。</p><p>本版使用固定題庫同組合變化，唔會即時用 AI 創作。題目可能喺多次生成後重複。</p><a href="https://www.edb.gov.hk/tc/edu-system/preprimary-kindergarten/quality-assurance-framework/dos-donts-for-kindergartens/index.html" target="_blank" rel="noopener">教育局：幼稚園應做和不應做的事項 ↗</a><a href="https://www.edb.gov.hk/tc/curriculum-development/major-level-of-edu/preprimary/index.html" target="_blank" rel="noopener">教育局：幼稚園學習範疇 ↗</a><a href="https://www.fhs.gov.hk/tc_chi/health_info/child/15670.html" target="_blank" rel="noopener">衞生署：兩至三歲兒童發展 ↗</a><a href="https://www.edb.gov.hk/tc/curriculum-development/kla/overview.html" target="_blank" rel="noopener">教育局：小學科目安排 ↗</a><p class="icon-credit">題目線圖：Lucide（ISC 授權）。</p></details>
   </aside>
   <section class="result" id="worksheet-preview" tabindex="-1" aria-label="工作紙預覽">
     <div class="toolbar"><div class="preview-label">工作紙預覽 <span id="sheet-count">01</span></div><a class="mobile-settings" href="#worksheet-settings">修改設定 ↑</a><div class="toolbar-actions"><button id="answers-toggle" aria-expanded="false" aria-controls="answer-sheet">家長答案</button><button id="print-button" class="print-button">列印 / PDF</button></div></div>
@@ -223,23 +223,30 @@ function make(c,cat,variant){
  return {category:cat,variant,title,prompt,body,answer,cue,writing,meta,key:JSON.stringify([cat,title,prompt,body])};
 }
 
-function generate(c,previous=[]){
- c=validate(c);const count=c.age===2?2:3;
- const cats=c.ability==='mixed'?shuffle(Object.keys(CATEGORIES).filter(x=>x!=='mixed')).slice(0,count):Array(count).fill(c.ability);
+function generate(c,previous=[],focusCategory=null,focusVariant=0){
+ c=validate(c);const count=c.age===2?2:3,cat=focusCategory||(c.ability==='mixed'?'language':c.ability);
  const used=new Set(),old=new Set(previous.map(x=>x.key));
- return cats.map((cat,i)=>{let item;for(let tries=0;tries<30;tries++){item=make(c,cat,c.ability==='mixed'?rand(3):i);if(!used.has(item.key)&&!old.has(item.key))break;}used.add(item.key);return item;});
+ return Array.from({length:count},()=>{let item;for(let tries=0;tries<30;tries++){item=make(c,cat,focusVariant);if(!used.has(item.key)&&!old.has(item.key))break;}used.add(item.key);return item;});
 }
 const engine={validate,generate,make,CATEGORIES,LANGS,TIMES};
 if(typeof module!=='undefined'&&module.exports)module.exports=engine;
 if(typeof document==='undefined')return;
-const $=id=>document.getElementById(id);let current=null,activities=[],serial=0,showAnswers=false;
+const $=id=>document.getElementById(id),PRACTICE_CATEGORIES=['language','math','logic','motor','science','social','creative'],PRACTICE_ROUNDS=3,PROGRESS_KEY='little-steps-practice-v1';let current=null,activities=[],serial=0,showAnswers=false,practice=null;
 function config(){return {age:Number(document.querySelector('[name=age]:checked').value),ability:$('ability').value,language:$('language').value};}
+function readProgress(){try{return JSON.parse(localStorage.getItem(PROGRESS_KEY)||'null');}catch{return null;}}
+function writeProgress(value){try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(value));}catch{}}
+function practiceFor(c,advance=false){
+ const key=[c.age,c.ability,c.language].join('|');let p=practice||readProgress();
+ if(!p||p.key!==key)p={key,categoryIndex:0,variant:0,round:1};
+ else if(advance){if(p.round<PRACTICE_ROUNDS)p.round++;else{p.round=1;if(c.ability==='mixed'){p.variant++;if(p.variant>2){p.variant=0;p.categoryIndex=(p.categoryIndex+1)%PRACTICE_CATEGORIES.length;}}else p.variant=(p.variant+1)%3;}}
+ p.category=c.ability==='mixed'?PRACTICE_CATEGORIES[p.categoryIndex]:c.ability;practice=p;writeProgress(p);return p;
+}
 function updateHints(){const c=config();$('age-hint').textContent=({2:'學前 / PN 左右',3:'K1 左右',4:'K2 左右',5:'K3 左右',6:'小一左右'})[c.age]+' · 按孩子能力調整';$('parent-note').textContent=c.age<=3?'所有題目都喺紙上做。兩、三歲可指選或塗畫，家長可代圈，唔要求寫字。':'只需工作紙同筆。按指示圈選、連線、填色或寫答案，唔需要準備其他物件。';}
 function render(){
  const t=(z,e)=>lex(current,z,e),english=current.language==='en';
  $('worksheet').lang=english?'en':'zh-Hant';$('answer-sheet').lang=english?'en':'zh-Hant';
  $('sheet-date').textContent=new Date().toLocaleDateString(english?'en-GB':'zh-HK');
- $('sheet-kicker').textContent=t(current.age+' 歲','Age '+current.age)+' · '+t(...CATEGORIES[current.ability]);
+ $('sheet-kicker').textContent=t(current.age+' 歲','Age '+current.age)+' · '+t(...CATEGORIES[current.topic])+' · '+t('第 '+current.practiceRound+'/'+PRACTICE_ROUNDS+' 次練習','Practice '+current.practiceRound+'/'+PRACTICE_ROUNDS);
  $('sheet-title').textContent=t(current.age<4?'一起玩，一起學':'小小發現家',current.age<4?'Play & discover':'Little discoveries');
  $('duration').innerHTML=TIMES[current.age]+'<small>'+esc(t('分鐘','minutes'))+'</small>';
  $('name-label').textContent=t('名字：________________','Name: ________________');$('mode-label').textContent=t('圈一圈 · 連一連 · 畫一畫','Circle · Match · Draw');
@@ -253,13 +260,13 @@ function render(){
  $('answer-id').textContent='#'+String(serial).padStart(2,'0');$('sheet-count').textContent=String(serial).padStart(2,'0');
  $('answer-sheet').hidden=!showAnswers;$('answers-toggle').setAttribute('aria-expanded',String(showAnswers));$('answers-toggle').textContent=showAnswers?'隱藏答案':'家長答案';
 }
-function generateNow(c=config()){validate(c);current={...c};activities=generate(current,activities);serial++;render();$('status').classList.remove('pending');$('status').textContent='已生成 '+current.age+' 歲 · '+CATEGORIES[current.ability][0]+' · '+LANGS[current.language]+'，共 '+activities.length+' 個活動。';return {age:current.age,ability:current.ability,language:current.language,activities:activities.map(a=>({title:a.title,prompt:a.prompt})),number:serial};}
+function generateNow(c=config(),advance=true){validate(c);const p=practiceFor(c,advance);current={...c,topic:p.category,topicVariant:p.variant,practiceRound:p.round};activities=generate(current,activities,p.category,p.variant);serial++;render();const focus=activities[0]?.title||CATEGORIES[p.category][0];$('status').classList.remove('pending');$('status').textContent='今次重點：'+focus+' · 第 '+p.round+'/'+PRACTICE_ROUNDS+' 次練習。完成第 '+PRACTICE_ROUNDS+' 次後先轉下一個內容。';return {age:current.age,ability:current.ability,language:current.language,topic:p.category,practiceRound:p.round,activities:activities.map(a=>({title:a.title,prompt:a.prompt})),number:serial};}
 $('settings').addEventListener('submit',e=>{e.preventDefault();generateNow();if(window.matchMedia('(max-width:750px)').matches){$('worksheet-preview').focus({preventScroll:true});$('worksheet-preview').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});}});
 $('settings').addEventListener('change',()=>{updateHints();$('status').classList.add('pending');$('status').textContent='設定已更改。按「生成一份新工作紙」套用；下方仍是上一份。';});
-$('activities').addEventListener('click',e=>{const button=e.target.closest('[data-replace]');if(!button)return;const i=Number(button.dataset.replace),old=activities[i];let next;for(let n=0;n<30;n++){next=make(current,old.category,rand(3));if(!activities.some(a=>a.key===next.key))break;}activities[i]=next;render();$('status').textContent='已更換第 '+(i+1)+' 題，家長答案已同步更新。';$('activities').querySelector('[data-replace="'+i+'"]')?.focus();});
+$('activities').addEventListener('click',e=>{const button=e.target.closest('[data-replace]');if(!button)return;const i=Number(button.dataset.replace),old=activities[i];let next;for(let n=0;n<30;n++){next=make(current,old.category,current.topicVariant);if(!activities.some(a=>a.key===next.key))break;}activities[i]=next;render();$('status').textContent='已更換第 '+(i+1)+' 題；仍然練習同一個重點，家長答案已同步更新。';$('activities').querySelector('[data-replace="'+i+'"]')?.focus();});
 $('answers-toggle').addEventListener('click',()=>{showAnswers=!showAnswers;render();});
 $('print-button').addEventListener('click',()=>window.print());
-updateHints();generateNow();
+updateHints();generateNow(config(),false);
 const ctx=document.modelContext;
 if(ctx?.registerTool){try{Promise.resolve(ctx.registerTool({name:'generate_worksheet',title:'Generate a worksheet',description:'Apply age, ability and language settings and replace the visible worksheet. No API, storage or printing is used.',inputSchema:{type:'object',properties:{age:{type:'integer',minimum:2,maximum:6},ability:{type:'string',enum:Object.keys(CATEGORIES)},language:{type:'string',enum:Object.keys(LANGS)}},required:['age','ability','language'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){const c=validate(input);document.querySelector('[name=age][value="'+c.age+'"]').checked=true;$('ability').value=c.ability;$('language').value=c.language;updateHints();return generateNow(c);}})).catch(()=>{});}catch{}}
 })();
